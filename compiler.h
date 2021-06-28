@@ -9,7 +9,7 @@
 #include "vm.h"
 
 #define MAX_NUMBER_VALUE 1000000
-#define skip - 1
+#define skip -1
 
 ObjFunction* compile(const char* source, ObjLibrary* library);
 //< Calls and Functions compile-h

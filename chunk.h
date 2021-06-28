@@ -82,6 +82,9 @@ typedef enum {
   OP_INDEX_SUBSCR,
   OP_STORE_SUBSCR,
 
+  OP_STORE_SUBSCR_C,
+  OP_INDEX_SUBSCR_C,
+
   OP_USE,
   OP_RECENT_USE,
 

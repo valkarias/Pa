@@ -1,16 +1,12 @@
 #include <string.h>
-//< Local Variables compiler-include-string
 
 #include "common.h"
 #include "compiler.h"
 #include "object.h"
-//> Garbage Collection compiler-include-memory
 #include "memory.h"
-//< Garbage Collection compiler-include-memory
 #include "scanner.h"
 
 #include "libraries/library.h"
-//> Compiling Expressions include-debug
 
 #ifdef DEBUG_PRINT_CODE
 #include "debug.h"
@@ -21,7 +17,7 @@ int innermostLoopStart = -1;
 int innermostLoopScopeDepth = 0;
 
 int listCount = 0;
-bool isList = false;
+int isList = false;
 //<
 
 typedef struct {
@@ -546,7 +542,6 @@ static void literal(bool canAssign) {
 }
 
 static void grouping(bool canAssign) {
-//< Global Variables grouping
   expression();
   consume(TOKEN_RIGHT_PAREN, "Expect ')' after expression.");
 
@@ -614,6 +609,7 @@ static void namedVariable(Token name, bool canAssign) {
     emitBytes(getOp, (uint8_t)arg);
   }
 
+  isList = skip;
 }
 
 static void variable(bool canAssign) {
@@ -621,6 +617,8 @@ static void variable(bool canAssign) {
 
   current->lastCall = false;
   isList = skip;
+
+  printf("%d\n", isList);
 }
 
 static Token syntheticToken(const char* text) {
@@ -736,9 +734,21 @@ static void subscript(bool canAssign) {
       if (index < 0 || index > listCount - 1) {
         error("List index out bounds.");
       }
+
+      consume(TOKEN_RIGHT_BRACK, "Expect ']' after index.");
+
+      if (canAssign && match(TOKEN_EQUAL)) {
+        expression();
+        emitByte(OP_STORE_SUBSCR_C);
+      } else {
+        emitByte(OP_INDEX_SUBSCR_C);
+      }
+
+      current->lastCall = false;
+      isList = false;
+      return;
     }
   }
-
   consume(TOKEN_RIGHT_BRACK, "Expect ']' after index.");
 
   if (canAssign && match(TOKEN_EQUAL)) {
@@ -1282,6 +1292,7 @@ static int getArgCount(uint8_t *code, const ValueArray constants, int ip) {
 
 static void statement() {
   current->lastCall = false;
+  isList = false;
 
   if (match(TOKEN_PRINT)) {
     printStatement();

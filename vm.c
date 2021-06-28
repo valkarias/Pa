@@ -897,6 +897,61 @@ static InterpretResult run() {
         break;
       }
 
+      case OP_STORE_SUBSCR_C: {
+        Value item = pop();
+        Value indexVal = pop();
+        Value listVal = pop();
+
+        ObjList* list = AS_LIST(listVal);
+
+        if (!IS_NUMBER(indexVal)) {
+          runtimeError("List index must be a number.");
+          return INTERPRET_RUNTIME_ERROR;
+        }
+        int index = AS_NUMBER(indexVal);
+
+        storeToList(list, index, item);
+        push(item);
+        break;
+      }
+
+      case OP_INDEX_SUBSCR_C: {
+        Value indexVal = pop();
+        Value objVal = pop();
+        Value result;
+
+
+        if (!IS_NUMBER(indexVal)) {
+          runtimeError("Index must be a number.");
+          return INTERPRET_RUNTIME_ERROR;
+        }
+        
+        int index = AS_NUMBER(indexVal);
+
+        switch(OBJ_TYPE(objVal)) {
+          case OBJ_LIST: {
+            ObjList* list = AS_LIST(objVal);
+
+            result = indexFromList(list, index);
+            push(result);
+            break;
+          }
+
+          case OBJ_STRING: {
+            ObjString* string = AS_STRING(objVal);
+
+            result = indexFromString(string, index);
+            push(result);
+            break;
+          }
+
+          default:
+            break;
+        }
+
+        break;
+      }
+
       case OP_STORE_SUBSCR: {
         Value item = pop();
         Value indexVal = pop();
