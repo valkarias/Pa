@@ -732,7 +732,7 @@ static void subscript(bool canAssign) {
   }
 
   if (current->function->type == TYPE_SCRIPT) {
-    if (isList == skip) {
+    if (isList != skip) {
       if (index < 0 || index > listCount - 1) {
         error("List index out bounds.");
       }

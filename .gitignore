@@ -4,4 +4,4 @@ tools/build.py
 
 test.pc
 
-.vscode
+.vscode/*
