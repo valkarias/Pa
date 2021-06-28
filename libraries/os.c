@@ -114,7 +114,7 @@ static char* getPlatform() {
 #elif __unix || __unix__
     return "Unix";
 #elif __APPLE__
-    return "Mac"
+    return "Mac";
 #else
     return "unknown";
 #endif
