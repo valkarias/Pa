@@ -1,5 +1,5 @@
-bin\pcrap
+bin/pcrap.exe
 
-tools\build
+tools/build.py
 
-test
+test.pc
