@@ -4,4 +4,5 @@ tools/build.py
 
 test.pc
 
-.vscode/*
+.vscode/settings.json
+.vscode/c_cpp_properties.json

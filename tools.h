@@ -9,6 +9,12 @@
 
 #define _basename _splitpath
 
+#ifdef _WIN32
+#define ACCESS _access
+#else
+#define ACCESS access
+#endif
+
 char* readFile(char* path);
 bool checkPath(char* filename);
 
