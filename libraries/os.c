@@ -113,6 +113,8 @@ static char* getPlatform() {
     return "Linux";
 #elif __unix || __unix__
     return "Unix";
+#elif __APPLE__
+    return "Mac"
 #else
     return "unknown";
 #endif
@@ -124,7 +126,9 @@ ObjLibrary* createOsLibrary() {
     ObjLibrary* library = newLibrary(name);
     push(OBJ_VAL(library));
 
+#ifndef __APPLE__
     defineNative("access", accessLib, &library->values);
+#endif
     defineNative("exit", exitLib, &library->values);
     defineNative("remove", removeLib, &library->values);
     defineNative("getCwd", getCwdLib, &library->values);
