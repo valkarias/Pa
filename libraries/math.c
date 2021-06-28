@@ -1,4 +1,4 @@
-#include "math.h"
+#include "pcrap_math.h"
 
 static Value absLib(int argCount, Value *args) {
     if (argCount != 1) {
