@@ -1,0 +1,12 @@
+{
+    "files.associations": {
+        "*.c": "c",
+        "cmath": "cpp",
+        "*.tcc": "cpp",
+        "type_traits": "cpp",
+        "limits": "c",
+        "memory.h": "c",
+        "stdarg.h": "c",
+        "stdlib.h": "c"
+    }
+}

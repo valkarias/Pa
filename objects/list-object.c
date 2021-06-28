@@ -1,0 +1,125 @@
+#include "objects.h"
+
+static Value appendMethod(int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError("Expected 1 argument but got %d from 'append()'.", argCount);
+        return NOTCLEAR;
+    }
+
+    ObjList* list = AS_LIST(args[0]);
+    Value item = args[1];
+
+    appendToList(list, item);
+
+    return CLEAR;
+}
+
+static Value containMethod(int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError("Expected 1 argument but got %d from 'contains()'.", argCount);
+        return NOTCLEAR;
+    }
+
+    ObjList* list = AS_LIST(args[0]);
+    Value item = args[1];
+
+    for (int i = 0; i < list->count; i++) {
+        if (valuesEqual(list->items[i], item)) {
+            return TRUE_VAL;
+        }
+    }
+
+    return FALSE_VAL;
+}
+
+static Value removeMethod(int argCount, Value *args) {
+    if (argCount > 1) {
+        runtimeError("Expected 1 or 0 arguments but got %d from 'remove()'.", argCount);
+        return NOTCLEAR;
+    }
+
+    ObjList* list = AS_LIST(args[0]);
+
+    if (argCount == 1) {
+        if (!IS_NUMBER(args[1])) {
+            runtimeError("Index must be a number from 'remove()'.");
+            return NOTCLEAR;
+        }
+
+        int index = AS_NUMBER(args[1]);
+
+        if (!isValidListIndex(list ,index)) {
+            runtimeError("Index out of bounds.");
+            return NOTCLEAR;
+        }
+
+        deleteFromList(list, index);
+        return CLEAR;
+    } else {
+        deleteFromList(list, list->count - 1);
+    }
+}
+
+static Value lengthMethod(int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError("Expected 0 arguments but got %d from 'length()'.", argCount);
+        return NOTCLEAR;
+    }
+
+    ObjList* list = AS_LIST(args[0]);
+
+    return NUMBER_VAL(list->count);
+}
+
+static Value indexMethod(int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError("Expected 1 argument but got %d from 'index()'.", argCount);
+        return NOTCLEAR;
+    }
+
+    ObjList* list = AS_LIST(args[0]);
+    Value item = args[1];
+    
+    for (int i = 0; i < list->count; i++) {
+        if (valuesEqual(list->items[i], item)) {
+            return NUMBER_VAL(i);
+        }
+    }
+
+    return FALSE_VAL;
+}
+
+static Value clearMethod(int argCount, Value* args) {
+    if (argCount != 0) {
+        runtimeError("Expected 0 arguments but got %d from 'clean()'.", argCount);
+        return NOTCLEAR;
+    }
+
+    clearList(AS_LIST(args[0]));
+    return CLEAR;
+}
+
+//
+void initListMethods() {
+    char* listMethodStrings[] = {
+        "append",
+        "length",
+        "remove",
+        "contains",
+        "index",
+        "clear",
+    };
+
+    NativeFn listMethods[] = {
+        appendMethod,
+        lengthMethod,
+        removeMethod,
+        containMethod,
+        indexMethod,
+        clearMethod
+    };
+
+    for (uint8_t i = 0; i < sizeof(listMethodStrings) / sizeof(listMethodStrings[0]); i++) {
+        defineNative(listMethodStrings[i], listMethods[i], &vm.listNativeMethods);
+    }
+}
