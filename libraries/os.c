@@ -96,7 +96,7 @@ static Value getHomeLib(int argCount, Value *args) {
 #ifdef _WIN32
     snprintf(home, 260, "%s%s", getenv("HOMEDRIVE"), getenv("HOMEPATH"));
 #else
-    snprintf(homedir, 260, "%s", getenv("HOME"));
+    snprintf(home, 260, "%s", getenv("HOME"));
 #endif
 
     return OBJ_VAL(copyString(home, strlen(home)));
