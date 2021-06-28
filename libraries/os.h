@@ -1,7 +1,12 @@
 #ifndef pcrap_os_h
 #define pcrap_os_h
 
-#include <io.h>
+#ifdef _WIN32
+    #include <io.h>
+#else
+    #include <sys/io.h>
+#endif
+
 #include "../object.h"
 #include "library.h"
 
