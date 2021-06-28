@@ -57,7 +57,10 @@ static Value removeMethod(int argCount, Value *args) {
         return CLEAR;
     } else {
         deleteFromList(list, list->count - 1);
+        return CLEAR;
     }
+
+    return CLEAR; // Clang
 }
 
 static Value lengthMethod(int argCount, Value *args) {
