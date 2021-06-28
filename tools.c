@@ -1,9 +1,15 @@
 #include "tools.h"
 
 bool checkPath(char* filename) {
-  if (ACCESS(filename, F_OK) == 0) {
+#if _WIN32 || __linux__ || __unix || __unix__
+  if (access(filename, F_OK) == 0) {
     return true;
   }
+#else
+  if (fopen(filename, "r") != NULL) {
+    return true;
+  }
+#endif
 
   return false;
 }

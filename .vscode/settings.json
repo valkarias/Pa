@@ -8,6 +8,7 @@
         "memory.h": "c",
         "stdarg.h": "c",
         "stdlib.h": "c",
-        "common.h": "c"
+        "common.h": "c",
+        "tools.h": "c"
     }
 }
