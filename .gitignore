@@ -3,3 +3,5 @@ bin/pcrap.exe
 tools/build.py
 
 test.pc
+
+.vscode

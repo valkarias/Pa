@@ -1,0 +1,14 @@
+//tail call fib
+
+define fib > n,a,b > {
+    if n == 0 {
+        return a;
+    }
+    if n == 1 {
+        return b;
+    }
+
+    return fib(n - 1, b, a + b);
+}
+
+print fib(40, 0, 1);

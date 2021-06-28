@@ -5,6 +5,7 @@
     #include <io.h>
 #else
     #include <sys/io.h>
+    #include <unistd.h>
 #endif
 
 #include "../object.h"

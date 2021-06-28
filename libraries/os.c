@@ -1,7 +1,5 @@
 #include "os.h"
 
-#include <unistd.h>
-
 static Value exitLib(int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError("Expected 1 argument but got %d from 'exit()'.", argCount);

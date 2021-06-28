@@ -189,7 +189,7 @@ static int emitJump(uint8_t instruction) {
 }
 
 static void emitReturn() {
-  if (current->type == TYPE_INITIALIZER) {
+  if (current->function->type == TYPE_INITIALIZER) {
     emitBytes(OP_GET_LOCAL, 0);
   } else {
     emitByte(OP_NIL);
@@ -233,6 +233,7 @@ static void initCompiler(Compiler* compiler, FunctionType type) {
   compiler->localCount = 0;
   compiler->lastCall = false;
   compiler->scopeDepth = 0;
+  compiler->type = type;
   compiler->function = newFunction(parser.library, FUNCTION_NOT_PROTECTED, type);
 
 
@@ -1129,11 +1130,11 @@ static void printStatement() {
 }
 
 static void returnStatement() {
-  if (current->type == TYPE_SCRIPT) {
+  if (current->function->type == TYPE_SCRIPT) {
     error("Can not return from top-level code.");
   }
 
-  if (current->type == TYPE_INITIALIZER) {
+  if (current->function->type == TYPE_INITIALIZER) {
     error("Can't return a value from an initializer.");
   }
 
@@ -1201,18 +1202,15 @@ static void synchronize() {
     advance();
   }
 }
-//< Global Variables synchronize
-//> Global Variables declaration
+
+
 static void declaration() {
-//> Classes and Instances match-class
   if (match(TOKEN_CLASS)) {
     classDeclaration();
 
   } else if (match(TOKEN_FUN)) {
     funDeclaration();
   } else if (match(TOKEN_VAR)) {
-//< Calls and Functions match-fun
-//> match-var
     varDeclaration();
   } else {
     statement();
@@ -1294,7 +1292,6 @@ static void statement() {
   } else if (match(TOKEN_USE)) {
     useStatement();
   } else if (match(TOKEN_IF)) {
-
     beginScope();
     ifStatement();
     endScope();
@@ -1304,8 +1301,7 @@ static void statement() {
     continueStatement();
   } else if (match(TOKEN_RETURN)) {
     returnStatement();
-
-  }else if (match(TOKEN_WHILE)) {
+  } else if (match(TOKEN_WHILE)) {
     whileStatement();
 
   } else if (match(TOKEN_LEFT_BRACE)) {
@@ -1315,7 +1311,6 @@ static void statement() {
 
   } else {
     expressionStatement();
-
   }
 }
 
