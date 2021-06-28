@@ -1,7 +1,7 @@
 #include "tools.h"
 
 bool checkPath(char* filename) {
-  if (access(filename, F_OK) == 0) {
+  if (ACCESS(filename, F_OK) == 0) {
     return true;
   }
 

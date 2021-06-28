@@ -330,6 +330,8 @@ static bool invoke(ObjString* name, int argCount) {
         return callValue(value, argCount);
       }
 
+      default:
+        break;
     }
   } else {
     if (IS_NUMBER(receiver)) {

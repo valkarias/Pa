@@ -1095,7 +1095,7 @@ static void useStatement() {
   } else {
     consume(TOKEN_IDENTIFIER, "Expect library identifier.");
     uint8_t libName = identifierConstant(&parser.previous);
-    declareVariable(&parser.previous);
+    declareVariable();
 
     int index = getNativeModule( (char*)parser.previous.start, parser.previous.length - parser.current.length );
 
