@@ -53,11 +53,9 @@ static Value getCwdLib(int argCount, Value *args) {
 
     if (getcwd(cwdPath, sizeof(cwdPath)) != NULL) {
         return OBJ_VAL(copyString(cwdPath, strlen(cwdPath)));
-    } else {
-        return FAILED;
     }
 
-    return CLEAR; // Cross-platforming...
+    return FAILED;
 }
 
 static Value accessLib(int argCount, Value *args) {

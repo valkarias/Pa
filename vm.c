@@ -36,9 +36,7 @@ void runtimeError(const char* format, ...) {
     ObjFunction* function = frame->closure->function;
 
     size_t instruction = frame->ip - function->chunk.code - 1;
-    if (function->chunk.lines[instruction] >= 0) {
-      fprintf(stderr, "[line %d] in ", function->chunk.lines[instruction]);
-    }
+    fprintf(stderr, "[line %d] in ", function->chunk.lines[instruction]);
     if (function->name == NULL) {
       fprintf(stderr, "%s \n", function->library->name->chars);
     } else {
@@ -51,6 +49,21 @@ void runtimeError(const char* format, ...) {
   resetStack();
 }
 
+void dryError(const char* error) {
+  fprintf(stderr, error);
+  puts("");
+
+  for (int i = vm.frameCount - 1; i >= 0; i--) {
+    CallFrame* frame = &vm.frames[i];
+    ObjFunction* function = frame->closure->function;
+
+    fprintf(stderr, " %s() in '%s' \n",
+    function->name->chars,
+    function->library->name->chars);
+  }
+
+  resetStack();
+}
 
 void defineNative(const char* name, NativeFn function, Table* table) {
   ObjNative* native = newNative(function);
@@ -230,9 +243,11 @@ static bool callValue(Value callee, int argCount) {
   return false;
 }
 
-static bool protectCall(ObjFunction* function) {
+static bool protectCall(int argCount) {
+  ObjFunction* function = AS_CLOSURE(peek(argCount))->function;
+
   if (function->protection != FUNCTION_PROTECTED) {
-    runtimeError("Function '%s()' is not protected.", function->name->chars);
+    dryError("Function is not protected:");
     return false;
   }
 
@@ -555,6 +570,28 @@ static InterpretResult run() {
         break;
       }
 
+      case OP_GET_PROPERTY_NO_POP: {
+        if (!IS_INSTANCE(peek(0))) {
+          runtimeError("Only instances have properties.");
+          return INTERPRET_RUNTIME_ERROR;
+        }
+
+        ObjInstance* instance = AS_INSTANCE(peek(0));
+        ObjString* name = READ_STRING();
+        Value val;
+
+        if (tableGet(&instance->fields, name, &val)) {
+          push(val);
+          break;
+        }
+
+        if (!bindMethod(instance->klass, name)) {
+          return INTERPRET_RUNTIME_ERROR;
+        }
+
+        break;
+      }
+
       case OP_GET_PROPERTY: {
         Value receiver = peek(0);
 
@@ -687,11 +724,13 @@ static InterpretResult run() {
         }
         push(NUMBER_VAL(-AS_NUMBER(pop())));
         break;
+
       case OP_PRINT: {
         printValue(pop());
         printf("\n");
         break;
       }
+
       case OP_JUMP: {
         uint16_t offset = READ_SHORT();
         frame->ip += offset;
@@ -714,13 +753,18 @@ static InterpretResult run() {
 
       case OP_CALL: {
         int argCount = READ_BYTE();
+        bool native = false;
+
+        if (IS_NATIVE(peek(argCount))) native = true;
 
         if (!callValue(peek(argCount), argCount)) {
           return INTERPRET_RUNTIME_ERROR;
         }
 
-        if (!protectCall(AS_CLOSURE(peek(argCount))->function)) {
-          return INTERPRET_RUNTIME_ERROR;
+        if (!native) {
+          if (!protectCall(argCount)) {
+            return INTERPRET_RUNTIME_ERROR;
+          }
         }
 
         frame = &vm.frames[vm.frameCount - 1];
@@ -729,6 +773,11 @@ static InterpretResult run() {
 
       case OP_TAIL_CALL: {
         int argCount = READ_BYTE();
+
+        if (!protectCall(argCount)) {
+          return INTERPRET_RUNTIME_ERROR;
+        }
+
         if (!keepFrame(frame, argCount)) {
           return INTERPRET_RUNTIME_ERROR;
         }
@@ -844,6 +893,35 @@ static InterpretResult run() {
         }
 
         push(OBJ_VAL(list));
+        break;
+      }
+
+      case OP_INDEX_SUBSCR_NO_POP: {
+        Value val;
+        Value indexVal = peek(0);
+        Value subscrVal = peek(1);
+
+        if (!IS_LIST(subscrVal)) {
+          runtimeError("Invalid type for subscripting.");
+          return INTERPRET_RUNTIME_ERROR;
+        }
+
+        if (!IS_NUMBER(indexVal)) {
+          printValue(indexVal);
+          runtimeError("Index must be a number.");
+          return INTERPRET_RUNTIME_ERROR;
+        }
+        
+        int index = AS_NUMBER(indexVal);
+        ObjList* list = AS_LIST(subscrVal);
+
+        if (!isValidListIndex(list, index)) {
+          runtimeError("List index out of range.");
+          return INTERPRET_RUNTIME_ERROR;
+        }
+
+        val = indexFromList(list, index);
+        push(val);
         break;
       }
 
@@ -994,6 +1072,26 @@ static InterpretResult run() {
         ObjLibrary* library = importLibrary(index);
 
         push(OBJ_VAL(library));
+        break;
+      }
+
+      case OP_INCREMENT: {
+        if (!IS_NUMBER(peek(0))) {
+          runtimeError("Operand must be number.");
+          return INTERPRET_RUNTIME_ERROR;
+        }
+
+        push(NUMBER_VAL(AS_NUMBER(pop()) + 1));
+        break;
+      }
+
+      case OP_DECREMENT: {
+        if (!IS_NUMBER(peek(0))) {
+          runtimeError("Operand must be number.");
+          return INTERPRET_RUNTIME_ERROR;
+        }
+
+        push(NUMBER_VAL(AS_NUMBER(pop()) - 1));
         break;
       }
 

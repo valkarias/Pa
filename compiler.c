@@ -102,8 +102,6 @@ static Chunk* currentChunk() {
 static void errorAt(Token* token, const char* message) {
 //> check-panic-mode
   if (parser.panicMode) return;
-//< check-panic-mode
-//> set-panic-mode
   parser.panicMode = true;
 //< set-panic-mode
   fprintf(stderr, "[line %d] in '%s'", token->line, parser.library->name->chars);
@@ -501,12 +499,22 @@ static void dot(bool canAssign) {
   if (canAssign && match(TOKEN_EQUAL)) {
     expression();
     emitBytes(OP_SET_PROPERTY, name);
-//> Methods and Initializers parse-call
+
+  } else if (canAssign && match(TOKEN_PLUS_PLUS)) {
+    emitBytes(OP_GET_PROPERTY_NO_POP, name);
+    emitByte(OP_INCREMENT);
+    emitBytes(OP_SET_PROPERTY, name);
+
+  } else if (canAssign && match(TOKEN_MINUS_MINUS)) {
+    emitBytes(OP_GET_PROPERTY_NO_POP, name);
+    emitByte(OP_DECREMENT);
+    emitBytes(OP_SET_PROPERTY, name);
+
   } else if (match(TOKEN_LEFT_PAREN)) {
     uint8_t argCount = argumentList();
     emitBytes(OP_INVOKE, name);
     emitByte(argCount);
-//< Methods and Initializers parse-call
+
   } else {
     emitBytes(OP_GET_PROPERTY, name);
   }
@@ -589,11 +597,11 @@ static void namedVariable(Token name, bool canAssign) {
   if (arg != -1) {
     getOp = OP_GET_LOCAL;
     setOp = OP_SET_LOCAL;
-//> Closures named-variable-upvalue
+
   } else if ((arg = resolveUpvalue(current, &name)) != -1) {
     getOp = OP_GET_UPVALUE;
     setOp = OP_SET_UPVALUE;
-//< Closures named-variable-upvalue
+
   } else {
     arg = identifierConstant(&name);
     getOp = OP_GET_GLOBAL;
@@ -602,10 +610,18 @@ static void namedVariable(Token name, bool canAssign) {
 
   if (canAssign && match(TOKEN_EQUAL)) {
     expression();
-
     emitBytes(setOp, (uint8_t)arg);
-  } else {
+  } else if (canAssign && match(TOKEN_PLUS_PLUS)) {
+    namedVariable(name, false);
+    emitByte(OP_INCREMENT);
+    emitBytes(setOp, (uint8_t)arg);
 
+  } else if (canAssign && match(TOKEN_MINUS_MINUS)) {
+    namedVariable(name, false);
+    emitByte(OP_DECREMENT);
+    emitBytes(setOp, (uint8_t)arg);
+
+  } else {
     emitBytes(getOp, (uint8_t)arg);
   }
 
@@ -617,8 +633,6 @@ static void variable(bool canAssign) {
 
   current->lastCall = false;
   isList = skip;
-
-  printf("%d\n", isList);
 }
 
 static Token syntheticToken(const char* text) {
@@ -671,13 +685,20 @@ static void unary(bool canAssign) {
 
   switch (operatorType) {
     case TOKEN_BANG: emitByte(OP_NOT); break;
-//< Types of Values compile-not
     case TOKEN_MINUS: emitByte(OP_NEGATE); break;
     default: return; // Unreachable.
   }
 
   current->lastCall = false;
   isList = false;
+}
+
+static void increment(bool canAssign) {
+  emitByte(OP_INCREMENT);
+}
+
+static void decrement(bool canAssign) {
+  emitByte(OP_DECREMENT);
 }
 
 static void list(bool canAssign) {
@@ -740,6 +761,14 @@ static void subscript(bool canAssign) {
       if (canAssign && match(TOKEN_EQUAL)) {
         expression();
         emitByte(OP_STORE_SUBSCR_C);
+      } else if (canAssign && match(TOKEN_PLUS_PLUS)) {
+        emitBytes(OP_INDEX_SUBSCR_NO_POP, OP_INCREMENT);
+        emitByte(OP_STORE_SUBSCR_C);
+
+      } else if (canAssign && match(TOKEN_MINUS_MINUS)) {
+        emitBytes(OP_INDEX_SUBSCR_NO_POP, OP_DECREMENT);
+        emitByte(OP_STORE_SUBSCR_C);
+
       } else {
         emitByte(OP_INDEX_SUBSCR_C);
       }
@@ -754,6 +783,14 @@ static void subscript(bool canAssign) {
   if (canAssign && match(TOKEN_EQUAL)) {
     expression();
     emitByte(OP_STORE_SUBSCR);
+  } else if (canAssign && match(TOKEN_PLUS_PLUS)) {
+    emitBytes(OP_INDEX_SUBSCR_NO_POP, OP_INCREMENT);
+    emitByte(OP_STORE_SUBSCR);
+
+  } else if (canAssign && match(TOKEN_MINUS_MINUS)) {
+    emitBytes(OP_INDEX_SUBSCR_NO_POP, OP_DECREMENT);
+    emitByte(OP_STORE_SUBSCR);
+    
   } else {
     emitByte(OP_INDEX_SUBSCR);
   }
@@ -788,6 +825,7 @@ static void arrow() {
 
 ParseRule rules[] = {
 
+  //TODO: do [decrement]
   [TOKEN_LEFT_PAREN]    = {grouping, call,   PREC_CALL},
   [TOKEN_RIGHT_PAREN]   = {NULL,     NULL,   PREC_NONE},
   [TOKEN_LEFT_BRACE]    = {NULL,     NULL,   PREC_NONE}, 
@@ -824,6 +862,9 @@ ParseRule rules[] = {
   [TOKEN_FUN]           = {NULL,     NULL,   PREC_NONE},
   [TOKEN_IF]            = {NULL,     NULL,   PREC_NONE},
   [TOKEN_USE]           = {NULL,     NULL,   PREC_NONE},
+
+  [TOKEN_PLUS_PLUS]     = {NULL,     increment, PREC_FACTOR},
+  [TOKEN_MINUS_MINUS]   = {NULL,     decrement, PREC_FACTOR},
 
   [TOKEN_CONTINUE]      = {NULL, NULL, PREC_NONE},
   [TOKEN_BREAK]         = {NULL, NULL, PREC_NONE},
@@ -1236,8 +1277,14 @@ static int getArgCount(uint8_t *code, const ValueArray constants, int ip) {
     case OP_TRUE:
     case OP_FALSE:
     case OP_BUILD_LIST:
+
     case OP_INDEX_SUBSCR:
     case OP_STORE_SUBSCR:
+    case OP_INDEX_SUBSCR_C:
+    case OP_STORE_SUBSCR_C:
+
+    case OP_INDEX_SUBSCR_NO_POP:
+
     case OP_POP:
     case OP_EQUAL:
     case OP_GREATER:
@@ -1252,6 +1299,8 @@ static int getArgCount(uint8_t *code, const ValueArray constants, int ip) {
     case OP_RETURN:
     case OP_BREAK:
     case OP_RECENT_USE:
+    case OP_INCREMENT:
+    case OP_DECREMENT:
       return 0;
 
     case OP_CONSTANT:
@@ -1262,6 +1311,7 @@ static int getArgCount(uint8_t *code, const ValueArray constants, int ip) {
     case OP_SET_UPVALUE:
     case OP_GET_PROPERTY:
     case OP_SET_PROPERTY:
+    case OP_GET_PROPERTY_NO_POP:
     case OP_GET_SUPER:
     case OP_CALL:
     case OP_TAIL_CALL:

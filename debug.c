@@ -97,6 +97,9 @@ int disassembleInstruction(Chunk* chunk, int offset) {
     case OP_INDEX_SUBSCR_C:
       return simpleInstruction("OP_INDEX_SUBSCRIPT_C", offset);
 
+    case OP_INDEX_SUBSCR_NO_POP:
+      return simpleInstruction("OP_INDEX_SUBSCR_NO_POP", offset);
+
     case OP_BUILD_LIST:
       return byteInstruction("OP_BUILD_LIST", chunk, offset);
 
@@ -127,6 +130,8 @@ int disassembleInstruction(Chunk* chunk, int offset) {
 
     case OP_GET_PROPERTY:
       return constantInstruction("OP_GET_PROPERTY", chunk, offset);
+    case OP_GET_PROPERTY_NO_POP:
+      return constantInstruction("OP_GET_PROPERTY_NO_POP", chunk, offset);
     case OP_SET_PROPERTY:
       return constantInstruction("OP_SET_PROPERTY", chunk, offset);
 
@@ -142,6 +147,11 @@ int disassembleInstruction(Chunk* chunk, int offset) {
       return simpleInstruction("OP_GREATER", offset);
     case OP_LESS:
       return simpleInstruction("OP_LESS", offset);
+
+    case OP_INCREMENT:
+      return simpleInstruction("OP_INCREMENT", offset);
+    case OP_DECREMENT:
+      return simpleInstruction("OP_DECREMENT", offset);
 
     case OP_ADD:
       return simpleInstruction("OP_ADD", offset);

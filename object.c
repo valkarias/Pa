@@ -215,6 +215,8 @@ static uint32_t blend(uint32_t h) {
   return h;
 }
 
+///// MurMur hash algorithm.
+
 /* Copyright 2013, Sébastien Paolacci.
 All rights reserved. Check NOTICE.TXT for more.
 */
