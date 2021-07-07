@@ -116,29 +116,21 @@ static Value tanLib(int argCount, Value *args) {
     return NUMBER_VAL(tan(number));
 }
 
-//Thanks Babylonian for headaches.
+//Thanks for the headaches.
 float fsqrt(float x) {
-    float i = 0;
-    float x1;
-    float x2;
+    union
+    {
+        float x;
+        int i;
+    } u;
 
-    while ( (i*i) <= x) {
-        i += 0.1f;
-    }
+    u.x = x;
+    u.i = 0x5f3759df - (u.i >> 1);
+    //   magic number
 
-    x1 = i;
-    
-    for (int j = 0; j < 10; j++) {
-        x2 = x;
-        x2 /= x1;
-        x2 += x1;
-        x2 /= 2;
+    const float xux = x * u.x;
 
-        x1 = x2;
-        //magic.
-    }
-
-    return x2;
+    return xux * (1.5f - .5f * xux * u.x);
 }
 
 static Value sqrtLib(int argCount, Value *args) {
