@@ -1,8 +1,0 @@
-use Math;
-
-let r = 4;
-
-for let i = 0; i < 100000; i++ {
-    Math.badSqrt(r);
-    r++;
-}
