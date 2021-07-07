@@ -116,17 +116,6 @@ static Value tanLib(int argCount, Value *args) {
     return NUMBER_VAL(tan(number));
 }
 
-// big no no.
-double fsqrt(double x) {
-    double res;
-
-    asm("fldl %1\n\t"
-        "fsqrt"
-        : "=&t" (res)
-        : "m" (x));
-
-    return res;
-}
 
 static Value sqrtLib(int argCount, Value *args) {
     if (argCount != 1) {
@@ -141,7 +130,7 @@ static Value sqrtLib(int argCount, Value *args) {
 
     double number = AS_NUMBER(args[0]);
 
-    return NUMBER_VAL(fsqrt(number));
+    return NUMBER_VAL(sqrt(number));
 }
 
 //
