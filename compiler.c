@@ -801,6 +801,7 @@ static void subscript(bool canAssign) {
 }
 
 static void arrow() {
+  bool protect = false;
   arrowFunctionArguments();
 
   consume(TOKEN_GREATER, "Expect '>' after arguments.");
@@ -809,11 +810,18 @@ static void arrow() {
     block();
   } else {
     expression();
+    protect = true;
     emitByte(OP_RETURN);
     consume(TOKEN_SEMICOLON, "Expect ';' after expression.");
   }
 
   ObjFunction* function = endCompiler();
+
+  if (protect) {
+    function->protection = FUNCTION_PROTECTED;
+    protect = false;
+  }
+
   uint8_t constant = makeConstant(OBJ_VAL(function));
   emitBytes(OP_CLOSURE, constant);
 

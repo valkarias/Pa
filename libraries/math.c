@@ -116,6 +116,47 @@ static Value tanLib(int argCount, Value *args) {
     return NUMBER_VAL(tan(number));
 }
 
+//Thanks Babylonian for headaches.
+float fsqrt(float x) {
+    float i = 0;
+    float x1;
+    float x2;
+
+    while ( (i*i) <= x) {
+        i += 0.1f;
+    }
+
+    x1 = i;
+    
+    for (int j = 0; j < 10; j++) {
+        x2 = x;
+        x2 /= x1;
+        x2 += x1;
+        x2 /= 2;
+
+        x1 = x2;
+        //magic.
+    }
+
+    return x2;
+}
+
+static Value sqrtLib(int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError("Expected 1 argument but got %d from 'sqrt()'.", argCount);
+        return NOTCLEAR;
+    }
+
+    if (!IS_NUMBER(args[0])) {
+        runtimeError("Argument must be a number from 'sqrt()'.");
+        return NOTCLEAR;
+    }
+
+    double number = AS_NUMBER(args[0]);
+
+    return NUMBER_VAL(fsqrt(number));
+}
+
 //
 ObjLibrary* createMathLibrary() {
     ObjString* name = copyString("Math", 4);
@@ -127,6 +168,8 @@ ObjLibrary* createMathLibrary() {
     defineNative("floor", floorLib, &library->values);
     defineNative("round", roundLib, &library->values);
     defineNative("ceil", ceilLib, &library->values);
+
+    defineNative("sqrt", sqrtLib, &library->values);
 
     defineNative("sin", sinLib, &library->values);
     defineNative("cos", cosLib, &library->values);
