@@ -49,7 +49,7 @@ define split > st,dl > {
 
     let temp = [];
 
-    for let i = 0; i < length; i = i + 1 {
+    for let i = 0; i < length; i++ {
         if full[i] != dl {
             word = word + full[i];
         } else {
