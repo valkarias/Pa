@@ -75,5 +75,5 @@ define split > st,dl > {
 
 # License
 
-Licensed under the [MIT License]().  
-Please look into [NOTICE]() for important details regarding references and credits.
+Licensed under the [MIT License](https://github.com/valkarias/PCrap/blob/master/LICENSE).  
+Please look into [NOTICE](https://github.com/valkarias/PCrap/blob/master/NOTICE.txt) for important details regarding references and credits.
