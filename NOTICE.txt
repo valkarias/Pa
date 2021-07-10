@@ -1,0 +1,12 @@
+- Murmur Hash Function Under The BSD 3-Clause "New" or "Revised" License By Sébastien Paolacci.
+    [ https://github.com/spaolacci/murmur3 ]
+
+- Dictu Code Implementation Under The MIT License By Jason Hall.
+    [ https://github.com/dictu-lang/Dictu ]
+
+Thanks to the references below:
+  Crafting Interpreters [ https://github.com/munificent/craftinginterpreters ]
+
+  Wren [ https://github.com/wren-lang/wren ]
+
+  PocketLang [ https://github.com/ThakeeNathees/pocketlang ]
