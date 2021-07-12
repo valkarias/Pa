@@ -12,8 +12,8 @@
 #include "natives.h"
 #include "tools.h"
 
-#include "objects/objects.h"
-#include "libraries/library.h"
+#include "../objects/objects.h"
+#include "../libraries/library.h"
 
 VM vm;
 

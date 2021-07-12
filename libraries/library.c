@@ -3,6 +3,7 @@
 NativeLibraries libraries[] = {
     {"Math", &createMathLibrary},
     {"Os", &createOsLibrary},
+    {"Random", &createRandomLibrary},
 
     // -1
     {NULL, NULL}

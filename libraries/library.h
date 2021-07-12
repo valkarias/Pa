@@ -3,6 +3,7 @@
 
 #include "pcrap_math.h"
 #include "os.h"
+#include "random.h"
 
 typedef ObjLibrary *(*NativeLibrary)();
 

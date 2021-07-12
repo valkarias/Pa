@@ -6,7 +6,7 @@
 #include "memory.h"
 #include "scanner.h"
 
-#include "libraries/library.h"
+#include "../libraries/library.h"
 
 #ifdef DEBUG_PRINT_CODE
 #include "debug.h"

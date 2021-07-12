@@ -1,7 +1,7 @@
 #include <string.h>
 
 #include "objects.h"
-#include "../memory.h"
+#include "../src/memory.h"
 
 static Value stringMethod(int argCount, Value *args) {
     if (argCount != 0) {

@@ -11,7 +11,7 @@
     #include <unistd.h>
 #endif
 
-#include "../object.h"
+#include "../src/object.h"
 #include "library.h"
 
 #ifdef _WIN32

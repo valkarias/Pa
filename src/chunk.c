@@ -1,26 +1,18 @@
-//> Chunks of Bytecode chunk-c
-#include <stdlib.h>
-
-#include "chunk.h"
-//> chunk-c-include-memory
 #include "memory.h"
-//< chunk-c-include-memory
-//> Garbage Collection chunk-include-vm
+
+#include <stdlib.h>
+#include "chunk.h"
 #include "vm.h"
-//< Garbage Collection chunk-include-vm
 
 void initChunk(Chunk* chunk) {
   chunk->count = 0;
   chunk->capacity = 0;
   chunk->code = NULL;
-//> chunk-null-lines
   chunk->lines = NULL;
-//< chunk-null-lines
-//> chunk-init-constant-array
   initValueArray(&chunk->constants);
-//< chunk-init-constant-array
+
 }
-//> free-chunk
+
 void freeChunk(Chunk* chunk) {
   FREE_ARRAY(uint8_t, chunk->code, chunk->capacity);
   FREE_ARRAY(int, chunk->lines, chunk->capacity);

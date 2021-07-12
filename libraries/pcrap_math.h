@@ -3,9 +3,9 @@
 
 #include <math.h>
 
-#include "../object.h"
-#include "../value.h"
-#include "../vm.h"
+#include "../src/object.h"
+#include "../src/value.h"
+#include "../src/vm.h"
 
 #include "library.h"
 
