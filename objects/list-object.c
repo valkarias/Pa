@@ -119,7 +119,7 @@ void initListMethods() {
         removeMethod,
         containMethod,
         indexMethod,
-        clearMethod
+        clearMethod,
     };
 
     for (uint8_t i = 0; i < sizeof(listMethodStrings) / sizeof(listMethodStrings[0]); i++) {

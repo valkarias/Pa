@@ -2,12 +2,12 @@
 // 0 = success
 
 class Dict {
-    init >> {
+    init () {
         this.keys = [];
         this.values = [];
     }
 
-    Get > key > {
+    Get (key) {
         let i = this.keys.index(key);
         if (i) {
             return this.values[i];
@@ -17,7 +17,7 @@ class Dict {
         return -1;
     }
 
-    Set > key,value > {
+    Set (key, value) {
         if this.isEmpty(key) {
             this.keys.append(key);
             this.values.append(value);
@@ -30,7 +30,7 @@ class Dict {
         return 0;
     }
 
-    Remove > key > {
+    Remove (key) {
         if this.isEmpty(key) {
             //failed
             return -1;
@@ -45,17 +45,17 @@ class Dict {
         return 0;
     }
 
-    Length >> {
+    Length () {
         return this.keys.length();
     }
 
-    Show >> {
+    Show () {
         print this.keys, this.values;
         return 0;
     }
 
 
-    isEmpty > key > {
+    isEmpty (key) {
         return this.keys.contains(key) == false;
     }
 }

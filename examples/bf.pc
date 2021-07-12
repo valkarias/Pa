@@ -1,4 +1,4 @@
-define bf > src,min,max,data,index > {
+define bf (src, min, max, data, index) {
     if src.length() == 0 return -1;
 
     if min < 0 min = 0;

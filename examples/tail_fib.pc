@@ -1,6 +1,6 @@
 //To understand recursion, read the comment below
 
-define fib > n,a,b > {
+define fib (n, a, b) {
     if n == 0 {
         return a;
     }
