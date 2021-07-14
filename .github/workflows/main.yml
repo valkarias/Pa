@@ -34,6 +34,7 @@ jobs:
       
       - name: Zip
         run: |
+          ls
           cd dist
           zip -r PBuild_linux.zip pbuild
       
