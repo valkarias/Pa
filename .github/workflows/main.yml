@@ -40,7 +40,7 @@ jobs:
           zip -r PBuild_linux.zip pbuild
                    
       - name: Release
-      - uses: "marvinpinto/action-automatic-releases@latest"
+        uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.BIG_SECRET_NAME }}"
           automatic_release_tag: "latest"
