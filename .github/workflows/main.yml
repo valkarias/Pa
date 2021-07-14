@@ -40,10 +40,10 @@ jobs:
           zip -r PBuild_linux.zip pbuild
                    
       - name: Release
-        uses: softprops/action-gh-release@v1
+      - uses: "marvinpinto/action-automatic-releases@latest"
         with:
+          repo_token: "${{ secrets.BIG_SECRET_NAME }}"
+          automatic_release_tag: "latest"
           prerelease: true
-          
+          title: "PBuild Releases"
           files: tools/PBuild/dist/PBuild_linux.zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.BIG_SECRET_NAME }}
