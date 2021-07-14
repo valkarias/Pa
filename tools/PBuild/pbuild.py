@@ -14,14 +14,15 @@ LINUX_BUILD = False
 
 exe = ""
 if platform.system() == "Windows":
-    exe = "PCrap.exe"
+    exe = "pcrap.exe"
 else:
     LINUX_BUILD = True
-    exe = "PCrap"
+    exe = "pcrap"
 
 
 home = os.path.expanduser('~')
-exe_path = os.path.join("bin", exe)
+exe_path = os.path.join(home, "PCrap", "bin", exe)
+print(exe_path)
 #
 
 def check():
