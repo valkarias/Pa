@@ -34,7 +34,7 @@ jobs:
       
       - name: Zip
         run: |
-          cd tools/pbuild/dist
+          cd tools/dist
           zip -r PBuild_linux.zip pbuild
       
       - name: Release
