@@ -1,6 +1,7 @@
 import click
 import subprocess
 import os
+import platform
 
 #
 objects = os.path.join("objects", "*.c")
@@ -9,10 +10,13 @@ libraries = os.path.join("libraries", "*.c")
 source = os.path.join("src", "*.c")
 flags = "-o"
 
+LINUX_BUILD = False
+
 exe = ""
-if os.name == "nt":
+if platform.system() == "Windows":
     exe = "PCrap.exe"
 else:
+    LINUX_BUILD = True
     exe = "PCrap"
 
 
@@ -72,9 +76,11 @@ def execute(command):
 
 def compile(cc):
     os.chdir(os.path.join(home, "PCrap"))
-    execute(
-        f"{cc} {objects} {libraries} {source} {flags} {exe_path}"
-    )
+
+    if LINUX_BUILD:
+        execute( f"{cc} {objects} {libraries} {source} {flags} -lm {exe_path}" )
+    else:
+        execute( f"{cc} {objects} {libraries} {source} {flags} {exe_path}" )
     
 
 @click.group()
