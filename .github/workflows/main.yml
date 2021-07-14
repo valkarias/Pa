@@ -16,6 +16,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+        with:
+            fetch-depth: '0'
       
       - name: Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
@@ -34,13 +36,14 @@ jobs:
       
       - name: Zip
         run: |
-          ls
           cd tools/PBuild/dist
           zip -r PBuild_linux.zip pbuild
-      
+                   
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
+          prerelease: true
+          
           files: tools/PBuild/dist/PBuild_linux.zip
         env:
           GITHUB_TOKEN: ${{ secrets.BIG_SECRET_NAME }}
