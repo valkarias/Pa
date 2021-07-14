@@ -22,7 +22,7 @@ Building manually is possible.
 Assuming you downloaded PBuild from [releases](https://github.com/valkarias/PCrap/releases)  
 - You need to extract the zip.  
 
-The executable is located in `PBuild_win -> pbuild -> pbuild.exe`  
+The executable is located in `PBuild_{platform} -> pbuild -> pbuild`  
 
 PBuild have only 2 commands as of now:
 ```bash
