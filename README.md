@@ -1,4 +1,4 @@
-# PCrap
+﻿# PCrap
 ![maintenance](https://img.shields.io/maintenance/yes/2021?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
 ![Version](https://img.shields.io/badge/version-0.1-green?style=flat-square)
@@ -10,6 +10,8 @@ Pcrap is a hobby project, its designed to be small. The goal was to make a langu
 ## Documentation
 If you are completely new, Please head to the [Pcrap guide](https://cdn.flipsnack.com/widget/v2/widget.html?hash=dcs6n9hgvu).  
 The documentation is a future plan.  
+**The Guide and the Documentation are in progress, Expect Major Changes.**  
+
 Examples are all in the [examples folder](https://github.com/valkarias/PCrap/tree/master/examples).
 
 ## Up & Running
