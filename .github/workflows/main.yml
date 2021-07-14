@@ -29,9 +29,7 @@ jobs:
       
       - name: Freeze CLI
         run: |
-          ls
           cd tools/PBuild
-          ls
           pyinstaller pbuild.py
       
       - name: Zip
