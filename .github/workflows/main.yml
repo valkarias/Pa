@@ -1,0 +1,49 @@
+name: Release-builds
+
+on:
+  push:
+    branches: [ CI ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.7, 3.8, 3.9]
+
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller
+      
+      - name: Freeze CLI
+        run: |
+          ls
+          cd tools/PBuild
+          ls
+          pyinstaller pbuild.py
+      
+      - name: Zip
+        run: |
+          cd dist
+          zip -r PBuild_linux.zip pbuild
+      
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+
+        with:
+          files: pbuild.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
