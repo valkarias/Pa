@@ -50,8 +50,7 @@ void runtimeError(const char* format, ...) {
 }
 
 void dryError(const char* error) {
-  fprintf(stderr, error);
-  puts("");
+  fprintf(stderr, "%s\n", error);
 
   for (int i = vm.frameCount - 1; i >= 0; i--) {
     CallFrame* frame = &vm.frames[i];

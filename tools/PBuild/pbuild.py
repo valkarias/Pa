@@ -76,7 +76,6 @@ def compile(cc):
     os.chdir(os.path.join(home, "PCrap", "bin"))
 
     if LINUX_BUILD:
-        print(f"{cc} {objects} {libraries} {source} {flags} {exe} -lm")
         execute( f"{cc} {objects} {libraries} {source} {flags} {exe} -lm" )
     else:
         execute( f"{cc} {objects} {libraries} {source} {flags} {exe}" )
