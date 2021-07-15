@@ -21,7 +21,7 @@ else:
 
 
 home = os.path.expanduser('~')
-exe_path = os.path.join("bin", exe)
+exe_path = os.path.join(home, "bin", exe)
 #
 
 def check():
@@ -78,6 +78,7 @@ def compile(cc):
     os.chdir(os.path.join(home, "PCrap"))
 
     if LINUX_BUILD:
+        print(os.getcwd())
         execute( f"{cc} {objects} {libraries} {source} {flags} -lm {exe_path}" )
     else:
         execute( f"{cc} {objects} {libraries} {source} {flags} {exe_path}" )
