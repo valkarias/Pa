@@ -4,10 +4,10 @@ import os
 import platform
 
 #
-objects = os.path.join("objects", "*.c")
-libraries = os.path.join("libraries", "*.c")
+objects = os.path.join(home, "PCrap", "objects", "*.c")
+libraries = os.path.join(home, "PCrap", "libraries", "*.c")
 
-source = os.path.join("src", "*.c")
+source = os.path.join(home, "PCrap", "src", "*.c")
 flags = "-o"
 
 LINUX_BUILD = False
@@ -21,7 +21,6 @@ else:
 
 
 home = os.path.expanduser('~')
-exe_path = os.path.join(home, "PCrap", "bin", exe)
 #
 
 def check():
@@ -75,13 +74,13 @@ def execute(command):
     print(output)
 
 def compile(cc):
-    os.chdir(os.path.join(home, "PCrap"))
+    os.chdir(os.path.join(home, "PCrap", "bin"))
 
     if LINUX_BUILD:
         print(os.getcwd())
-        execute( f"{cc} {objects} {libraries} {source} {flags} -lm {exe_path}" )
+        execute( f"{cc} {objects} {libraries} {source} {flags} -lm {exe}" )
     else:
-        execute( f"{cc} {objects} {libraries} {source} {flags} {exe_path}" )
+        execute( f"{cc} {objects} {libraries} {source} {flags} {exe}" )
     
 
 @click.group()
