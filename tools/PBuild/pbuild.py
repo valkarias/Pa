@@ -4,6 +4,8 @@ import os
 import platform
 
 #
+home = os.path.expanduser('~')
+
 objects = os.path.join(home, "PCrap", "objects", "*.c")
 libraries = os.path.join(home, "PCrap", "libraries", "*.c")
 
@@ -18,9 +20,6 @@ if platform.system() == "Windows":
 else:
     LINUX_BUILD = True
     exe = "pcrap"
-
-
-home = os.path.expanduser('~')
 #
 
 def check():
