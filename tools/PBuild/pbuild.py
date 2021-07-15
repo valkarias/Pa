@@ -21,7 +21,7 @@ else:
 
 
 home = os.path.expanduser('~')
-exe_path = os.path.join(home, "bin", "PCrap", exe)
+exe_path = os.path.join(home, "PCrap", "bin", exe)
 #
 
 def check():
