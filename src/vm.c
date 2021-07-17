@@ -242,25 +242,6 @@ static bool callValue(Value callee, int argCount) {
   return false;
 }
 
-static bool protectCall(int argCount) {
-  ObjFunction* function = AS_CLOSURE(peek(argCount))->function;
-
-  if (function->protection != FUNCTION_PROTECTED) {
-    dryError("Function is not protected:");
-    return false;
-  }
-
-  return true;
-}
-
-static bool protectInvoke(Value methodVal) {
-  ObjFunction* method = AS_CLOSURE(methodVal)->function;
-  if (method->protection != FUNCTION_PROTECTED) {
-    return false;
-  }
-
-  return true;
-}
 
 static bool invokeFromClass(ObjClass* klass, ObjString* name, int argCount) {
   Value method;
@@ -269,10 +250,6 @@ static bool invokeFromClass(ObjClass* klass, ObjString* name, int argCount) {
     return false;
   }
 
-  if (!protectInvoke(method)) {
-    runtimeError("Method '%s()' is not protected.", AS_CLOSURE(method)->function->name->chars);
-    return false;
-  }
   return call(AS_CLOSURE(method), argCount);
 }
 
@@ -359,8 +336,8 @@ static bool invoke(ObjString* name, int argCount) {
     }
   }
 
-    runtimeError("Only instances have methods.");
-    return false;
+  runtimeError("Only instances have methods.");
+  return false;
 }
 
 static bool bindMethod(ObjClass* klass, ObjString* name) {
@@ -752,18 +729,9 @@ static InterpretResult run() {
 
       case OP_CALL: {
         int argCount = READ_BYTE();
-        bool native = false;
-
-        if (IS_NATIVE(peek(argCount))) native = true;
 
         if (!callValue(peek(argCount), argCount)) {
           return INTERPRET_RUNTIME_ERROR;
-        }
-
-        if (!native) {
-          if (!protectCall(argCount)) {
-            return INTERPRET_RUNTIME_ERROR;
-          }
         }
 
         frame = &vm.frames[vm.frameCount - 1];
@@ -773,8 +741,13 @@ static InterpretResult run() {
       case OP_TAIL_CALL: {
         int argCount = READ_BYTE();
 
-        if (!protectCall(argCount)) {
-          return INTERPRET_RUNTIME_ERROR;
+        if (frame != &vm.frames[vm.frameCount]) {
+          if (!callValue(peek(argCount), argCount)) {
+            return INTERPRET_RUNTIME_ERROR;
+          }
+
+          frame = &vm.frames[vm.frameCount - 1];
+          break;
         }
 
         if (!keepFrame(frame, argCount)) {
@@ -783,9 +756,7 @@ static InterpretResult run() {
 
         // Awkward stack cleaner hack.
         Value result = pop();
-        if (frame == &vm.frames[vm.frameCount]) {
-          cleanCalls();
-        }
+        cleanCalls();
 
         push(result);
         frame = &vm.frames[vm.frameCount - 1];
@@ -848,6 +819,7 @@ static InterpretResult run() {
         }
 
         vm.stackTop = frame->slots;
+
         push(result);
         frame = &vm.frames[vm.frameCount - 1];
         break;

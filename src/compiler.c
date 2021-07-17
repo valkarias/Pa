@@ -12,13 +12,16 @@
 #include "debug.h"
 #endif
 
-//>
-int innermostLoopStart = -1;
-int innermostLoopScopeDepth = 0;
 
-int listCount = 0;
-int isList = false;
-//<
+typedef struct {
+  int innermostLoopStart;
+  int innermostLoopScopeDepth;
+
+  int listCount;
+  int isList;
+
+  int returned;
+} Static;
 
 typedef struct {
   Token current;
@@ -92,6 +95,7 @@ typedef struct ClassCompiler {
 
 Parser parser;
 Compiler* current = NULL;
+Static staticCheck;
 
 ClassCompiler* currentClass = NULL;
 
@@ -219,14 +223,25 @@ static void patchJump(int offset) {
   currentChunk()->code[offset + 1] = jump & 0xff;
 }
 
-static void initCompiler(Compiler* compiler, FunctionType type) {
+static void initStaticChecks(Static* s) {
+  s->innermostLoopStart = -1;
+  s->innermostLoopScopeDepth = 0;
 
+  s->listCount = 0;
+  s->isList = false;
+
+  s->returned = false;
+}
+
+static void initCompiler(Compiler* compiler, FunctionType type) {
   compiler->enclosing = current;
   compiler->function = NULL;
 
   compiler->localCount = 0;
   compiler->lastCall = false;
   compiler->scopeDepth = 0;
+
+
   compiler->type = type;
   compiler->function = newFunction(parser.library, FUNCTION_NOT_PROTECTED, type);
 
@@ -255,6 +270,10 @@ static ObjFunction* endCompiler() {
   emitReturn();
   ObjFunction* function = current->function;
 
+  if (staticCheck.returned != true) {
+    error("Function unprotected");
+    staticCheck.returned = false;
+  }
 
 #ifdef DEBUG_PRINT_CODE
   if (!parser.hadError) {
@@ -521,7 +540,7 @@ static void dot(bool canAssign) {
   }
 
   current->lastCall = false;
-  isList = false;
+  staticCheck.isList = false;
 }
 
 static bool isHex() {
@@ -547,14 +566,14 @@ static void literal(bool canAssign) {
   }
 
   current->lastCall = false;
-  isList = false;
+  staticCheck.isList = false;
 }
 
 static void grouping(bool canAssign) {
   expression();
   consume(TOKEN_RIGHT_PAREN, "Expected ')' after expression.");
   current->lastCall = false;
-  isList = false;
+  staticCheck.isList = false;
 }
 
 static void number(bool canAssign) {
@@ -584,11 +603,11 @@ static void or_(bool canAssign) {
 }
 
 static void string(bool canAssign) {
-  listCount = 0;
+  staticCheck.listCount = 0;
   emitConstant(OBJ_VAL(copyString(parser.previous.start + 1, parser.previous.length - 2)));
 
-  listCount = parser.previous.length - 2;
-  isList = true;
+  staticCheck.listCount = parser.previous.length - 2;
+  staticCheck.isList = true;
 }
 
 static void namedVariable(Token name, bool canAssign) {
@@ -625,14 +644,14 @@ static void namedVariable(Token name, bool canAssign) {
     emitBytes(getOp, (uint8_t)arg);
   }
 
-  isList = skip;
+  staticCheck.isList = skip;
 }
 
 static void variable(bool canAssign) {
   namedVariable(parser.previous, canAssign);
 
   current->lastCall = false;
-  isList = skip;
+  staticCheck.isList = skip;
 }
 
 static Token syntheticToken(const char* text) {
@@ -689,7 +708,7 @@ static void unary(bool canAssign) {
   }
 
   current->lastCall = false;
-  isList = false;
+  staticCheck.isList = false;
 }
 
 static void increment(bool canAssign) {
@@ -701,7 +720,7 @@ static void decrement(bool canAssign) {
 }
 
 static void list(bool canAssign) {
-  listCount = 0;
+  staticCheck.listCount = 0;
   if (!check(TOKEN_RIGHT_BRACK)) {
     do {
       if (check(TOKEN_RIGHT_BRACK)) {
@@ -710,20 +729,20 @@ static void list(bool canAssign) {
 
       parsePrecedence(PREC_OR);
 
-      if (listCount == UINT8_COUNT) {
+      if (staticCheck.listCount == UINT8_COUNT) {
         error("Cannot have more than 256 items in a list.");
       }
-      listCount++;
+      staticCheck.listCount++;
     } while(match(TOKEN_COMMA));
   }
 
   consume(TOKEN_RIGHT_BRACK, "Expected ']' after list.");
 
   emitByte(OP_BUILD_LIST);
-  emitByte(listCount);
+  emitByte(staticCheck.listCount);
 
   current->lastCall = false;
-  isList = true;
+  staticCheck.isList = true;
   return;
 }
 
@@ -745,13 +764,13 @@ static void subscript(bool canAssign) {
 
   parsePrecedence(PREC_OR);
 
-  if (isList == false) {
+  if (staticCheck.isList == false) {
     error("Type not subscriptable.");
   }
 
   if (current->function->type == TYPE_SCRIPT) {
-    if (isList != skip) {
-      if (index < 0 || index > listCount - 1) {
+    if (staticCheck.isList != skip) {
+      if (index < 0 || index > staticCheck.listCount - 1) {
         error("List index out bounds.");
       }
 
@@ -773,7 +792,7 @@ static void subscript(bool canAssign) {
       }
 
       current->lastCall = false;
-      isList = false;
+      staticCheck.isList = false;
       return;
     }
   }
@@ -795,12 +814,11 @@ static void subscript(bool canAssign) {
   }
 
   current->lastCall = false;
-  isList = false;
+  staticCheck.isList = false;
   return;
 }
 
 static void body() {
-  bool protect = false;
   functionArguments();
 
   consume(TOKEN_RIGHT_PAREN, "Expected ')' after arguments.");
@@ -809,12 +827,6 @@ static void body() {
   block();
 
   ObjFunction* function = endCompiler();
-
-  if (protect) {
-    function->protection = FUNCTION_PROTECTED;
-    protect = false;
-  }
-
   uint8_t constant = makeConstant(OBJ_VAL(function));
   emitBytes(OP_CLOSURE, constant);
 
@@ -938,9 +950,9 @@ static void method() {
 
   FunctionType type = TYPE_METHOD;
 
-  if (parser.previous.length == 4 &&
-      memcmp(parser.previous.start, "init", 4) == 0) {
+  if (parser.previous.length == 4 && memcmp(parser.previous.start, "init", 4) == 0) {
     type = TYPE_INITIALIZER;
+    staticCheck.returned = true;
   }
   
   function(type);
@@ -1032,7 +1044,7 @@ static void expressionStatement() {
 }
 
 static void breakLoop() {
-  int i = innermostLoopStart;
+  int i = staticCheck.innermostLoopStart;
   while (i < current->function->chunk.count) {
     if (current->function->chunk.code[i] == OP_BREAK) {
       current->function->chunk.code[i] = OP_JUMP;
@@ -1044,12 +1056,12 @@ static void breakLoop() {
   }
 }
 static void breakStatement() {
-  if (innermostLoopStart == -1) {
+  if (staticCheck.innermostLoopStart == -1) {
     error("Can't use 'break' outside of a loop.");
   }
 
   consume(TOKEN_SEMICOLON, "Expected ';' after 'break'.");
-  for (int i = current->localCount - 1; i >= 0 && current->locals[i].depth > innermostLoopScopeDepth; i--) {
+  for (int i = current->localCount - 1; i >= 0 && current->locals[i].depth > staticCheck.innermostLoopScopeDepth; i--) {
     emitByte(OP_POP);
   }
 
@@ -1057,16 +1069,16 @@ static void breakStatement() {
 }
 
 static void continueStatement() {
-  if (innermostLoopStart == -1) {
+  if (staticCheck.innermostLoopStart == -1) {
     error("Can't use 'continue' outside of a loop.");
   }
 
   consume(TOKEN_SEMICOLON, "Expected ';' after 'continue'.");
-  for (int i = current->localCount - 1; i >= 0 && current->locals[i].depth > innermostLoopScopeDepth; i--) {
+  for (int i = current->localCount - 1; i >= 0 && current->locals[i].depth > staticCheck.innermostLoopScopeDepth; i--) {
     emitByte(OP_POP);
   }
 
-  emitLoop(innermostLoopStart);
+  emitLoop(staticCheck.innermostLoopStart);
 }
 
 static void forStatement() {
@@ -1082,11 +1094,11 @@ static void forStatement() {
   }
 //< for-initializer
 
-  int MotherLoopStart = innermostLoopStart;
-  int MotherLoopScopeDepth = innermostLoopScopeDepth; 
+  int MotherLoopStart = staticCheck.innermostLoopStart;
+  int MotherLoopScopeDepth = staticCheck.innermostLoopScopeDepth; 
 
-  innermostLoopStart = currentChunk()->count;
-  innermostLoopScopeDepth = current->scopeDepth;
+  staticCheck.innermostLoopStart = currentChunk()->count;
+  staticCheck.innermostLoopScopeDepth = current->scopeDepth;
   
   int exitJump = -1;
   if (!match(TOKEN_SEMICOLON)) {
@@ -1104,14 +1116,14 @@ static void forStatement() {
     expression();
     emitByte(OP_POP);
 
-    emitLoop(innermostLoopStart);
-    innermostLoopStart = incrementStart;
+    emitLoop(staticCheck.innermostLoopStart);
+    staticCheck.innermostLoopStart = incrementStart;
     patchJump(bodyJump);
   }
 //< for-increment
 
   statement();
-  emitLoop(innermostLoopStart);
+  emitLoop(staticCheck.innermostLoopStart);
 //> exit-jump
 
   if (exitJump != -1) {
@@ -1119,8 +1131,8 @@ static void forStatement() {
     emitByte(OP_POP); // Condition.
   }
 
-  innermostLoopStart = MotherLoopStart; 
-  innermostLoopScopeDepth = MotherLoopScopeDepth; 
+  staticCheck.innermostLoopStart = MotherLoopStart; 
+  staticCheck.innermostLoopScopeDepth = MotherLoopScopeDepth; 
 
   breakLoop();
   endScope();
@@ -1201,15 +1213,15 @@ static void returnStatement() {
   emitByte(OP_RETURN);
 
   if (current->scopeDepth < 2) {
-    current->function->protection = FUNCTION_PROTECTED;
+    staticCheck.returned = true;
   }
 }
 
 static void whileStatement() {
   beginScope();
 
-  int MotherLoopStart = innermostLoopStart;
-  innermostLoopStart = currentChunk()->count;
+  int MotherLoopStart = staticCheck.innermostLoopStart;
+  staticCheck.innermostLoopStart = currentChunk()->count;
 //< loop-start
   expression();
   int exitJump = emitJump(OP_JUMP_IF_FALSE);
@@ -1217,14 +1229,14 @@ static void whileStatement() {
 
   statement();
 //> loop
-  emitLoop(innermostLoopStart);
+  emitLoop(staticCheck.innermostLoopStart);
 //< loop
 
   patchJump(exitJump);
   emitByte(OP_POP);
 
   breakLoop();
-  innermostLoopStart = MotherLoopStart;
+  staticCheck.innermostLoopStart = MotherLoopStart;
 
   endScope();
 }
@@ -1342,7 +1354,7 @@ static int getArgCount(uint8_t *code, const ValueArray constants, int ip) {
 
 static void statement() {
   current->lastCall = false;
-  isList = false;
+  staticCheck.isList = false;
 
   if (match(TOKEN_PRINT)) {
     printStatement();
@@ -1376,6 +1388,8 @@ static void statement() {
 }
 
 ObjFunction* compile(const char* source, ObjLibrary* library) {
+  initStaticChecks(&staticCheck);
+
   parser.library = library;
   parser.hadError = false;
   parser.panicMode = false;
@@ -1384,13 +1398,12 @@ ObjFunction* compile(const char* source, ObjLibrary* library) {
   Compiler compiler;
 
   initCompiler(&compiler, TYPE_SCRIPT);
-
   advance();
 
   while (!match(TOKEN_EOF)) {
     declaration();
   }
-
+  staticCheck.returned = true;
 
   ObjFunction* function = endCompiler();
   return parser.hadError ? NULL : function;

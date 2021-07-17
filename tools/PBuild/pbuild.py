@@ -6,10 +6,12 @@ import platform
 #
 home = os.path.expanduser('~')
 
-objects = os.path.join(home, "PCrap", "objects", "*.c")
-libraries = os.path.join(home, "PCrap", "libraries", "*.c")
+master = os.path.join(home, "PCrap")
 
-source = os.path.join(home, "PCrap", "src", "*.c")
+objects = os.path.join(master, "objects", "*.c")
+libraries = os.path.join(master, "libraries", "*.c")
+
+source = os.path.join(master, "src", "*.c")
 flags = "-o"
 
 LINUX_BUILD = False
@@ -73,7 +75,7 @@ def execute(command):
     print(output)
 
 def compile(cc):
-    os.chdir(os.path.join(home, "PCrap", "bin"))
+    os.chdir(os.path.join(master, "bin"))
 
     if LINUX_BUILD:
         execute( f"{cc} {objects} {libraries} {source} {flags} {exe} -lm" )

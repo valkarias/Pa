@@ -10,7 +10,7 @@ Pcrap is a hobby project, its designed to be small. The goal was to make a langu
 ## Documentation
 If you are completely new, Please head to the [Pcrap guide](https://cdn.flipsnack.com/widget/v2/widget.html?hash=dcs6n9hgvu).  
 The documentation is a future plan.  
-**The Guide and the Documentation are in progress, Expect Major Changes.**  
+**A New website containing docs and guides is in progress**  
 
 Examples are all in the [examples folder](https://github.com/valkarias/PCrap/tree/master/examples).
 
@@ -22,11 +22,11 @@ Building manually is possible.
 Assuming you downloaded PBuild from [releases](https://github.com/valkarias/PCrap/releases)  
 - You need to extract the zip.  
 
-The executable is located in `PBuild_{platform} -> pbuild -> pbuild`  
+The executable is located in `PBuild_(platform) -> pbuild -> pbuild(.exe)`  
 
 PBuild have only 2 commands as of now:
 ```bash
-pbuild.exe download
+pbuild download
 ```
 Which clones the PCrap repo into the user's home directory.  
 - the build command will not work if the download command was not executed.
@@ -41,7 +41,7 @@ There are two compilers supported as of now.
 ## Example
 Here is a split string function algorithm implemented in pcrap.
 ```js
-define split > st,dl > {
+define split (st,dl) {
 
     let word = "";
     let number = 0;
