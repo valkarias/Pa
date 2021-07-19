@@ -87,9 +87,6 @@ typedef enum {
   OP_INDEX_SUBSCR_NO_POP,
 
 
-  OP_STORE_SUBSCR_C,
-  OP_INDEX_SUBSCR_C,
-
   OP_USE,
   OP_RECENT_USE,
 

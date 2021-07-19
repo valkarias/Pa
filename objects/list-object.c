@@ -23,8 +23,8 @@ static Value containMethod(int argCount, Value *args) {
     ObjList* list = AS_LIST(args[0]);
     Value item = args[1];
 
-    for (int i = 0; i < list->count; i++) {
-        if (valuesEqual(list->items[i], item)) {
+    for (int i = 0; i < list->items.count; i++) {
+        if (valuesEqual(list->items.values[i], item)) {
             return TRUE_VAL;
         }
     }
@@ -56,11 +56,28 @@ static Value removeMethod(int argCount, Value *args) {
         deleteFromList(list, index);
         return CLEAR;
     } else {
-        deleteFromList(list, list->count - 1);
+        deleteFromList(list, list->items.count - 1);
         return CLEAR;
     }
 
     return CLEAR; // Clang
+}
+
+static Value allMethod(int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError("Expected 0 arguments but got %d from 'length()'.", argCount);
+        return NOTCLEAR;
+    }
+
+    ObjList* list = AS_LIST(args[0]);
+
+    for (int i = 0; i < list->items.count; i++) {
+        if (isFalsey(list->items.values[i])) {
+            return FALSE_VAL;
+        }
+    }    
+
+    return TRUE_VAL;
 }
 
 static Value lengthMethod(int argCount, Value *args) {
@@ -71,7 +88,7 @@ static Value lengthMethod(int argCount, Value *args) {
 
     ObjList* list = AS_LIST(args[0]);
 
-    return NUMBER_VAL(list->count);
+    return NUMBER_VAL(list->items.count);
 }
 
 static Value indexMethod(int argCount, Value *args) {
@@ -83,8 +100,8 @@ static Value indexMethod(int argCount, Value *args) {
     ObjList* list = AS_LIST(args[0]);
     Value item = args[1];
     
-    for (int i = 0; i < list->count; i++) {
-        if (valuesEqual(list->items[i], item)) {
+    for (int i = 0; i < list->items.count; i++) {
+        if (valuesEqual(list->items.values[i], item)) {
             return NUMBER_VAL(i);
         }
     }
@@ -111,6 +128,8 @@ void initListMethods() {
         "contains",
         "index",
         "clear",
+
+        "all",
     };
 
     NativeFn listMethods[] = {
@@ -120,6 +139,8 @@ void initListMethods() {
         containMethod,
         indexMethod,
         clearMethod,
+
+        allMethod,
     };
 
     for (uint8_t i = 0; i < sizeof(listMethodStrings) / sizeof(listMethodStrings[0]); i++) {

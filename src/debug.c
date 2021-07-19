@@ -92,11 +92,6 @@ int disassembleInstruction(Chunk* chunk, int offset) {
     case OP_INDEX_SUBSCR:
       return simpleInstruction("OP_INDEX_SUBSCRIPT", offset);
 
-    case OP_STORE_SUBSCR_C:
-      return simpleInstruction("OP_STORE_SUBSCRIPT_C", offset);
-    case OP_INDEX_SUBSCR_C:
-      return simpleInstruction("OP_INDEX_SUBSCRIPT_C", offset);
-
     case OP_INDEX_SUBSCR_NO_POP:
       return simpleInstruction("OP_INDEX_SUBSCR_NO_POP", offset);
 

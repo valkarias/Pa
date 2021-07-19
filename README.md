@@ -31,7 +31,7 @@ pbuild download
 Which clones the PCrap repo into the user's home directory.  
 - the build command will not work if the download command was not executed.
 ```bash
-pbuild.exe build --cc-type=<compiler name>
+pbuild build --cc-type=<compiler name>
 ```
 This command builds the cloned PCrap repo. It takes a required option specifying the compiler to build with.  
 

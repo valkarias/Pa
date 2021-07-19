@@ -1,3 +1,5 @@
+// brainf_ck interpreter.
+
 define bf (src, min, max, data, index) {
     if src.length() == 0 return -1;
 

@@ -33,8 +33,21 @@ void freeValueArray(ValueArray* array) {
   FREE_ARRAY(Value, array->values, array->capacity);
   initValueArray(array);
 }
-//< free-value-array
-//> print-value
+
+char* typeValue(Value value) {
+  if (IS_BOOL(value)) {
+    return generateType("bool");
+
+  } else if (IS_NUMBER(value)) {
+    return generateType("number");
+    
+  } else if (IS_OBJ(value)) {
+    return typeObject(value);
+  }
+
+  return generateType("unknown");
+}
+
 void printValue(Value value) {
 //> Optimization print-value
 #ifdef NAN_BOXING
@@ -74,12 +87,12 @@ bool valuesEqual(Value a, Value b) {
       ObjList* listA = AS_LIST(a);
       ObjList* listB = AS_LIST(b);
 
-      if (listA->count != listB->count) {
+      if (listA->items.count != listB->items.count) {
         return false;
       }
 
-      for (int i = 0; i < listA->count; i++) {
-        if (!valuesEqual(listA->items[i], listB->items[i])) {
+      for (int i = 0; i < listA->items.count; i++) {
+        if (!valuesEqual(listA->items.values[i], listB->items.values[i])) {
           return false;
         }
       }

@@ -148,7 +148,14 @@ static TokenType identifierType() {
     case 'b': return checkKeyword(1, 4, "reak", TOKEN_BREAK);
     case 'e': return checkKeyword(1, 3, "lse", TOKEN_ELSE);
     case 'd': return checkKeyword(1, 5, "efine", TOKEN_FUN);
-    case 'l': return checkKeyword(1, 2, "et", TOKEN_VAR);
+    case 'l':
+      if (scanner.current - scanner.start > 1) {
+        switch (scanner.start[1]) {
+          case 'e': return checkKeyword(2, 1, "t", TOKEN_VAR);
+          case 'a': return checkKeyword(2, 4, "mbda", TOKEN_LAMBDA);
+        }
+      }
+      break;
 
     case 'f':
       if (scanner.current - scanner.start > 1) {
@@ -265,8 +272,14 @@ Token scanToken() {
       return makeToken(
         match('+') ? TOKEN_PLUS_PLUS : TOKEN_PLUS);
     case '-':
-      return makeToken(
-        match('-') ? TOKEN_MINUS_MINUS : TOKEN_MINUS);
+      if (match('-')) {
+        return makeToken(TOKEN_MINUS_MINUS);
+      } else if (match('>')) {
+        return makeToken(TOKEN_ARROW);
+      } else {
+        return makeToken(TOKEN_MINUS);
+      }
+
     case '!':
       return makeToken(
           match('=') ? TOKEN_BANG_EQUAL : TOKEN_BANG);

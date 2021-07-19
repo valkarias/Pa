@@ -132,62 +132,39 @@ ObjNative* newNative(NativeFn function) {
 
 ObjList* newList() {
   ObjList* list = ALLOCATE_OBJ(ObjList, OBJ_LIST);
-  list->items = NULL;
-  list->count = 0;
-  list->capacity = 0;
+  initValueArray(&list->items);
   return list;
 }
 
 void appendToList(ObjList* list, Value value) {
-  if (list->capacity < list->count + 1) {
-    int oldCapacity = list->capacity;
-    list->capacity = GROW_CAPACITY(oldCapacity);
-    list->items = GROW_ARRAY(Value, list->items, oldCapacity, list->capacity);
-  }
-
-  list->items[list->count] = value;
-  list->count++;
-  return;
+  writeValueArray(&list->items, value);
 }
 
 Value indexFromList(ObjList* list, int index) {
-  return list->items[index];
+  return list->items.values[index];
 }
 
 void storeToList(ObjList* list, int index, Value value) {
-  list->items[index] = value;
+  list->items.values[index] = value;
 }
 
 bool isValidListIndex(ObjList* list, int index) {
-  if (index < 0 || index > list->count - 1) {
+  if (index < 0 || index > list->items.count - 1) {
     return false;
   }
   return true;
 }
 
 void deleteFromList(ObjList* list, int index) {
-  for (int i = index; i < list->count - 1; i++) {
-    list->items[i] = list->items[i + 1];
+  for (int i = index; i < list->items.count - 1; i++) {
+    list->items.values[i] = list->items.values[i + 1];
   }
 
-  list->items[list->count - 1] = NIL_VAL;
-  list->count--;
-
-  if (list->count <= 8 && list->capacity > list->count + 8) {
-    int oldCapacity = list->capacity;
-    list->capacity = SHRINK_CAPACITY(oldCapacity);
-    list->items = GROW_ARRAY(Value, list->items, oldCapacity, list->capacity);
-
-#ifdef DEBUG_LOG_GC
-    printf("SHRINKED %p TO: %d\n", (void*)list, list->capacity);
-    printf("OLD CAPACITY: %d\n", oldCapacity);
-    printf("CURRENT CAPACITY: %d\n", list->capacity);
-#endif
-  }
+  list->items.count--;
 }
 
 void clearList(ObjList* list) {
-  const int count = list->count;
+  const int count = list->items.count;
 
   for (int i = 0; i < count; i++) {
     deleteFromList(list, i);
@@ -312,10 +289,53 @@ static void printFunction(ObjFunction* function) {
   printf("<fn %s>", function->name->chars);
 }
 
+void* generateType (char* type) {
+  size_t len = strlen(type) + 1;
+
+  char* c = ALLOCATE(char, len);
+  memcpy(c, type, len);
+  c[len] = '\0';
+  
+  return c;
+}
+
+char* typeObject(Value value) {
+  switch (OBJ_TYPE(value)) {
+    case OBJ_BOUND_METHOD:
+    case OBJ_CLOSURE:
+      return generateType("function");
+    
+    case OBJ_CLASS:
+      return generateType("class");
+    
+    case OBJ_LIBRARY:
+      return generateType("library");
+
+    case OBJ_LIST:
+      return generateType("list");
+
+    case OBJ_INSTANCE: {
+      char* c = malloc(9 + AS_INSTANCE(value)->klass->name->length);
+      c = strcat("instance ", AS_INSTANCE(value)->klass->name->chars);
+      
+      return generateType(c);
+    }
+
+    case OBJ_NATIVE:
+      return generateType("native");
+
+    case OBJ_STRING:
+      return generateType("string");
+    
+    case OBJ_UPVALUE:
+      return generateType("upvalue");
+  }
+
+  return generateType("unknown");
+}
 
 void printObject(Value value) {
   switch (OBJ_TYPE(value)) {
-//> Methods and Initializers print-bound-method
     case OBJ_BOUND_METHOD:
       printFunction(AS_BOUND_METHOD(value)->method->function);
       break;
@@ -338,9 +358,9 @@ void printObject(Value value) {
     case OBJ_LIST: {
       ObjList* list = AS_LIST(value);
       printf("[");
-      for (int i = 0; i < list->count; i++) {
+      for (int i = 0; i < list->items.count; i++) {
         printf(" ");
-        printValue(list->items[i]);
+        printValue(list->items.values[i]);
         printf(" ");
       }
 

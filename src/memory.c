@@ -120,8 +120,8 @@ static void blackenObject(Obj* object) {
 
     case OBJ_LIST: {
         ObjList* list = (ObjList*)object;
-        for (int i = 0; i < list->count; i++) {
-          markValue(list->items[i]);
+        for (int i = 0; i < list->items.count; i++) {
+          markValue(list->items.values[i]);
         }
         break;
     }
@@ -190,7 +190,7 @@ static void freeObject(Obj* object) {
 
     case OBJ_LIST: {
         ObjList* list = (ObjList*)object;
-        FREE_ARRAY(Value*, list->items, list->count);
+        freeValueArray(&list->items);
         FREE(ObjList, object);
         break;
     }

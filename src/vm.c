@@ -401,7 +401,7 @@ static void defineMethod(ObjString* name) {
   pop();
 }
 
-static bool isFalsey(Value value) {
+bool isFalsey(Value value) {
   return IS_NIL(value) || (IS_BOOL(value) && !AS_BOOL(value));
 }
 
@@ -854,15 +854,12 @@ static InterpretResult run() {
         uint8_t itemCount = READ_BYTE();
 
         push(OBJ_VAL(list));
+
         for (int i = itemCount; i > 0; i--) {
           appendToList(list, peek(i));
         }
-        pop();
-
-        while (itemCount-- > 0) {
-          pop();
-        }
-
+        
+        vm.stackTop -= itemCount + 1; 
         push(OBJ_VAL(list));
         break;
       }
@@ -943,61 +940,6 @@ static InterpretResult run() {
           default:
             runtimeError("Type not subscriptable.");
             return INTERPRET_RUNTIME_ERROR;
-        }
-
-        break;
-      }
-
-      case OP_STORE_SUBSCR_C: {
-        Value item = pop();
-        Value indexVal = pop();
-        Value listVal = pop();
-
-        ObjList* list = AS_LIST(listVal);
-
-        if (!IS_NUMBER(indexVal)) {
-          runtimeError("List index must be a number.");
-          return INTERPRET_RUNTIME_ERROR;
-        }
-        int index = AS_NUMBER(indexVal);
-
-        storeToList(list, index, item);
-        push(item);
-        break;
-      }
-
-      case OP_INDEX_SUBSCR_C: {
-        Value indexVal = pop();
-        Value objVal = pop();
-        Value result;
-
-
-        if (!IS_NUMBER(indexVal)) {
-          runtimeError("Index must be a number.");
-          return INTERPRET_RUNTIME_ERROR;
-        }
-        
-        int index = AS_NUMBER(indexVal);
-
-        switch(OBJ_TYPE(objVal)) {
-          case OBJ_LIST: {
-            ObjList* list = AS_LIST(objVal);
-
-            result = indexFromList(list, index);
-            push(result);
-            break;
-          }
-
-          case OBJ_STRING: {
-            ObjString* string = AS_STRING(objVal);
-
-            result = indexFromString(string, index);
-            push(result);
-            break;
-          }
-
-          default:
-            break;
         }
 
         break;

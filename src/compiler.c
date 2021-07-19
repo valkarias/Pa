@@ -247,8 +247,20 @@ static void initCompiler(Compiler* compiler, FunctionType type) {
 
 
   current = compiler;
-  if (type != TYPE_SCRIPT) {
-    current->function->name = copyString(parser.previous.start,parser.previous.length);
+  switch (type) {
+    case TYPE_FUNCTION:
+    case TYPE_METHOD:
+    case TYPE_INITIALIZER:
+      current->function->name = copyString(parser.previous.start,parser.previous.length);
+      break;
+
+    case TYPE_UNKNOWN:
+      current->function->name = copyString("<unknown", 8);
+      break;
+
+    case TYPE_SCRIPT:
+      current->function->name = NULL;
+      break;
   }
 
   Local* local = &current->locals[current->localCount++];
@@ -275,6 +287,7 @@ static ObjFunction* endCompiler() {
     staticCheck.returned = false;
   }
 
+  staticCheck.returned = false;
 #ifdef DEBUG_PRINT_CODE
   if (!parser.hadError) {
     disassembleChunk(currentChunk(), function->name != NULL ? function->name->chars : function->library->name->chars);
@@ -721,6 +734,8 @@ static void decrement(bool canAssign) {
 
 static void list(bool canAssign) {
   staticCheck.listCount = 0;
+  int count = 0;
+
   if (!check(TOKEN_RIGHT_BRACK)) {
     do {
       if (check(TOKEN_RIGHT_BRACK)) {
@@ -729,18 +744,14 @@ static void list(bool canAssign) {
 
       parsePrecedence(PREC_OR);
 
-      if (staticCheck.listCount == UINT8_COUNT) {
-        error("Cannot have more than 256 items in a list.");
-      }
-      staticCheck.listCount++;
+      count++;
     } while(match(TOKEN_COMMA));
   }
 
   consume(TOKEN_RIGHT_BRACK, "Expected ']' after list.");
-
-  emitByte(OP_BUILD_LIST);
-  emitByte(staticCheck.listCount);
-
+  emitBytes(OP_BUILD_LIST, count);
+  
+  staticCheck.listCount = count;
   current->lastCall = false;
   staticCheck.isList = true;
   return;
@@ -773,29 +784,9 @@ static void subscript(bool canAssign) {
       if (index < 0 || index > staticCheck.listCount - 1) {
         error("List index out bounds.");
       }
-
-      consume(TOKEN_RIGHT_BRACK, "Expected ']' after index.");
-
-      if (canAssign && match(TOKEN_EQUAL)) {
-        expression();
-        emitByte(OP_STORE_SUBSCR_C);
-      } else if (canAssign && match(TOKEN_PLUS_PLUS)) {
-        emitBytes(OP_INDEX_SUBSCR_NO_POP, OP_INCREMENT);
-        emitByte(OP_STORE_SUBSCR_C);
-
-      } else if (canAssign && match(TOKEN_MINUS_MINUS)) {
-        emitBytes(OP_INDEX_SUBSCR_NO_POP, OP_DECREMENT);
-        emitByte(OP_STORE_SUBSCR_C);
-
-      } else {
-        emitByte(OP_INDEX_SUBSCR_C);
-      }
-
-      current->lastCall = false;
-      staticCheck.isList = false;
-      return;
     }
   }
+
   consume(TOKEN_RIGHT_BRACK, "Expected ']' after index.");
 
   if (canAssign && match(TOKEN_EQUAL)) {
@@ -818,10 +809,40 @@ static void subscript(bool canAssign) {
   return;
 }
 
+static void arrow(bool canAssign) {
+  Compiler compiler;
+  initCompiler(&compiler, TYPE_UNKNOWN);
+  beginScope();
+
+  consume(TOKEN_LEFT_PAREN, "Expected '(' after 'lambda'.");
+  functionArguments();
+  consume(TOKEN_RIGHT_PAREN, "Expected ')'.");
+
+  consume(TOKEN_ARROW, "Expected '->' after ')'.");
+
+  if (match(TOKEN_LEFT_BRACE)) {
+    block();
+  } else {
+    expression();
+    emitByte(OP_RETURN);
+    staticCheck.returned = true;
+  }
+
+  ObjFunction* function = endCompiler();
+
+  uint8_t constant = makeConstant(OBJ_VAL(function));
+  emitBytes(OP_CLOSURE, constant);
+
+  for (int i = 0; i < function->upvalueCount; i++) {
+    emitByte(current->upvalues[i].isLocal ? 1 : 0);
+    emitByte(current->upvalues[i].index);
+  }
+}
+
 static void body() {
   functionArguments();
 
-  consume(TOKEN_RIGHT_PAREN, "Expected ')' after arguments.");
+  consume(TOKEN_RIGHT_PAREN, "Expected ')'.");
   consume(TOKEN_LEFT_BRACE, "Expected '{' after ')'.");
 
   block();
@@ -872,6 +893,9 @@ ParseRule rules[] = {
   [TOKEN_FOR]           = {NULL,     NULL,   PREC_NONE},
 
   [TOKEN_FUN]           = {NULL,     NULL,   PREC_NONE},
+
+  [TOKEN_LAMBDA]        = {arrow,    NULL,   PREC_NONE},
+  [TOKEN_ARROW]         = {NULL,     NULL,   PREC_NONE},
 
   [TOKEN_IF]            = {NULL,     NULL,   PREC_NONE},
   [TOKEN_USE]           = {NULL,     NULL,   PREC_NONE},
@@ -957,6 +981,7 @@ static void method() {
   
   function(type);
   emitBytes(OP_METHOD, constant);
+  staticCheck.returned = false;
 }
 
 static void classDeclaration() {
@@ -1292,9 +1317,6 @@ static int getArgCount(uint8_t *code, const ValueArray constants, int ip) {
 
     case OP_INDEX_SUBSCR:
     case OP_STORE_SUBSCR:
-    case OP_INDEX_SUBSCR_C:
-    case OP_STORE_SUBSCR_C:
-
     case OP_INDEX_SUBSCR_NO_POP:
 
     case OP_POP:
@@ -1403,8 +1425,8 @@ ObjFunction* compile(const char* source, ObjLibrary* library) {
   while (!match(TOKEN_EOF)) {
     declaration();
   }
-  staticCheck.returned = true;
 
+  staticCheck.returned = true;
   ObjFunction* function = endCompiler();
   return parser.hadError ? NULL : function;
 }

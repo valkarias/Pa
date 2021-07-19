@@ -1,3 +1,5 @@
+#include <ctype.h>
+
 #include "objects.h"
 #include "../src/memory.h"
 
@@ -76,19 +78,58 @@ static Value splitMethod(int argCount, Value *args) {
     return OBJ_VAL(l);
 }
 
+static Value lowerMethod(int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError("Expected 0 arguments but got %d from 'lower()'.", argCount);
+        return NOTCLEAR;
+    } 
+
+    ObjString* string = AS_STRING(args[0]);
+    char* alloc = ALLOCATE(char, string->length + 1);
+
+    for (int i = 0; i < string->chars[i]; i++) {
+        alloc[i] = tolower(string->chars[i]);
+    }
+
+    alloc[string->length] = '\0';
+
+    return OBJ_VAL(takeString(alloc, string->length));
+}
+
+static Value upperMethod(int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError("Expected 0 arguments but got %d from 'upper()'.", argCount);
+        return NOTCLEAR;
+    } 
+
+    ObjString* string = AS_STRING(args[0]);
+    char* alloc = ALLOCATE(char, string->length + 1);
+
+    for (int i = 0; i < string->chars[i]; i++) {
+        alloc[i] = toupper(string->chars[i]);
+    }
+
+    alloc[string->length] = '\0';
+
+    return OBJ_VAL(takeString(alloc, string->length));
+}
 
 //
 void initStringMethods() {
     char* stringMethodStrings[] = {
         "number",
         "length",
-        "split"
+        "split",
+        "lower",
+        "upper"
     };
 
     NativeFn stringMethods[] = {
         numberMethod,
         lengthMethod,
         splitMethod,
+        lowerMethod,
+        upperMethod
     };
 
     for (uint8_t i = 0; i < sizeof(stringMethodStrings) / sizeof(stringMethodStrings[0]); i++) {

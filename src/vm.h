@@ -76,4 +76,6 @@ void runtimeError(const char* format, ...);
 void push(Value value);
 Value pop();
 
+bool isFalsey(Value value);
+
 #endif

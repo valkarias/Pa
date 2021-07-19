@@ -7,21 +7,6 @@
 #include "vm.h"
 #include "memory.h"
 
-
-static Value printNative(int argCount, Value* args) {
-    if (argCount == 0) {
-        printf("\n");
-        return CLEAR;
-    }
-
-    for (int i = 0; i < argCount; i++) {
-        printValue(args[i]);
-        printf("\n");
-    } 
-
-    return CLEAR;
-}
-
 static Value inputNative(int argCount, Value *args) {
     if (argCount > 1) {
         runtimeError("Expected 1 or 0 arguments but got %d from 'input()'.", argCount);
@@ -72,17 +57,27 @@ static Value inputNative(int argCount, Value *args) {
     return OBJ_VAL(takeString(line, length));
 }
 
+static Value typeNative(int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError("Expected 1 argument but got %d from 'type()'.", argCount);
+        return NOTCLEAR;
+    }
+
+    char* c = typeValue(args[0]);
+    return OBJ_VAL(takeString(c, strlen(c)));
+}
+
 ///////////////////
 
 void defineAllNatives() {
     char* nativeStrings[] = {
-        "printn",
         "input",
+        "type"
     };
 
     NativeFn nativeFunctions[] = {
-        printNative,
         inputNative,
+        typeNative,
     };
 
     for (uint8_t i = 0; i < sizeof(nativeStrings) / sizeof(nativeStrings[0]); i++) {

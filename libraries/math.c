@@ -130,6 +130,11 @@ static Value sqrtLib(int argCount, Value *args) {
 
     double number = AS_NUMBER(args[0]);
 
+    if (number <= 0) {
+        runtimeError("Argument must be bigger than 0 from 'sqrt()'.");
+        return NOTCLEAR;
+    }
+
     return NUMBER_VAL(sqrt(number));
 }
 

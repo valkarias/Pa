@@ -92,7 +92,9 @@ typedef enum {
 
   TYPE_INITIALIZER,
   TYPE_METHOD,
-  TYPE_SCRIPT
+  TYPE_SCRIPT,
+
+  TYPE_UNKNOWN,
 } FunctionType;
 
 typedef enum {
@@ -163,9 +165,7 @@ typedef struct {
 
 typedef struct {
     Obj obj;
-    int count;
-    int capacity;
-    Value* items;
+    ValueArray items;
 } ObjList;
 
 typedef struct {
@@ -213,6 +213,9 @@ Value indexFromString(ObjString* string, int index);
 ObjUpvalue* newUpvalue(Value* slot);
 
 void printObject(Value value);
+
+char* typeObject(Value value);
+void* generateType (char* type);
 
 static inline bool isObjType(Value value, ObjType type) {
   return IS_OBJ(value) && AS_OBJ(value)->type == type;
