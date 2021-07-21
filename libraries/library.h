@@ -4,6 +4,7 @@
 #include "pcrap_math.h"
 #include "os.h"
 #include "random.h"
+#include "pcrap_time.h"
 
 typedef ObjLibrary *(*NativeLibrary)();
 

@@ -310,10 +310,6 @@ static bool invoke(ObjString* name, int argCount) {
         Value value;
 
         if (!tableGet(&library->values, name, &value)) {
-          for (int i = 0; i < library->values.count; i++) {
-            printValue(library->values.entries[i].value);
-            printf("\n");
-          }
           runtimeError("Undefined property '%s'.", name->chars);
           return false;
         }

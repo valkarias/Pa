@@ -753,6 +753,7 @@ static void list(bool canAssign) {
   
   staticCheck.listCount = count;
   current->lastCall = false;
+  
   staticCheck.isList = true;
   return;
 }
@@ -773,11 +774,11 @@ static void functionArguments() {
 static void subscript(bool canAssign) {
   int index = strtod(parser.previous.start, NULL);
 
-  parsePrecedence(PREC_OR);
-
   if (staticCheck.isList == false) {
     error("Type not subscriptable.");
   }
+
+  parsePrecedence(PREC_OR);
 
   if (current->function->type == TYPE_SCRIPT) {
     if (staticCheck.isList != skip) {

@@ -120,9 +120,7 @@ static void blackenObject(Obj* object) {
 
     case OBJ_LIST: {
         ObjList* list = (ObjList*)object;
-        for (int i = 0; i < list->items.count; i++) {
-          markValue(list->items.values[i]);
-        }
+        markArray(&list->items);
         break;
     }
 //< blacken-closure

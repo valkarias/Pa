@@ -1,8 +1,11 @@
 #ifndef pcrap_os_h
 #define pcrap_os_h
 
+//combining mix functionalities into 1 module.
+
 #ifdef _WIN32
     #include <io.h>
+    #include <direct.h>
 #elif __APPLE__
     #include <sys/uio.h>
     #include <unistd.h>
@@ -14,12 +17,15 @@
 #include "../src/object.h"
 #include "library.h"
 
+//p = path, m = mode
 #ifdef _WIN32
-#define REMOVE remove
-#define ACCESS _access
+#define REMOVE(p) remove(p)
+#define ACCESS(p, m) _access(p, m)
+#define MKDIR(p, m) ((void)m, _mkdir(p))
 #else
-#define REMOVE unlink
-#define ACCESS access
+#define REMOVE(p) unlink(p)
+#define ACCESS(p, m) access(p, m)
+#define MKDIR(p, m) mkdir(p, m)
 #endif
 
 #define FAILED NUMBER_VAL(-1)

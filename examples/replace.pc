@@ -18,3 +18,5 @@ define replace (s1, s2, s3) {
 }
 
 print replace("Apple", "A", "B");
+
+//"Apple".replace("A", "B");

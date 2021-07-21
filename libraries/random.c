@@ -17,11 +17,35 @@ static Value rangeLib(int argCount, Value *args) {
     int min = AS_NUMBER(args[0]);
     int max = AS_NUMBER(args[1]);
 
-    time_t time;
-    srand((unsigned)time);
+    time_t t;
+    srand((unsigned)time(&t));
 
     int res = rand() % (max + 1 - min) + min;
     return NUMBER_VAL(res);
+}
+
+static Value choiceLib(int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError("Expected 1 argument1 but got %d from 'choice()'.", argCount);
+        return NOTCLEAR;
+    }
+
+    if (!IS_LIST(args[0])) {
+        runtimeError("Argument must be a list from 'choice()'.");
+        return NOTCLEAR;
+    }    
+
+    ObjList* list = AS_LIST(args[0]);
+    argCount = list->items.count;
+    args = list->items.values;
+
+    time_t t;
+    srand((unsigned)time(&t));
+
+    int r = rand();
+    int res = r % argCount;
+
+    return args[res];
 }
 
 //
@@ -32,6 +56,7 @@ ObjLibrary* createRandomLibrary() {
     push(OBJ_VAL(library));
 
     defineNative("range", rangeLib, &library->values);
+    defineNative("choice", choiceLib, &library->values);
     
     pop();
     pop();

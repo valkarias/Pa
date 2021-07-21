@@ -2,6 +2,7 @@ import click
 import subprocess
 import os
 import platform
+import shutil
 
 #
 home = os.path.expanduser('~')
@@ -39,6 +40,7 @@ def check():
 
     if len(os.listdir(p)) == 0:
         click.secho("An Empty Directory with the same name exists: ", fg='red')
+        click.echo("Please use the 'uninstall' command to clean up.")
         click.echo(f"-> '{p}'")
         return -1
 
@@ -119,8 +121,26 @@ def build(cc_type):
 
     click.secho("Building finished", fg='green')
 
+@click.command()
+def uninstall():
+    p = os.path.join(home, "PCrap")
+    
+    if os.path.exists(p) == False:
+        click.secho("PCrap Directory is missing: ", fg='red')
+        return
+    
+    if (os.path.isdir(p)) and len(os.listdir(p)) == 0:
+        os.rmdir(p)
+
+        click.secho("Cleaning finished", fg='green')
+        return
+    
+    shutil.rmtree(p, ignore_errors=True)
+    click.secho("Uninstalling finished", fg='green')
+
 if __name__ == '__main__':
     cli.add_command(download)
     cli.add_command(build)
+    cli.add_command(uninstall)
 
     cli()

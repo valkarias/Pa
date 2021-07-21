@@ -80,6 +80,23 @@ static Value allMethod(int argCount, Value *args) {
     return TRUE_VAL;
 }
 
+static Value anyMethod(int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError("Expected 0 arguments but got %d from 'any()'.", argCount);
+        return NOTCLEAR;
+    }
+
+    ObjList* list = AS_LIST(args[0]);
+
+    for (int i = 0; i < list->items.count; i++) {
+        if (!isFalsey(list->items.values[i])) {
+            return TRUE_VAL;
+        }
+    }    
+
+    return FALSE_VAL;
+}
+
 static Value lengthMethod(int argCount, Value *args) {
     if (argCount != 0) {
         runtimeError("Expected 0 arguments but got %d from 'length()'.", argCount);
@@ -119,6 +136,26 @@ static Value clearMethod(int argCount, Value* args) {
     return CLEAR;
 }
 
+static Value reverseMethod(int argCount, Value* args) {
+    if (argCount != 0) {
+        runtimeError("Expected 0 arguments but got %d from 'reverse()'.", argCount);
+        return NOTCLEAR;
+    }
+
+    ObjList* list = AS_LIST(args[0]);
+    int len = list->items.count;
+    int j;
+
+    for(int i = 0, j = len - 1; i < j; i++, j--) {
+        Value temp = list->items.values[i];
+
+        list->items.values[i] = list->items.values[j];
+        list->items.values[j] = temp;
+    }
+
+    return CLEAR;
+}
+
 //
 void initListMethods() {
     char* listMethodStrings[] = {
@@ -130,6 +167,9 @@ void initListMethods() {
         "clear",
 
         "all",
+        "any",
+        
+        "reverse",
     };
 
     NativeFn listMethods[] = {
@@ -141,6 +181,9 @@ void initListMethods() {
         clearMethod,
 
         allMethod,
+        anyMethod,
+
+        reverseMethod
     };
 
     for (uint8_t i = 0; i < sizeof(listMethodStrings) / sizeof(listMethodStrings[0]); i++) {
