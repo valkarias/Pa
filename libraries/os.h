@@ -11,6 +11,8 @@
     #include <unistd.h>
 #else
     #include <sys/io.h>
+    //man
+    #include <sys/stat.h>
     #include <unistd.h>
 #endif
 

@@ -278,6 +278,8 @@ void replace_(char* src, char* str, char* rep) {
 
     if (p) {
         int len = strlen(src) + strlen(rep) - strlen(str);
+        int repLen = strlen (rep);
+
         char r[len];
         memset (r, 0, len);
 
@@ -285,11 +287,11 @@ void replace_(char* src, char* str, char* rep) {
             strncpy (r, src, p-src);
             r[p - src] = '\0';
 
-            strncat(r, rep, strlen (rep));
+            strncat(r, rep, repLen);
             strncat(r, p + strlen (str), p + strlen (str) - src + strlen(src));
 
             strcpy(src, r);
-            replace_(p + strlen (rep), str, rep);
+            replace_(p + repLen, str, rep);
         }
     }
 }
