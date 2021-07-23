@@ -77,5 +77,4 @@ void push(Value value);
 Value pop();
 
 bool isFalsey(Value value);
-
 #endif

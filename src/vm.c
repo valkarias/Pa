@@ -173,7 +173,6 @@ static bool call(ObjClosure* closure, int argCount) {
 
   frame->closure = closure;
   frame->ip = closure->function->chunk.code;
-//< Closures call-init-closure
   frame->slots = vm.stackTop - argCount - 1;
   return true;
 }
@@ -435,10 +434,7 @@ static InterpretResult run() {
 
 #define READ_CONSTANT() \
     (frame->closure->function->chunk.constants.values[READ_BYTE()])
-//< Closures read-constant
 
-//< Calls and Functions run
-//> Global Variables read-string
 #define READ_STRING() AS_STRING(READ_CONSTANT())
 
 #define BINARY_OP(valueType, op) \

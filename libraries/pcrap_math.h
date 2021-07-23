@@ -2,6 +2,7 @@
 #define pcrap_math_h
 
 #include <math.h>
+#include <errno.h>
 
 #include "../src/object.h"
 #include "../src/value.h"

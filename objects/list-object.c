@@ -183,7 +183,7 @@ void initListMethods() {
         allMethod,
         anyMethod,
 
-        reverseMethod
+        reverseMethod,
     };
 
     for (uint8_t i = 0; i < sizeof(listMethodStrings) / sizeof(listMethodStrings[0]); i++) {
