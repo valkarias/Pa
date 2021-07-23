@@ -129,6 +129,58 @@ static Value getCwdLib(int argCount, Value *args) {
     return FAILED;
 }
 
+static Value setCwdLib(int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError("Expected 1 argument but got %d from 'setCwd()'.", argCount);
+        return NOTCLEAR;
+    }
+
+    char* p = AS_CSTRING(args[0]);
+
+    int status = chdir(p);
+
+    if (status < 0) {
+        return FAILED;
+    }
+
+    return CLEAR;
+}
+
+static void mkdirs(const char* path) {
+    char tmp[260]; //ugh
+    char* p = NULL;
+    size_t len;
+
+    snprintf(tmp, sizeof(tmp), "%s", path);
+    len = strlen(tmp);
+    
+    if(tmp[len - 1] == SEP) {
+        tmp[len - 1] = 0;
+    }
+
+    for(p = tmp + 1; *p; p++) {
+        if(*p == SEP) {
+            *p = 0;
+            MKDIR(tmp, S_IRWXU);
+            *p = SEP;
+        }
+    }
+
+    MKDIR(tmp, S_IRWXU);
+}
+
+static Value makeDirsLib(int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError("Expected 1 argument but got %d from 'makeDirs()'.", argCount);
+        return NOTCLEAR;
+    }
+
+    char* p = AS_CSTRING(args[0]);
+
+    mkdirs(p);
+    return CLEAR;
+}
+
 static Value accessLib(int argCount, Value *args) {
     if (argCount != 2) {
         runtimeError("Expected 2 arguments but got %d from 'access()'.", argCount);
@@ -206,14 +258,22 @@ ObjLibrary* createOsLibrary() {
     defineNative("time", timeLib, &library->values);
     defineNative("remove", removeLib, &library->values);
     defineNative("getCwd", getCwdLib, &library->values);
+    defineNative("setCwd", setCwdLib, &library->values);
     defineNative("getHome", getHomeLib, &library->values);
     defineNative("mkdir", mkdirLib, &library->values);
     defineNative("rmdir", rmdirLib, &library->values);
+    defineNative("makeDirs", makeDirsLib, &library->values);
 
     defineProperty("F_OK", NUMBER_VAL(F_OK), &library->values);
     defineProperty("X_OK", NUMBER_VAL(X_OK), &library->values);
     defineProperty("W_OK", NUMBER_VAL(W_OK), &library->values);
     defineProperty("R_OK", NUMBER_VAL(R_OK), &library->values);
+
+#ifdef _WIN32
+    defineProperty("separator", OBJ_VAL(copyString("\\", 1)), &library->values);
+#else
+    defineProperty("separator", OBJ_VAL(copyString("/", 1)), &library->values);
+#endif
 
     char* pChar = getPlatform();
     ObjString* platform = copyString(pChar, strlen(pChar));

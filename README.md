@@ -1,7 +1,8 @@
 ﻿# PCrap
 ![maintenance](https://img.shields.io/maintenance/yes/2021?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
-![Version](https://img.shields.io/badge/version-0.1-green?style=flat-square)
+![CI](https://img.shields.io/github/workflow/status/valkarias/PCrap/Release-builds?style=flat-square)
+
 
 You are welcomed to the holy lands of PCrap.  
 
