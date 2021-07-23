@@ -68,6 +68,45 @@ static Value ceilLib(int argCount, Value *args) {
     return NUMBER_VAL(ceil(number));
 }
 
+static Value logLib(int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError("Expected 1 argument but got %d from 'log()'.", argCount);
+        return NOTCLEAR;
+    }
+
+    if (!IS_NUMBER(args[0])) {
+        runtimeError("Argument must be a number from 'log()'.");
+        return NOTCLEAR;
+    }
+
+    double number = AS_NUMBER(args[0]);
+
+    double res = log(number);
+
+    if (errno) {
+        runtimeError("Math domain error from 'log()'.");
+        return NOTCLEAR;
+    }
+
+    return NUMBER_VAL(res);
+}
+
+static Value expLib(int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError("Expected 1 argument but got %d from 'exp()'.", argCount);
+        return NOTCLEAR;
+    }
+
+    if (!IS_NUMBER(args[0])) {
+        runtimeError("Argument must be a number from 'exp()'.");
+        return NOTCLEAR;
+    }
+
+    double number = AS_NUMBER(args[0]);
+
+    return NUMBER_VAL(exp(number));
+}
+
 static Value sinLib(int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError("Expected 1 argument but got %d from 'sin()'.", argCount);
@@ -349,8 +388,6 @@ static Value gcdLib(int argCount, Value *args) {
 
 //
 ObjLibrary* createMathLibrary() {
-    //TODO: log, exp.
-
     ObjString* name = copyString("Math", 4);
     push(OBJ_VAL(name));
     ObjLibrary* library = newLibrary(name);
@@ -360,6 +397,8 @@ ObjLibrary* createMathLibrary() {
     defineNative("floor", floorLib, &library->values);
     defineNative("round", roundLib, &library->values);
     defineNative("ceil", ceilLib, &library->values);
+    defineNative("log",  logLib, &library->values);
+    defineNative("exp",  expLib, &library->values);
 
     defineNative("sqrt", sqrtLib, &library->values);
     defineNative("clamp", clampLib, &library->values);
