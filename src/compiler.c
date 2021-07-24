@@ -18,7 +18,6 @@ typedef struct {
   int innermostLoopScopeDepth;
 
   int listCount;
-  int isList;
 
   int returned;
 } Static;
@@ -228,7 +227,6 @@ static void initStaticChecks(Static* s) {
   s->innermostLoopScopeDepth = 0;
 
   s->listCount = 0;
-  s->isList = false;
 
   s->returned = false;
 }
@@ -553,7 +551,7 @@ static void dot(bool canAssign) {
   }
 
   current->lastCall = false;
-  staticCheck.isList = false;
+  
 }
 
 static bool isHex() {
@@ -579,14 +577,14 @@ static void literal(bool canAssign) {
   }
 
   current->lastCall = false;
-  staticCheck.isList = false;
+  
 }
 
 static void grouping(bool canAssign) {
   expression();
   consume(TOKEN_RIGHT_PAREN, "Expected ')' after expression.");
   current->lastCall = false;
-  staticCheck.isList = false;
+  
 }
 
 static void number(bool canAssign) {
@@ -620,7 +618,7 @@ static void string(bool canAssign) {
   emitConstant(OBJ_VAL(copyString(parser.previous.start + 1, parser.previous.length - 2)));
 
   staticCheck.listCount = parser.previous.length - 2;
-  staticCheck.isList = true;
+  
 }
 
 static void namedVariable(Token name, bool canAssign) {
@@ -657,14 +655,14 @@ static void namedVariable(Token name, bool canAssign) {
     emitBytes(getOp, (uint8_t)arg);
   }
 
-  staticCheck.isList = skip;
+  
 }
 
 static void variable(bool canAssign) {
   namedVariable(parser.previous, canAssign);
 
   current->lastCall = false;
-  staticCheck.isList = skip;
+  
 }
 
 static Token syntheticToken(const char* text) {
@@ -707,6 +705,7 @@ static void this_(bool canAssign) {
   
 //< this-outside-class
   variable(false);
+  
 }
 static void unary(bool canAssign) {
 //< Global Variables unary
@@ -721,7 +720,7 @@ static void unary(bool canAssign) {
   }
 
   current->lastCall = false;
-  staticCheck.isList = false;
+  
 }
 
 static void increment(bool canAssign) {
@@ -754,7 +753,7 @@ static void list(bool canAssign) {
   staticCheck.listCount = count;
   current->lastCall = false;
   
-  staticCheck.isList = true;
+  
   return;
 }
 
@@ -772,21 +771,7 @@ static void functionArguments() {
 }
 
 static void subscript(bool canAssign) {
-  int index = strtod(parser.previous.start, NULL);
-
-  if (staticCheck.isList == false) {
-    error("Type not subscriptable.");
-  }
-
   parsePrecedence(PREC_OR);
-
-  if (current->function->type == TYPE_SCRIPT) {
-    if (staticCheck.isList != skip) {
-      if (index < 0 || index > staticCheck.listCount - 1) {
-        error("List index out bounds.");
-      }
-    }
-  }
 
   consume(TOKEN_RIGHT_BRACK, "Expected ']' after index.");
 
@@ -806,7 +791,7 @@ static void subscript(bool canAssign) {
   }
 
   current->lastCall = false;
-  staticCheck.isList = false;
+  
   return;
 }
 
@@ -1377,7 +1362,7 @@ static int getArgCount(uint8_t *code, const ValueArray constants, int ip) {
 
 static void statement() {
   current->lastCall = false;
-  staticCheck.isList = false;
+  
 
   if (match(TOKEN_PRINT)) {
     printStatement();

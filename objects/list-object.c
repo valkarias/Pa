@@ -156,6 +156,39 @@ static Value reverseMethod(int argCount, Value* args) {
     return CLEAR;
 }
 
+static ObjList* copyList(ObjList* list) {
+    ObjList* copy = newList();
+    const int length = list->items.count;
+    push(OBJ_VAL(copy));
+
+    for (int i = 0; i < length; i++) {
+        Value val = list->items.values[i];
+
+        if (list->items.count != 0) {
+            if (IS_LIST(val)) {
+                val = OBJ_VAL(copyList(AS_LIST(val)));
+            }
+        }
+
+        push(val);
+        writeValueArray(&copy->items, val);
+        pop();
+    }
+
+    pop();
+    return copy;
+}
+
+static Value copyMethod(int argCount, Value* args) {
+    if (argCount != 0) {
+        runtimeError("Expected 0 arguments but got %d from 'copy()'.", argCount);
+        return NOTCLEAR;
+    }
+
+    ObjList* list = AS_LIST(args[0]);
+    return OBJ_VAL(copyList(list));
+}
+
 //
 void initListMethods() {
     char* listMethodStrings[] = {
@@ -170,6 +203,8 @@ void initListMethods() {
         "any",
         
         "reverse",
+        
+        "copy",
     };
 
     NativeFn listMethods[] = {
@@ -184,6 +219,8 @@ void initListMethods() {
         anyMethod,
 
         reverseMethod,
+        
+        copyMethod,
     };
 
     for (uint8_t i = 0; i < sizeof(listMethodStrings) / sizeof(listMethodStrings[0]); i++) {
