@@ -141,18 +141,30 @@ void appendToList(ObjList* list, Value value) {
 }
 
 Value indexFromList(ObjList* list, int index) {
+  if (index < 0) {
+    index = list->items.count + index;
+  }
+
   return list->items.values[index];
 }
 
 void storeToList(ObjList* list, int index, Value value) {
+  if (index < 0) {
+    index = list->items.count + index;
+  }
+
   list->items.values[index] = value;
 }
 
 bool isValidListIndex(ObjList* list, int index) {
-  if (index < 0 || index > list->items.count - 1) {
-    return false;
+  if (index < 0) {
+    index = list->items.count + index;
   }
-  return true;
+
+  if (index >= 0 && index < list->items.count) {
+    return true;
+  }
+  return false;
 }
 
 void deleteFromList(ObjList* list, int index) {
@@ -255,14 +267,22 @@ ObjString* copyString(const char* chars, int length) {
 }
 
 bool isValidStringIndex(ObjString* string, int index) {
-  if (index < 0 || index > string->length - 1) {
-    return false;
+  if (index < 0) {
+    index = string->length + index;
   }
 
-  return true;
+  if (index >= 0 && index < string->length) {
+    return true;
+  }
+
+  return false;
 }
 
 Value indexFromString(ObjString* string, int index) {
+  if (index < 0) {
+    index = string->length + index;
+  }
+
   return OBJ_VAL(copyString(&string->chars[index], 1));
 }
 
