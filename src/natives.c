@@ -16,7 +16,7 @@ static Value inputNative(int argCount, Value *args) {
     if (argCount != 0) {
         Value input = args[0];
         if (!IS_STRING(input)) {
-            runtimeError("input() only takes a string argument");
+            runtimeError("Argument must be a string from 'input()'.");
             return NOTCLEAR;
         }
 
@@ -67,17 +67,55 @@ static Value typeNative(int argCount, Value *args) {
     return OBJ_VAL(takeString(c, strlen(c)));
 }
 
+static Value assertNative(int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError("Expected 1 argument but got %d from 'assert()'.", argCount);
+        return NOTCLEAR;
+    }
+
+    if (isFalsey(args[0])) {
+        ERROR("Assertion Failed");
+        return NOTCLEAR;
+    }
+
+    return CLEAR;
+}
+
+static Value assertShowNative(int argCount, Value *args) {
+    if (argCount != 2) {
+        runtimeError("Expected 2 arguments but got %d from 'assertShow()'.", argCount);
+        return NOTCLEAR;
+    }
+    if (!IS_STRING(args[1])) {
+        runtimeError("Argument must be a string from 'assertShow()'.");
+        return NOTCLEAR;
+    }
+
+    if (isFalsey(args[0])) {
+        ERROR(AS_CSTRING(args[1]));
+        return NOTCLEAR;
+    }
+
+    return CLEAR;
+}
+
 ///////////////////
 
 void defineAllNatives() {
     char* nativeStrings[] = {
         "input",
-        "type"
+        "type",
+
+        "assert",
+        "assertShow"
     };
 
     NativeFn nativeFunctions[] = {
         inputNative,
         typeNative,
+        
+        assertNative,
+        assertShowNative,
     };
 
     for (uint8_t i = 0; i < sizeof(nativeStrings) / sizeof(nativeStrings[0]); i++) {

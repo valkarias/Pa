@@ -3,11 +3,11 @@
 // S.O.F :)
 static unsigned int g_seed;
 
-inline void fastsrand(int seed) {
+static inline void fastsrand(int seed) {
   g_seed = seed;
 }
 
-inline int fastrand() { 
+static inline int fastrand() { 
   g_seed = (214013*g_seed+2531011); 
   return (g_seed>>16)&0x7FFF; 
 }

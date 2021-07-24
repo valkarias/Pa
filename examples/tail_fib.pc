@@ -1,4 +1,4 @@
-//To understand recursion, read the comment below
+// To understand recursion, read the comment below
 
 define fib (n, a, b) {
     if n == 0 {
@@ -11,6 +11,6 @@ define fib (n, a, b) {
     return fib(n - 1, b, a + b);
 }
 
-//To understand recursion, read the comment above
+// To understand recursion, read the comment above
 
 print fib(40, 0, 1);
