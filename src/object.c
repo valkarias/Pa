@@ -335,9 +335,12 @@ char* typeObject(Value value) {
       return generateType("list");
 
     case OBJ_INSTANCE: {
-      size_t len = 9;
-      char* c = ALLOCATE(char, len + 1); //type + 1.
-      c = strcat("instance ", AS_INSTANCE(value)->klass->name->chars);
+      //god damit.
+      ObjInstance* instance = AS_INSTANCE(value);
+      char* c = malloc(sizeof(char) * (instance->klass->name->length + 11));
+      memcpy(c, instance->klass->name->chars, instance->klass->name->length);
+      memcpy(c + instance->klass->name->length, " instance", 9);
+      c[instance->klass->name->length + 10] = '\0';
       return c;
     }
 
