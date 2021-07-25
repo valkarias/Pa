@@ -277,8 +277,8 @@ void replace_(char* src, char* str, char* rep) {
     char* p = strstr(src, str);
 
     if (p) {
-        int len = strlen(src) + strlen(rep) - strlen(str);
         int repLen = strlen (rep);
+        int len = strlen(src) + repLen - strlen(str);
 
         char r[len];
         memset (r, 0, len);

@@ -94,7 +94,7 @@ static Value fillLib(int argCount, Value *args) {
     srand((unsigned)time(NULL));
 
     for (int i = 0; i < count; i++) {
-        int r = rand() % (RAND_MAX + 1);
+        int r = rand() % RAND_MAX;
         appendToList(result, NUMBER_VAL(r));
     }
     pop();
@@ -104,6 +104,7 @@ static Value fillLib(int argCount, Value *args) {
 
 //
 ObjLibrary* createRandomLibrary() {
+    //TODO: add xoroshiro algorithm.
     ObjString* name = copyString("Random", 6);
     push(OBJ_VAL(name));
     ObjLibrary* library = newLibrary(name);
