@@ -335,10 +335,10 @@ char* typeObject(Value value) {
       return generateType("list");
 
     case OBJ_INSTANCE: {
-      char* c = malloc(9 + AS_INSTANCE(value)->klass->name->length);
+      size_t len = 9;
+      char* c = ALLOCATE(char, len + 1); //type + 1.
       c = strcat("instance ", AS_INSTANCE(value)->klass->name->chars);
-      
-      return generateType(c);
+      return c;
     }
 
     case OBJ_NATIVE:
