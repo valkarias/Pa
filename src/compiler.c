@@ -1057,6 +1057,7 @@ static void expressionStatement() {
 static void breakLoop() {
   int i = staticCheck.innermostLoopStart;
   while (i < current->function->chunk.count) {
+    printf("%d\n", i);
     if (current->function->chunk.code[i] == OP_BREAK) {
       current->function->chunk.code[i] = OP_JUMP;
       patchJump(i + 1);
@@ -1142,12 +1143,11 @@ static void forStatement() {
     emitByte(OP_POP); // Condition.
   }
 
-  staticCheck.innermostLoopStart = MotherLoopStart; 
-  staticCheck.innermostLoopScopeDepth = MotherLoopScopeDepth; 
-
   breakLoop();
   endScope();
-//< for-end-scope
+
+  staticCheck.innermostLoopStart = MotherLoopStart; 
+  staticCheck.innermostLoopScopeDepth = MotherLoopScopeDepth; 
 }
 
 static void useStatement() {
