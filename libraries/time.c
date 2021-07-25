@@ -3,6 +3,8 @@
 //i hate this.
 //shrug.
 
+//will cause warnings on the very old gcc versions.
+
 static Value todayLib(int argCount, Value *args) {
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
@@ -10,7 +12,7 @@ static Value todayLib(int argCount, Value *args) {
 
     char* tstring = ALLOCATE(char, size + 1);
 
-    snprintf(tstring , size,"%d-%02d-%02d %02d:%02d:%02d", (tm.tm_year + 1900)%10000u, (tm.tm_mon + 1)%100u, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+    snprintf(tstring , size,"%d-%02d-%02d %02d:%02d:%02d", (tm.tm_year + 1900), (tm.tm_mon + 1), tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
 
     tstring[size + 1] = '\0';
     return OBJ_VAL(takeString(tstring, size));
@@ -23,7 +25,7 @@ static Value dateLib(int argCount, Value *args) {
 
     char* tstring = ALLOCATE(char, size + 1);
 
-    snprintf(tstring , size,"%d-%02d-%02d", (tm.tm_year + 1900)%10000u, (tm.tm_mon + 1)%100u, tm.tm_mday);
+    snprintf(tstring , size,"%d-%02d-%02d", (tm.tm_year + 1900), (tm.tm_mon + 1), tm.tm_mday);
 
     tstring[size + 1] = '\0';
     return OBJ_VAL(takeString(tstring, size));
