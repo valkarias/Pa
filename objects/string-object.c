@@ -287,7 +287,7 @@ void replace_(char* src, char* str, char* rep) {
             strncpy (r, src, p-src);
             r[p - src] = '\0';
 
-            strncat(r, rep, repLen);
+            memcpy(r, rep, repLen);
             strncat(r, p + strlen (str), p + strlen (str) - src + strlen(src));
 
             strcpy(src, r);
