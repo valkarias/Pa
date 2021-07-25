@@ -310,9 +310,9 @@ static void printFunction(ObjFunction* function) {
 }
 
 void* generateType (char* type) {
-  size_t len = strlen(type) + 1;
+  size_t len = strlen(type);
 
-  char* c = ALLOCATE(char, len);
+  char* c = ALLOCATE(char, len + 1);
   memcpy(c, type, len);
   c[len] = '\0';
   

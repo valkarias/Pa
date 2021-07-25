@@ -6,7 +6,8 @@
 
 You are welcomed to the holy lands of PCrap.  
 
-Pcrap is a hobby project, its designed to be small. The goal was to make a language that i can use in my daily life.
+Pcrap is a hobby project, its designed to be small. The goal was to make a language that i can use in my daily life.    
+Huge thanks to Jérémie Astor and his language [Gwion](https://github.com/Gwion/Gwion) for helping PCrap!
 
 ## Documentation
 If you are completely new, Please head to the [Pcrap guide](https://cdn.flipsnack.com/widget/v2/widget.html?hash=dcs6n9hgvu).  
@@ -69,8 +70,7 @@ define split (st,dl) {
 ```
 
 ## Thanks to
-- [Dictu](https://github.com/dictu-lang/Dictu) By Jason Hall.
-- [Gwion](https://github.com/Gwion/Gwion) By Jérémie Astor.  
+- [Dictu](https://github.com/dictu-lang/Dictu) By Jason Hall.  
  
 - [Crafting Interpreters](https://github.com/munificent/craftinginterpreters) By Bob Nystrom.
 - [Wren](https://github.com/wren-lang/wren) By Wren-lang Organization.
