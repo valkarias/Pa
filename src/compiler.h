@@ -4,9 +4,6 @@
 
 //> Strings compiler-include-object
 #include "object.h"
-//< Strings compiler-include-object
-//> Compiling Expressions compile-h
-#include "vm.h"
 
 #define MAX_NUMBER_VALUE 1000000
 #define skip -1

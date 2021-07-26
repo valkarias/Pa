@@ -103,9 +103,12 @@ void initVM() {
 
   vm.recentLibrary = NULL;
 
+
   initTable(&vm.globals);
   initTable(&vm.libraries);
   initTable(&vm.strings);
+
+  defineAllNatives();
 
   //
   initTable(&vm.listNativeMethods);
@@ -121,8 +124,6 @@ void initVM() {
 
   vm.initString = NULL;
   vm.initString = copyString("init", 4);
-
-  defineAllNatives();
 
 }
 
@@ -275,7 +276,17 @@ static bool invoke(ObjString* name, int argCount) {
       case OBJ_LIST: {
         Value value;
         if (tableGet(&vm.listNativeMethods, name, &value)) {
-          return callMethod(value, argCount);
+          if (IS_NATIVE(value)) {
+            return callMethod(value, argCount);
+          }
+
+          //For in-lang written natives. [Dictu!]
+          push(peek(0));
+          for (int i = 2; i <= argCount + 1; i++) {
+            vm.stackTop[-i] = peek(i);
+          }
+
+          return call(AS_CLOSURE(value), argCount + 1);
         }
 
         runtimeError("Undefined method '%s' from list object.", name->chars);
@@ -498,6 +509,24 @@ static InterpretResult run() {
         break;
       }
 
+      case OP_GET_LIBRARY: {
+        ObjString* name = READ_STRING();
+        Value value;
+        if (!tableGet(&frame->closure->function->library->values, name, &value)) {
+          runtimeError("Undefined variable '%s'.", name->chars);
+          return INTERPRET_RUNTIME_ERROR;
+        }
+        push(value);
+        break;
+      }
+
+      case OP_DEFINE_LIBRARY: {
+        ObjString* name = READ_STRING();
+        tableSet(&frame->closure->function->library->values, name, peek(0));
+        pop();
+        break;
+      }
+
       case OP_GET_GLOBAL: {
         ObjString* name = READ_STRING();
         Value value;
@@ -509,17 +538,10 @@ static InterpretResult run() {
         break;
       }
 
-      case OP_DEFINE_GLOBAL: {
+      case OP_SET_LIBRARY: {
         ObjString* name = READ_STRING();
-        tableSet(&vm.globals, name, peek(0));
-        pop();
-        break;
-      }
-
-      case OP_SET_GLOBAL: {
-        ObjString* name = READ_STRING();
-        if (tableSet(&vm.globals, name, peek(0))) {
-          tableDelete(&vm.globals, name); // [delete]
+        if (tableSet(&frame->closure->function->library->values, name, peek(0))) {
+          tableDelete(&frame->closure->function->library->values, name); // [delete]
           runtimeError("Undefined variable '%s'.", name->chars);
           return INTERPRET_RUNTIME_ERROR;
         }
@@ -604,7 +626,7 @@ static InterpretResult run() {
           }
 
           default:
-            runtimeError("Given Type can not have properties.");
+            runtimeError("Given Type has no properties.");
             return INTERPRET_RUNTIME_ERROR;
 
         }
@@ -961,6 +983,11 @@ static InterpretResult run() {
 
         storeToList(list, index, item);
         push(item);
+        break;
+      }
+
+      case OP_USE_NAME: {
+        push(OBJ_VAL(vm.recentLibrary));
         break;
       }
 

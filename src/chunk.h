@@ -11,8 +11,7 @@
 typedef enum {
 //> op-constant
   OP_CONSTANT,
-//< op-constant
-//> Types of Values literal-ops
+
   OP_NIL,
   OP_TRUE,
   OP_FALSE,
@@ -23,10 +22,6 @@ typedef enum {
   OP_SET_LOCAL,
 
   OP_GET_GLOBAL,
-
-  OP_DEFINE_GLOBAL,
-
-  OP_SET_GLOBAL,
 
   OP_GET_UPVALUE,
   OP_SET_UPVALUE,
@@ -89,11 +84,16 @@ typedef enum {
 
   OP_USE,
   OP_RECENT_USE,
+  OP_USE_BUILTIN,
+  OP_USE_NAME,
 
   OP_INCREMENT,
   OP_DECREMENT,
 
-  OP_USE_BUILTIN,
+
+  OP_DEFINE_LIBRARY,
+  OP_GET_LIBRARY,
+  OP_SET_LIBRARY,
 
 } OpCode;
 

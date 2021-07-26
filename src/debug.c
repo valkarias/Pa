@@ -95,6 +95,9 @@ int disassembleInstruction(Chunk* chunk, int offset) {
     case OP_INDEX_SUBSCR_NO_POP:
       return simpleInstruction("OP_INDEX_SUBSCR_NO_POP", offset);
 
+    case OP_USE_NAME:
+        return simpleInstruction("OP_USE_NAME", offset);
+
     case OP_BUILD_LIST:
       return byteInstruction("OP_BUILD_LIST", chunk, offset);
 
@@ -103,11 +106,14 @@ int disassembleInstruction(Chunk* chunk, int offset) {
     case OP_SET_LOCAL:
       return byteInstruction("OP_SET_LOCAL", chunk, offset);
 
+    case OP_GET_LIBRARY:
+      return constantInstruction("OP_GET_LIBRARY", chunk, offset);
+
     case OP_GET_GLOBAL:
       return constantInstruction("OP_GET_GLOBAL", chunk, offset);
 
-    case OP_DEFINE_GLOBAL:
-      return constantInstruction("OP_DEFINE_GLOBAL", chunk, offset);
+    case OP_DEFINE_LIBRARY:
+      return constantInstruction("OP_DEFINE_LIBRARY", chunk, offset);
 
     case OP_USE:
       return constantInstruction("OP_USE", chunk, offset);
@@ -115,8 +121,8 @@ int disassembleInstruction(Chunk* chunk, int offset) {
     case OP_RECENT_USE:
       return simpleInstruction("OP_RECENT_USE", offset);
 
-    case OP_SET_GLOBAL:
-      return constantInstruction("OP_SET_GLOBAL", chunk, offset);
+    case OP_SET_LIBRARY:
+      return constantInstruction("OP_SET_LIBRARY", chunk, offset);
 
     case OP_GET_UPVALUE:
       return byteInstruction("OP_GET_UPVALUE", chunk, offset);

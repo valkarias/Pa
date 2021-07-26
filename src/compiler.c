@@ -6,6 +6,8 @@
 #include "memory.h"
 #include "scanner.h"
 
+#include "vm.h"
+
 #include "../libraries/library.h"
 
 #ifdef DEBUG_PRINT_CODE
@@ -253,7 +255,7 @@ static void initCompiler(Compiler* compiler, FunctionType type) {
       break;
 
     case TYPE_UNKNOWN:
-      current->function->name = copyString("<unknown", 8);
+      current->function->name = copyString("unknown", 7);
       break;
 
     case TYPE_SCRIPT:
@@ -460,7 +462,7 @@ static void defineVariable(uint8_t global) {
   }
 
 
-  emitBytes(OP_DEFINE_GLOBAL, global);
+  emitBytes(OP_DEFINE_LIBRARY, global);
 }
 
 static uint8_t argumentList() {
@@ -634,8 +636,15 @@ static void namedVariable(Token name, bool canAssign) {
 
   } else {
     arg = identifierConstant(&name);
-    getOp = OP_GET_GLOBAL;
-    setOp = OP_SET_GLOBAL;
+    ObjString* string = copyString(name.start, name.length);
+    Value val;
+    if (tableGet(&vm.globals, string, &val)) {
+      getOp = OP_GET_GLOBAL;
+      canAssign = false;
+    } else {
+      getOp = OP_GET_LIBRARY;
+      setOp = OP_SET_LIBRARY;
+    }
   }
 
   if (canAssign && match(TOKEN_EQUAL)) {
@@ -1057,7 +1066,6 @@ static void expressionStatement() {
 static void breakLoop() {
   int i = staticCheck.innermostLoopStart;
   while (i < current->function->chunk.count) {
-    printf("%d\n", i);
     if (current->function->chunk.code[i] == OP_BREAK) {
       current->function->chunk.code[i] = OP_JUMP;
       patchJump(i + 1);
@@ -1154,8 +1162,15 @@ static void useStatement() {
   if (match(TOKEN_STRING)) {
     int constant = addConstant(currentChunk(), OBJ_VAL(copyString(parser.previous.start + 1, parser.previous.length - 2)));
 
+
     emitBytes(OP_USE, constant);
     emitByte(OP_POP);
+    
+    if (match(TOKEN_FOR)) {
+      uint8_t library = parseVariable("Expected an indentifier after library's path.");
+      emitByte(OP_USE_NAME);
+      defineVariable(library);
+    }
   } else {
     consume(TOKEN_IDENTIFIER, "Expected library identifier.");
     uint8_t libName = identifierConstant(&parser.previous);

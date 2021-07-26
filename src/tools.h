@@ -7,7 +7,7 @@
 #include "common.h"
 #include "memory.h"
 
-#define _basename _splitpath
+#define _basename(c1, c2, c3, c4, c5) _splitpath(c1, c2, c3, c4, c5)
 
 char* readFile(char* path);
 bool checkPath(char* filename);

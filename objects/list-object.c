@@ -226,4 +226,14 @@ void initListMethods() {
     for (uint8_t i = 0; i < sizeof(listMethodStrings) / sizeof(listMethodStrings[0]); i++) {
         defineNative(listMethodStrings[i], listMethods[i], &vm.listNativeMethods);
     }
+
+    interpret(LIST_EXTRA, "List");
+
+    Value val;
+    tableGet(&vm.libraries, copyString("List", 4), &val);
+
+    ObjLibrary* library = AS_LIBRARY(val);
+    push(val);
+    tableAddAll(&library->values, &vm.listNativeMethods);
+    pop();
 }
