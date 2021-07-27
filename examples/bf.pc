@@ -1,0 +1,75 @@
+// brainf_ck interpreter.
+
+define bf (src, min, max, data, index) {
+    if src.length() == 0 return -1;
+
+    if min < 0 min = 0;
+    if min >= src.length() min = src.length() - 1;
+
+    if max < 0 max = 0;
+    if max >= src.length() max = src.length() - 1;
+
+    let arr = [0,0,0,0,0,0,0,0,0,0,0,0,0]; // fixed size.
+
+    let ptr = 0;
+    let i = 0;
+
+    while i <= max {
+        let s = src[i];
+
+        if s == '>' {
+            ptr++;
+            if ptr >= arr.length() ptr = 0;
+        }
+        if s == '<' {
+            ptr = ptr - 1;
+            if ptr < 0 ptr = arr.length() - 1;
+        }
+
+        if s == '+' {
+            arr[ptr]++;
+        }
+        if s == '-' {
+            arr[ptr]--;
+        }
+
+        if s == '.' print arr[ptr];
+        if s == ',' {
+            if index >= 0 {
+                arr[ptr] = input().number();
+                index++;
+            } else {
+                arr[ptr] = 0;
+            }
+        }
+
+        if s == '[' {
+            if arr[ptr] == 0 {
+                let loop = 1;
+                while loop > 0 {
+                    i++;
+                    let c = src[i];
+                    if c == '[' loop++;
+
+                    if c == ']' loop--;
+                }
+            }
+        }
+
+        if s == ']' {
+            let loop = 1;
+            while loop > 0 {
+                i--;
+                let c = src[i];
+
+                if c == '[' loop--;
+                if c == ']' loop++;
+            }
+            i--;
+        }
+
+        i++;
+    } 
+
+    return 0;
+}

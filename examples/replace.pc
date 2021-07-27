@@ -1,0 +1,22 @@
+define replace (s1, s2, s3) {
+    let s1l = [];
+    let s2l = [];
+
+    for let i = 0; i < s1.length(); i++ {
+        s1l.append(s1[i]);
+
+        for let j = 0; j < s2.length(); j++ {
+            s2l.append(s2[j]);
+
+            if s1l[i] == s2l[j] {
+                s1l[i] = s3;
+            }
+        }
+    }
+
+    return s1l;
+}
+
+print replace("Apple", "A", "B");
+
+//"Apple".replace("A", "B");
