@@ -31,8 +31,6 @@ typedef enum {
 
   OP_GET_PROPERTY_NO_POP,
 
-  OP_GET_SUPER,
-
   OP_EQUAL,
   OP_GREATER,
   OP_LESS,
@@ -61,8 +59,6 @@ typedef enum {
 
   OP_INVOKE,
 
-  OP_SUPER_INVOKE,
-
   OP_CLOSURE,
 
   OP_CLOSE_UPVALUE,
@@ -70,9 +66,6 @@ typedef enum {
   OP_RETURN,
 
   OP_CLASS,
-
-  OP_INHERIT,
-
   OP_METHOD,
 
   OP_BUILD_LIST, 

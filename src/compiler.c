@@ -88,9 +88,9 @@ typedef struct Compiler {
   int scopeDepth;
 } Compiler;
 
+//lol??
 typedef struct ClassCompiler {
   struct ClassCompiler* enclosing;
-  bool hasSuperclass;
 } ClassCompiler;
 
 
@@ -245,7 +245,6 @@ static void initCompiler(Compiler* compiler, FunctionType type) {
   compiler->type = type;
   compiler->function = newFunction(parser.library, FUNCTION_NOT_PROTECTED, type);
 
-
   current = compiler;
   switch (type) {
     case TYPE_FUNCTION:
@@ -345,7 +344,6 @@ static int resolveLocal(Compiler* compiler, Token* name) {
   for (int i = compiler->localCount - 1; i >= 0; i--) {
     Local* local = &compiler->locals[i];
     if (identifiersEqual(name, &local->name)) {
-//> own-initializer-error
       if (local->depth == -1) {
         error("Can't read local variable in its own initializer.");
       }
@@ -387,7 +385,6 @@ static int resolveUpvalue(Compiler* compiler, Token* name) {
   int local = resolveLocal(compiler->enclosing, name);
   if (local != -1) {
     compiler->enclosing->locals[local].isCaptured = true;
-//< mark-local-captured
     return addUpvalue(compiler, (uint8_t)local, true);
   }
 
@@ -460,7 +457,6 @@ static void defineVariable(uint8_t global) {
     markInitialized();
     return;
   }
-
 
   emitBytes(OP_DEFINE_LIBRARY, global);
 }
@@ -681,31 +677,6 @@ static Token syntheticToken(const char* text) {
   return token;
 }
 
-static void super_(bool canAssign) {
-
-  if (currentClass == NULL) {
-    error("Can't use 'super' outside of a class.");
-  } else if (!currentClass->hasSuperclass) {
-    error("Can't use 'super' in a class with no superclass.");
-  }
-
-
-  consume(TOKEN_DOT, "Expected '.' after 'super'.");
-  consume(TOKEN_IDENTIFIER, "Expected superclass method name.");
-  uint8_t name = identifierConstant(&parser.previous);
-  namedVariable(syntheticToken("this"), false);
-
-  if (match(TOKEN_LEFT_PAREN)) {
-    uint8_t argCount = argumentList();
-    namedVariable(syntheticToken("super"), false);
-    emitBytes(OP_SUPER_INVOKE, name);
-    emitByte(argCount);
-  } else {
-    namedVariable(syntheticToken("super"), false);
-    emitBytes(OP_GET_SUPER, name);
-  }
-//< super-invoke
-}
 static void this_(bool canAssign) {
   if (currentClass == NULL) {
     error("Can't use 'this' outside of a class.");
@@ -905,7 +876,6 @@ ParseRule rules[] = {
   [TOKEN_OR]            = {NULL,     or_,    PREC_OR},
   [TOKEN_PRINT]         = {NULL,     NULL,   PREC_NONE},
   [TOKEN_RETURN]        = {NULL,     NULL,   PREC_NONE},
-  [TOKEN_SUPER]         = {super_,   NULL,   PREC_NONE},
   [TOKEN_THIS]          = {this_,    NULL,   PREC_NONE},
   [TOKEN_TRUE]          = {literal,  NULL,   PREC_NONE},
   [TOKEN_VAR]           = {NULL,     NULL,   PREC_NONE},
@@ -981,63 +951,27 @@ static void method() {
 
 static void classDeclaration() {
   consume(TOKEN_IDENTIFIER, "Expected class name.");
-
   Token className = parser.previous;
-
   uint8_t nameConstant = identifierConstant(&parser.previous);
   declareVariable();
 
   emitBytes(OP_CLASS, nameConstant);
   defineVariable(nameConstant);
 
-
   ClassCompiler classCompiler;
-
-  classCompiler.hasSuperclass = false;
-
   classCompiler.enclosing = currentClass;
   currentClass = &classCompiler;
 
-  if (match(TOKEN_LESS)) {
-    consume(TOKEN_IDENTIFIER, "Expected superclass name.");
-    variable(false);
-//> inherit-self
-
-    if (identifiersEqual(&className, &parser.previous)) {
-      error("A class can't inherit from itself.");
-    }
-
-    beginScope();
-    addLocal(syntheticToken("super"));
-    defineVariable(0);
-    
-//< superclass-variable
-    namedVariable(className, false);
-    emitByte(OP_INHERIT);
-//> set-has-superclass
-    classCompiler.hasSuperclass = true;
-//< set-has-superclass
-  }
-  
-
   namedVariable(className, false);
-//< Methods and Initializers load-class
   consume(TOKEN_LEFT_BRACE, "Expected '{' before class body.");
-//> Methods and Initializers class-body
   while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF)) {
     method();
   }
 
   consume(TOKEN_RIGHT_BRACE, "Expected '}' after class body.");
-
   emitByte(OP_POP);
 
-  if (classCompiler.hasSuperclass) {
-    endScope();
-  }
-
   currentClass = currentClass->enclosing;
-
 }
 
 static void funDeclaration() {
@@ -1154,8 +1088,8 @@ static void forStatement() {
   breakLoop();
   endScope();
 
-  staticCheck.innermostLoopStart = MotherLoopStart; 
   staticCheck.innermostLoopScopeDepth = MotherLoopScopeDepth; 
+  staticCheck.innermostLoopStart = MotherLoopStart; 
 }
 
 static void useStatement() {
@@ -1334,6 +1268,7 @@ static int getArgCount(uint8_t *code, const ValueArray constants, int ip) {
     case OP_RETURN:
     case OP_BREAK:
     case OP_RECENT_USE:
+    case OP_USE_NAME:
     case OP_INCREMENT:
     case OP_DECREMENT:
       return 0;
@@ -1342,12 +1277,14 @@ static int getArgCount(uint8_t *code, const ValueArray constants, int ip) {
     case OP_GET_LOCAL:
     case OP_SET_LOCAL:
     case OP_GET_GLOBAL:
+    case OP_GET_LIBRARY:
+    case OP_SET_LIBRARY:
+    case OP_DEFINE_LIBRARY:
     case OP_GET_UPVALUE:
     case OP_SET_UPVALUE:
     case OP_GET_PROPERTY:
     case OP_SET_PROPERTY:
     case OP_GET_PROPERTY_NO_POP:
-    case OP_GET_SUPER:
     case OP_CALL:
     case OP_TAIL_CALL:
     case OP_USE:

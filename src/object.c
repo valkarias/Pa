@@ -51,18 +51,14 @@ ObjBoundMethod* newBoundMethod(Value receiver,
 //> Classes and Instances new-class
 ObjClass* newClass(ObjString* name) {
   ObjClass* klass = ALLOCATE_OBJ(ObjClass, OBJ_CLASS);
-  klass->name = name; // [klass]
-//> Methods and Initializers init-methods
+  klass->name = name;
   initTable(&klass->methods);
-//< Methods and Initializers init-methods
   return klass;
 }
-//< Classes and Instances new-class
-//> Closures new-closure
+
 ObjClosure* newClosure(ObjFunction* function) {
 //> allocate-upvalue-array
-  ObjUpvalue** upvalues = ALLOCATE(ObjUpvalue*,
-                                   function->upvalueCount);
+  ObjUpvalue** upvalues = ALLOCATE(ObjUpvalue*, function->upvalueCount);
   for (int i = 0; i < function->upvalueCount; i++) {
     upvalues[i] = NULL;
   }

@@ -139,9 +139,6 @@ int disassembleInstruction(Chunk* chunk, int offset) {
     case OP_USE_BUILTIN:
       return simpleInstruction("OP_USE_BUILTIN", offset);
 
-    case OP_GET_SUPER:
-      return constantInstruction("OP_GET_SUPER", chunk, offset);
-
     case OP_EQUAL:
       return simpleInstruction("OP_EQUAL", offset);
     case OP_GREATER:
@@ -188,8 +185,6 @@ int disassembleInstruction(Chunk* chunk, int offset) {
     case OP_INVOKE:
       return invokeInstruction("OP_INVOKE", chunk, offset);
 
-    case OP_SUPER_INVOKE:
-      return invokeInstruction("OP_SUPER_INVOKE", chunk, offset);
 
     case OP_CLOSURE: {
       offset++;
@@ -197,7 +192,7 @@ int disassembleInstruction(Chunk* chunk, int offset) {
       printf("%-16s %4d ", "OP_CLOSURE", constant);
       printValue(chunk->constants.values[constant]);
       printf("\n");
-//> disassemble-upvalues
+
 
       ObjFunction* function = AS_FUNCTION(
           chunk->constants.values[constant]);
@@ -208,31 +203,24 @@ int disassembleInstruction(Chunk* chunk, int offset) {
                offset - 2, isLocal ? "local" : "upvalue", index);
       }
       
-//< disassemble-upvalues
       return offset;
     }
-//< Closures disassemble-closure
-//> Closures disassemble-close-upvalue
+
     case OP_CLOSE_UPVALUE:
       return simpleInstruction("OP_CLOSE_UPVALUE", offset);
-//< Closures disassemble-close-upvalue
+
     case OP_RETURN:
       return simpleInstruction("OP_RETURN", offset);
-//> Classes and Instances disassemble-class
+
     case OP_CLASS:
       return constantInstruction("OP_CLASS", chunk, offset);
-//< Classes and Instances disassemble-class
-//> Superclasses disassemble-inherit
-    case OP_INHERIT:
-      return simpleInstruction("OP_INHERIT", offset);
-//< Superclasses disassemble-inherit
-//> Methods and Initializers disassemble-method
+
+
     case OP_METHOD:
       return constantInstruction("OP_METHOD", chunk, offset);
-//< Methods and Initializers disassemble-method
+
     default:
       printf("Unknown opcode %d\n", instruction);
       return offset + 1;
   }
 }
-//< disassemble-instruction
