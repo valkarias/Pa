@@ -13,6 +13,8 @@ objects = os.path.join(master, "objects", "*.c")
 libraries = os.path.join(master, "libraries", "*.c")
 
 source = os.path.join(master, "src", "*.c")
+# >:)
+opts = "-Ofast -flto"
 flags = "-o"
 
 LINUX_BUILD = False
@@ -80,9 +82,9 @@ def compile(cc):
     os.chdir(os.path.join(master, "bin"))
 
     if LINUX_BUILD:
-        execute( f"{cc} {objects} {libraries} {source} {flags} {exe} -lm" )
+        execute( f"{cc} {objects} {libraries} {source} {opts} {flags} {exe} -lm" )
     else:
-        execute( f"{cc} {objects} {libraries} {source} {flags} {exe}" )
+        execute( f"{cc} {objects} {libraries} {source} {opts} {flags} {exe}" )
     
 
 @click.group()
