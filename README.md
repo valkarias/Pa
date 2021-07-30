@@ -1,6 +1,5 @@
 ﻿# PCrap
 ![maintenance](https://img.shields.io/maintenance/yes/2021?style=flat-square)
-![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
 ![CI](https://img.shields.io/github/workflow/status/valkarias/PCrap/Release-builds?style=flat-square)
 
 
@@ -26,7 +25,7 @@ Assuming you downloaded PBuild from [releases](https://github.com/valkarias/PCra
 
 The executable is located in `PBuild_(platform) -> pbuild -> pbuild(.exe)`  
 
-PBuild have only 2 commands as of now:
+PBuild have 3 commands as of now:
 ```bash
 pbuild download
 ```
@@ -36,6 +35,10 @@ Which clones the PCrap repo into the user's home directory.
 pbuild build --cc-type=<compiler name>
 ```
 This command builds the cloned PCrap repo. It takes a required option specifying the compiler to build with.  
+```bash
+pbuild uninstall
+```  
+This command erases and uninstalls the pcrap repo from you computer.
 
 There are two compilers supported as of now.  
 [Gnu Compiler Collection](https://gcc.gnu.org) (gcc) & [Tiny C Compiler](https://bellard.org/tcc/) (tcc).
@@ -45,9 +48,9 @@ There are two compilers supported as of now.
  
 At the moment there is only a syntax highlighter for the vscode text editor.    
 Avaliable in the marketplace [here](https://marketplace.visualstudio.com/items?itemName=PCrap.pcrap-syntax-highlighter)
-![vscode](https://user-images.githubusercontent.com/70243457/127378318-54219c78-022f-42a2-a714-206dfb4fb620.png)  
+![vscode](https://user-images.githubusercontent.com/70243457/127378318-54219c78-022f-42a2-a714-206dfb4fb620.png)    
 
-Preview:
+Preview:  
 ![preview](https://user-images.githubusercontent.com/70243457/127378235-bcdfa15f-cded-4599-98fd-a506e3263216.png)
 
 ## Example
