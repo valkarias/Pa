@@ -10,7 +10,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macOS-latest]
+        os: [ubuntu-latest, macOS-latest]
 
     runs-on: ${{ matrix.os }}
 
@@ -48,7 +48,7 @@ jobs:
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.BIG_SECRET_NAME }}"
-          automatic_release_tag: "latest"
+          automatic_release_tag: "${{ matrix.os }}"
           prerelease: true
           title: "${{ steps.date.outputs.date }}a-${{ matrix.os }}"
           files: tools/PBuild/dist/PBuild_${{ matrix.os }}.zip
