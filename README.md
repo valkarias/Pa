@@ -25,35 +25,37 @@ Assuming you downloaded PBuild from [releases](https://github.com/valkarias/PCra
 
 The executable is located in `PBuild_(platform) -> pbuild -> pbuild(.exe)`  
 
-PBuild have 3 commands as of now:
+PBuild have 3 commands as of now: 
+
+
+#### download 
+Which clones the PCrap repo into the user's home directory.  
 ```bash
 pbuild download
-```  
-Which clones the PCrap repo into the user's home directory.  
-- the build command will not work if the download command was not executed.  
+```
+- the build command will not work if the download command was not executed.     
 
+#### build
+This command builds the cloned PCrap repo. It takes a required option specifying the compiler to build with. 
 ```bash
 pbuild build --cc-type=<compiler name>
-```
-This command builds the cloned PCrap repo. It takes a required option specifying the compiler to build with.  
+```  
 
+#### uninstall 
+And this command erases and uninstalls the pcrap repo from you computer :(
 ```bash
 pbuild uninstall
 ```  
-And, this erases and uninstalls the pcrap repo from you computer.
 
 There are two compilers supported as of now.  
 [Gnu Compiler Collection](https://gcc.gnu.org) (gcc) & [Tiny C Compiler](https://bellard.org/tcc/) (tcc).
 
 ### Tooling
 - A more versatile tooling is planned! 
- 
-At the moment there is only a syntax highlighter for the vscode text editor.    
-Avaliable in the marketplace [here](https://marketplace.visualstudio.com/items?itemName=PCrap.pcrap-syntax-highlighter)
-![vscode](https://user-images.githubusercontent.com/70243457/127378318-54219c78-022f-42a2-a714-206dfb4fb620.png)    
 
-Preview:  
-![preview](https://user-images.githubusercontent.com/70243457/127378235-bcdfa15f-cded-4599-98fd-a506e3263216.png)
+At the moment there is only a syntax highlighter for the vscode text editor.  
+Avaliable in the marketplace [here](https://marketplace.visualstudio.com/items?itemName=PCrap.pcrap-syntax-highlighter)  
+
 
 ## Example
 Here is a split string function algorithm implemented in pcrap.
@@ -86,10 +88,7 @@ define split (st,dl) {
 
 ## Performance  
 Thanks [Gwion-Benchmarks](https://github.com/Gwion/gwion-benchmark) for benchmarking PCrap.  
-
-Here is the result of the `fib(40)` test.
-![fib](https://raw.githubusercontent.com/Gwion/gwion-benchmark/results/png/fib-recurs.png)
-For the full result of the benchmark suite, visit this [page](https://gwion.github.io/Gwion/Benchmarks.html)
+Here is the results of a full benchmark suite for pcrap against other languages -> [benchmarks](https://gwion.github.io/Gwion/Benchmarks.html).
 
 ## Thanks to
 - [Dictu](https://github.com/dictu-lang/Dictu) By Jason Hall.  
