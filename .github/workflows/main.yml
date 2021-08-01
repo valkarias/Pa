@@ -13,7 +13,6 @@ jobs:
         os: [ubuntu-latest, windows-latest, macOS-latest]
 
     runs-on: ${{ matrix.os }}
-    python-version: [3.9]
 
     steps:
       - uses: actions/checkout@v2
@@ -24,10 +23,10 @@ jobs:
         id: date
         run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
       
-      - name: Python ${{ matrix.python-version }}
+      - name: Python 3.9
         uses: actions/setup-python@v2
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: 3.9
           
       - name: Install dependencies
         run: |
@@ -51,5 +50,5 @@ jobs:
           repo_token: "${{ secrets.BIG_SECRET_NAME }}"
           automatic_release_tag: "latest"
           prerelease: true
-          title: "${{ steps.date.outputs.date }}a-Linux"
-          files: tools/PBuild/dist/PBuild_linux.zip
+          title: "${{ steps.date.outputs.date }}a-${{ matrix.os }}"
+          files: tools/PBuild/dist/PBuild_${{ matrix.os }}.zip
