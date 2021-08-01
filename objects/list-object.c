@@ -40,6 +40,11 @@ static Value removeMethod(int argCount, Value *args) {
 
     ObjList* list = AS_LIST(args[0]);
 
+    if (list->items.count == 0) {
+        runtimeError("Can not remove from an empty list from 'remove()'.", argCount);
+        return NOTCLEAR;
+    }
+
     if (argCount == 1) {
         if (!IS_NUMBER(args[1])) {
             runtimeError("Index must be a number from 'remove()'.");
@@ -56,8 +61,9 @@ static Value removeMethod(int argCount, Value *args) {
         deleteFromList(list, index);
         return CLEAR;
     } else {
+        Value last = list->items.values[list->items.count - 1];
         deleteFromList(list, list->items.count - 1);
-        return CLEAR;
+        return last;
     }
 
     return CLEAR; // Clang

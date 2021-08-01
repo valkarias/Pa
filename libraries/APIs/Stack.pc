@@ -1,0 +1,31 @@
+//Other libraries written in pcrap...
+//Supported by the VM.
+
+//Stack.new() is better than Stack.Stack().
+class new {
+    init () { 
+      this._values = []; 
+    } 
+ 
+    isEmpty () { 
+      return this._values.length() == 0; 
+    } 
+ 
+    push (item) { 
+      this._values.append(item); 
+      return 0; 
+    } 
+ 
+    pop () { 
+      assertShow(!this.isEmpty(), "Can not pop from an empty stack from 'pop()'."); 
+      return this._values.remove(); 
+    } 
+ 
+    peek (distance) { 
+      let index = -1 - distance;
+
+      assertShow(!this.isEmpty(), "Can not peek an empty stack from 'peek()'."); 
+      assertShow(index > this._values.length(), "Distance out of bounds from 'peek()'."); 
+      return this._values[index]; 
+    } 
+} 

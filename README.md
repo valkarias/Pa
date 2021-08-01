@@ -28,17 +28,19 @@ The executable is located in `PBuild_(platform) -> pbuild -> pbuild(.exe)`
 PBuild have 3 commands as of now:
 ```bash
 pbuild download
-```
+```  
 Which clones the PCrap repo into the user's home directory.  
-- the build command will not work if the download command was not executed.
+- the build command will not work if the download command was not executed.  
+
 ```bash
 pbuild build --cc-type=<compiler name>
 ```
 This command builds the cloned PCrap repo. It takes a required option specifying the compiler to build with.  
+
 ```bash
 pbuild uninstall
 ```  
-This command erases and uninstalls the pcrap repo from you computer.
+And, this erases and uninstalls the pcrap repo from you computer.
 
 There are two compilers supported as of now.  
 [Gnu Compiler Collection](https://gcc.gnu.org) (gcc) & [Tiny C Compiler](https://bellard.org/tcc/) (tcc).

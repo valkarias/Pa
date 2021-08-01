@@ -14,6 +14,53 @@ bool checkPath(char* filename) {
   return false;
 }
 
+void join(char* dest, const char* p1, const char* p2) {
+  if (p1 && *p1) {
+    int len = strlen(p1);
+    strcpy(dest, p1);
+
+    if (dest[len - 1] == SEP) {
+      if (p2 && *p2) {
+        strcpy(dest + len, (*p2 == SEP) ? (p2 + 1) : p2);
+      }
+    }
+    else {
+      if (p2 && *p2) {
+        if (*p2 == SEP)
+          strcpy(dest + len, p2);
+        else {
+          dest[len] = SEP;
+          strcpy(dest + len + 1, p2);
+        }
+      }
+    }
+  }
+  else if (p2 && *p2)
+    strcpy(dest, p2);
+  else
+    dest[0] = '\0';
+}
+
+char* resolveLibrary(char* name) {
+  char* apis_dir = malloc(sizeof(char) * _MAX);
+  char* EXT = basename(name);
+
+  // ???
+  getcwd(apis_dir, _MAX);
+  
+  join(apis_dir, apis_dir, "libraries");
+  join(apis_dir, apis_dir, "APIs");
+  strcat(EXT, ".pc");
+  join(apis_dir, apis_dir, EXT);
+  //
+
+  if (checkPath(apis_dir)) {
+    return apis_dir;
+  }
+
+  return NULL;
+}
+
 char* basename(char* path) {
   char* bfname = ALLOCATE(char, strlen(path) + 1);
   memcpy(bfname, path, strlen(path));

@@ -64,6 +64,38 @@ void dryError(const char* error) {
   resetStack();
 }
 
+static char* resolveUse(ObjString* raw) {
+  char* API = resolveLibrary(raw->chars);
+  char* api_ref = API; 
+  if (!API) {
+    if (checkPath(raw->chars) == false) {
+      runtimeError("Could not load \"%s\"", raw->chars);
+      return NULL;
+    } else {
+      return raw->chars;
+    }
+  }
+
+  return api_ref;
+}
+
+ObjClosure* compileModule(ObjLibrary* library, char* source) {
+  ObjFunction* function = compile(source, library);
+  pop(); //pop module.
+
+  FREE_ARRAY(char, source, strlen(source) + 1);
+
+  if (function == NULL) {
+    return NULL;
+  }
+
+  push(OBJ_VAL(function));
+  ObjClosure* closure = newClosure(function);
+  pop();
+
+  return closure;
+}
+
 void defineNative(const char* name, NativeFn function, Table* table) {
   ObjNative* native = newNative(function);
   push(OBJ_VAL(native));
@@ -1003,49 +1035,21 @@ static InterpretResult run() {
           break;
         }
         
-        if (checkPath(name->chars) == false) {
-          runtimeError("Could not load \"%s\"", name->chars);
-          return INTERPRET_RUNTIME_ERROR;
-        }
+        char* api_ref = resolveUse(name);
+        if (!api_ref) return INTERPRET_RUNTIME_ERROR;
 
-        char* source = readFile(name->chars);
+        char* source = readFile(api_ref);
 
-        if (source == NULL) {
-          runtimeError("Could not load \"%s\"", name->chars);
-          return INTERPRET_RUNTIME_ERROR;
-        }
-
-        char* bfname = basename(name->chars);
-        char* ref = bfname;
-
-        if (bfname == NULL) {
-          runtimeError("Error loading \"%s\"", name->chars);
-          return INTERPRET_RUNTIME_ERROR;
-        }
-
-        ObjString* fname = copyString(bfname, strlen(bfname));
-        push(OBJ_VAL(fname));
-        
-        ObjLibrary* library = newLibrary(fname);
+        push(OBJ_VAL(name));
+        ObjLibrary* library = newLibrary(name);
         vm.recentLibrary = library;
         pop();
         
-        FREE_ARRAY(char, ref, name->length + 1);
+        FREE_ARRAY(char, api_ref, strlen(api_ref) + 1);
 
         push(OBJ_VAL(library));
-        ObjFunction* function = compile(source, library);
-        pop();
-
-        FREE_ARRAY(char, source, strlen(source) + 1);
-
-        if (function == NULL) {
-          return INTERPRET_COMPILE_ERROR;
-        }
-
-        push(OBJ_VAL(function));
-
-        ObjClosure* closure = newClosure(function);
-        pop();
+        ObjClosure* closure = compileModule(library, source);
+        if (!closure) return INTERPRET_COMPILE_ERROR;
 
         push(OBJ_VAL(closure));
         call(closure, 0);

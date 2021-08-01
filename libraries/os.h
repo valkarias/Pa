@@ -5,12 +5,6 @@
 #include <sys/stat.h>
 
 #ifdef _WIN32
-#define SEP '\\'
-#else
-#define SEP '/'
-#endif
-
-#ifdef _WIN32
     #include <io.h>
     #include <direct.h>
 #elif __APPLE__
@@ -22,6 +16,7 @@
 #endif
 
 #include "../src/object.h"
+#include "../src/tools.h"
 #include "library.h"
 
 //p = path, m = mode

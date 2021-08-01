@@ -78,8 +78,10 @@ def execute(command):
 
     print(output)
 
+
 def compile(cc):
-    os.chdir(os.path.join(master, "bin"))
+    binp = os.path.join(master, "bin")
+    os.chdir(binp)
 
     if LINUX_BUILD:
         execute( f"{cc} {objects} {libraries} {source} {opts} {flags} {exe} -lm" )

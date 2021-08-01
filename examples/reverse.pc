@@ -1,0 +1,15 @@
+use "Stack" for Stack; //import built-in module stack.
+
+let stack = Stack.new();
+let word = "eM";
+
+for let i = 0; i < word.length(); i++ {
+    stack.push(word[i]);
+}
+
+let reversed = "";
+for let i = 0; i < word.length(); i++ {
+    reversed = reversed + stack.pop();
+}
+
+print reversed; //Me
