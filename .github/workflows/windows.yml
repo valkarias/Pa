@@ -1,4 +1,4 @@
-name: Release-builds
+name: Release-build-win
 
 on:
   push:
@@ -38,7 +38,7 @@ jobs:
       - name: Zip
         run: |
           cd tools/PBuild/dist
-          powershell Compress-Archive -r pbuild PBuild_windows-latest.zip
+          powershell Compress-Archive pbuild PBuild_windows-latest.zip
                    
       - name: Release
         uses: "marvinpinto/action-automatic-releases@latest"
