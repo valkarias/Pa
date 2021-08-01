@@ -51,4 +51,4 @@ jobs:
           automatic_release_tag: "${{ matrix.os }}"
           prerelease: true
           title: "${{ steps.date.outputs.date }}a-${{ matrix.os }}"
-          files: tools/PBuild/dist/PBuild_${{ matrix.os }}.zip
+          files: "tools/PBuild/dist/PBuild_${{ matrix.os }}.zip"
