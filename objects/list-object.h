@@ -20,5 +20,6 @@ void initListMethods();
 "\n" \
 "   return 0;\n" \
 "}\n" \
+"\n" \
 
 #endif

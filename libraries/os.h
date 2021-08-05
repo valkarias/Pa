@@ -31,8 +31,6 @@
 #define MKDIR(p, m) mkdir(p, m)
 #endif
 
-#define FAILED NUMBER_VAL(-1)
-
 ObjLibrary* createOsLibrary();
 
 #endif

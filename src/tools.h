@@ -7,14 +7,17 @@
 #include "common.h"
 #include "memory.h"
 
-#define _basename(c1, c2, c3, c4, c5) _splitpath(c1, c2, c3, c4, c5)
+#define _basename(c1) _splitpath(c1, NULL, NULL, c1, NULL)
 
 #ifdef _WIN32
 #define SEP_C "\\"
 #define SEP '\\'
+#define _dirname(c1) _splitpath(c1, NULL, c1, NULL, NULL)
 #else
 #define SEP_C "/"
 #define SEP '/'
+#include <libgen.h>
+#define _dirname(c1) dirname(c1)
 #endif
 
 #define _MAX 260
@@ -24,4 +27,5 @@ bool checkPath(char* filename);
 
 char* basename(char* path);
 char* resolveLibrary(char* name);
+void join(char* dest, const char* p1, const char* p2);
 #endif

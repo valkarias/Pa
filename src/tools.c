@@ -46,7 +46,9 @@ char* resolveLibrary(char* name) {
   char* EXT = basename(name);
 
   // ???
-  getcwd(apis_dir, _MAX);
+  if (getcwd(apis_dir, _MAX) == NULL) {
+    return NULL;
+  }
   
   join(apis_dir, apis_dir, "libraries");
   join(apis_dir, apis_dir, "APIs");
@@ -67,7 +69,7 @@ char* basename(char* path) {
   bfname[strlen(path)] = '\0';
 
 #ifdef _WIN32
-  _basename(bfname, NULL, NULL, bfname, NULL);
+  _basename(bfname);
   return bfname;
 #else
   return strrchr(bfname, '/');

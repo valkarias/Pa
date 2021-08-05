@@ -269,11 +269,6 @@ ObjLibrary* createOsLibrary() {
     defineProperty("W_OK", NUMBER_VAL(W_OK), &library->values);
     defineProperty("R_OK", NUMBER_VAL(R_OK), &library->values);
 
-#ifdef _WIN32
-    defineProperty("separator", OBJ_VAL(copyString("\\", 1)), &library->values);
-#else
-    defineProperty("separator", OBJ_VAL(copyString("/", 1)), &library->values);
-#endif
 
     char* pChar = getPlatform();
     ObjString* platform = copyString(pChar, strlen(pChar));

@@ -282,7 +282,7 @@ static Value minLib(int argCount, Value *args) {
     }
 
     if (!IS_NUMBER(args[0])) {
-        runtimeError("List Should be all numeric from 'min()'.");
+        runtimeError("List must be all numeric from 'min()'.");
         return NOTCLEAR;
     }
 
@@ -292,7 +292,7 @@ static Value minLib(int argCount, Value *args) {
         Value val = args[i];
 
         if (!IS_NUMBER(val)) {
-            runtimeError("List Should be all numeric from 'min()'.");
+            runtimeError("List must be all numeric from 'min()'.");
             return NOTCLEAR;
         }
 

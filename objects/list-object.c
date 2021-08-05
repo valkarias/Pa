@@ -195,6 +195,38 @@ static Value copyMethod(int argCount, Value* args) {
     return OBJ_VAL(copyList(list));
 }
 
+// O(n^2) time complexity...
+static ObjList* flattenList(ObjList* list) {
+    if (list->items.count <= 1) {
+        return list;
+    }
+
+    ObjList* res = newList();
+
+    for (int i = 0; i < list->items.count; i++) {
+        if (IS_LIST(list->items.values[i])) {
+            ObjList* temp = flattenList(AS_LIST(list->items.values[i]));
+            for (int j = 0; j < temp->items.count; j++) {
+                writeValueArray(&res->items, temp->items.values[j]);
+            }
+        } else {
+            writeValueArray(&res->items, list->items.values[i]);
+        }
+    }
+
+    return res;
+}
+
+static Value flattenMethod(int argCount, Value* args) {
+    if (argCount != 0) {
+        runtimeError("Expected 0 arguments but got %d from 'flatten()'.", argCount);
+        return NOTCLEAR;
+    }
+
+    ObjList* list = AS_LIST(args[0]);
+    return OBJ_VAL(flattenList(list));
+}
+
 //
 void initListMethods() {
     char* listMethodStrings[] = {
@@ -204,13 +236,11 @@ void initListMethods() {
         "contains",
         "index",
         "clear",
-
         "all",
         "any",
-        
         "reverse",
-        
         "copy",
+        "flatten",
     };
 
     NativeFn listMethods[] = {
@@ -220,13 +250,11 @@ void initListMethods() {
         containMethod,
         indexMethod,
         clearMethod,
-
         allMethod,
         anyMethod,
-
         reverseMethod,
-        
         copyMethod,
+        flattenMethod,
     };
 
     for (uint8_t i = 0; i < sizeof(listMethodStrings) / sizeof(listMethodStrings[0]); i++) {
