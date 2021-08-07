@@ -56,12 +56,12 @@ static Value dirLib(int argCount, Value *args) {
         return FAILED;
     }
 
-    char* dirname = ALLOCATE(char, strlen(path) + 1);
-    memcpy(dirname, path, strlen(path));
-    dirname[strlen(path)] = '\0';
+    char* dir = ALLOCATE(char, strlen(path) + 1);
+    memcpy(dir, path, strlen(path));
+    dir[strlen(path)] = '\0';
 
-    _dirname(dirname);
-    return OBJ_VAL(takeString(dirname, strlen(dirname)));
+    _dirname(dir);
+    return OBJ_VAL(takeString(dir, strlen(dir)));
 }
 
 static Value isDirLib(int argCount, Value *args) {
