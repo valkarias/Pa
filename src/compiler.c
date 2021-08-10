@@ -46,6 +46,7 @@ typedef enum {
   PREC_TERM,        // + -
   PREC_FACTOR,      // * /
   PREC_UNARY,       // ! -
+  PREC_EXPONENT,    // **
   PREC_SUBSCRIPT,   // []
   PREC_CALL,        // . ()
   PREC_PRIMARY
@@ -508,6 +509,8 @@ static void binary(bool canAssign) {
     case TOKEN_MINUS:         emitByte(OP_SUBTRACT); break;
     case TOKEN_STAR:          emitByte(OP_MULTIPLY); break;
     case TOKEN_SLASH:         emitByte(OP_DIVIDE); break;
+    case TOKEN_MODULO:        emitByte(OP_MOD); break;
+    case TOKEN_POW:           emitByte(OP_POW); break;
     default: return; // Unreachable.
   }
 
@@ -830,11 +833,16 @@ ParseRule rules[] = {
   [TOKEN_RIGHT_BRACE]   = {NULL,     NULL,   PREC_NONE},
   [TOKEN_COMMA]         = {NULL,     NULL,   PREC_NONE},
   [TOKEN_DOT]           = {NULL,     dot,    PREC_CALL},
-  [TOKEN_MINUS]         = {unary,    binary, PREC_TERM},
-  [TOKEN_PLUS]          = {NULL,     binary, PREC_TERM},
+
   [TOKEN_SEMICOLON]     = {NULL,     NULL,   PREC_NONE},
+
+  [TOKEN_POW]           = {NULL,     binary, PREC_EXPONENT},
   [TOKEN_SLASH]         = {NULL,     binary, PREC_FACTOR},
   [TOKEN_STAR]          = {NULL,     binary, PREC_FACTOR},
+  [TOKEN_MODULO]        = {NULL,     binary, PREC_FACTOR},
+  [TOKEN_PLUS]          = {NULL,     binary, PREC_TERM},
+  [TOKEN_MINUS]         = {unary,    binary, PREC_TERM},
+
   [TOKEN_BANG]          = {unary,    NULL,   PREC_NONE},
   [TOKEN_BANG_EQUAL]    = {NULL,     binary, PREC_EQUALITY},
 
@@ -866,8 +874,8 @@ ParseRule rules[] = {
   [TOKEN_IF]            = {NULL,     NULL,   PREC_NONE},
   [TOKEN_USE]           = {NULL,     NULL,   PREC_NONE},
 
-  [TOKEN_PLUS_PLUS]     = {NULL,     increment, PREC_FACTOR},
-  [TOKEN_MINUS_MINUS]   = {NULL,     decrement, PREC_FACTOR},
+  [TOKEN_PLUS_PLUS]     = {NULL,     increment, PREC_TERM},
+  [TOKEN_MINUS_MINUS]   = {NULL,     decrement, PREC_TERM},
 
   [TOKEN_CONTINUE]      = {NULL, NULL, PREC_NONE},
   [TOKEN_BREAK]         = {NULL, NULL, PREC_NONE},
@@ -1262,6 +1270,8 @@ static int getArgCount(uint8_t *code, const ValueArray constants, int ip) {
     case OP_SUBTRACT:
     case OP_MULTIPLY:
     case OP_DIVIDE:
+    case OP_POW:
+    case OP_MOD:
     case OP_NOT:
     case OP_NEGATE:
     case OP_CLOSE_UPVALUE:

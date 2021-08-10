@@ -386,6 +386,28 @@ static Value gcdLib(int argCount, Value *args) {
     return NUMBER_VAL(gcd(a, b));
 }
 
+static Value powLib(int argCount, Value *args) {
+    if (argCount != 2) {
+        runtimeError("Expected 2 arguments but got %d from 'pow()'.", argCount);
+        return NOTCLEAR;
+    }
+
+    if (!IS_NUMBER(args[0])) {
+        runtimeError("First Argument must be a number from 'pow()'.");
+        return NOTCLEAR;
+    }
+    
+    if (!IS_NUMBER(args[1])) {
+        runtimeError("Second Argument must be a number from 'pow()'.");
+        return NOTCLEAR;
+    }
+
+    int a = AS_NUMBER(args[0]);
+    int b = AS_NUMBER(args[1]);
+
+    return NUMBER_VAL(powf(a,b));
+}
+
 //
 ObjLibrary* createMathLibrary() {
     ObjString* name = copyString("Math", 4);
@@ -415,6 +437,7 @@ ObjLibrary* createMathLibrary() {
     defineNative("max", maxLib, &library->values);
 
     defineNative("gcd", gcdLib, &library->values);
+    defineNative("pow", powLib, &library->values);
 
     defineProperty("pi", NUMBER_VAL(3.14159265358979), &library->values);
     defineProperty("e", NUMBER_VAL(2.71828182845905), &library->values);

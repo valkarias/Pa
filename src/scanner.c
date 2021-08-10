@@ -264,8 +264,8 @@ Token scanToken() {
     case ',': return makeToken(TOKEN_COMMA);
     case '.': return makeToken(TOKEN_DOT);
     case '/': return makeToken(TOKEN_SLASH);
-    case '*': return makeToken(TOKEN_STAR);
     case ':': return makeToken(TOKEN_COLON);
+    case '%': return makeToken(TOKEN_MODULO);
 
     case '+':
       return makeToken(
@@ -282,6 +282,9 @@ Token scanToken() {
     case '!':
       return makeToken(
           match('=') ? TOKEN_BANG_EQUAL : TOKEN_BANG);
+    case '*':
+      return makeToken(
+          match('*') ? TOKEN_POW : TOKEN_STAR);
     case '=':
       return makeToken(
           match('=') ? TOKEN_EQUAL_EQUAL : TOKEN_EQUAL);
