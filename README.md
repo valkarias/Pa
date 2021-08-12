@@ -1,17 +1,16 @@
-﻿# PCrap
+# PCrap
 ![maintenance](https://img.shields.io/maintenance/yes/2021?style=flat-square)
 ![CI](https://img.shields.io/github/workflow/status/valkarias/PCrap/Release-builds?style=flat-square)
 
 
 You are welcomed to the holy lands of PCrap.  
 
-Pcrap is a hobby project, its designed to be small. The goal was to make a language that i can use in my daily life.    
+Pcrap is a hobby project, its designed to be small the goal was to make a language that i can use in my daily life.    
 Huge thanks to Jérémie Astor and his language [Gwion](https://github.com/Gwion/Gwion) for helping PCrap!
 
 ## Documentation
-If you are completely new, Please head to the [Pcrap guide](https://cdn.flipsnack.com/widget/v2/widget.html?hash=dcs6n9hgvu).  
-The documentation is a future plan.  
-**A New website containing docs and guides is in progress**  
+If you are completely new, Please head to the [Pcrap Documentation](https://valkarias.github.io/contents/toc.html).
+The website is not completely responsive & the standard library documentation will be gradually added and is in progress.
 
 Examples are all in the [examples folder](https://github.com/valkarias/PCrap/tree/master/examples).
 
@@ -58,31 +57,18 @@ Avaliable in the marketplace [here](https://marketplace.visualstudio.com/items?i
 
 
 ## Example
-Here is a split string function algorithm implemented in pcrap.
+Here is a tail-call fibonacci function implemented in pcrap.
 ```js
-define split (st,dl) {
-
-    let word = "";
-    let number = 0;
-
-    let full = st + dl;
-    let length = full.length();
-
-    let temp = [];
-
-    for let i = 0; i < length; i++ {
-        if full[i] != dl {
-            word = word + full[i];
-        } else {
-            if word.length() != 0 {
-                temp.append(word);
-            }
-
-            word = "";
-        }
+define fib (n, a, b) {
+    if n == 0 {
+        return a;
+    }
+    
+    if n == 1 {
+        return b;
     }
 
-    return temp;
+    return fib(n - 1, b, a + b);
 }
 ```
 
