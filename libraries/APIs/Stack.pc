@@ -27,5 +27,10 @@ class new {
       assertShow(!this.isEmpty(), "Can not peek an empty stack from 'peek()'."); 
       assertShow(index > this._values.length(), "Distance out of bounds from 'peek()'."); 
       return this._values[index]; 
-    } 
+    }
+
+    clear () {
+      this._values.clear();
+      return 0;
+    }
 } 

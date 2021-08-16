@@ -24,6 +24,7 @@
 
 char* readFile(char* path);
 bool checkPath(char* filename);
+char* real(char* p);
 
 char* basename(char* path);
 char* resolveLibrary(char* name);

@@ -68,11 +68,12 @@ static char* resolveUse(ObjString* raw) {
   char* API = resolveLibrary(raw->chars);
   char* api_ref = API; 
   if (!API) {
-    if (checkPath(raw->chars) == false) {
+    char* realpath = real(raw->chars);
+    if (checkPath(realpath) == false) {
       runtimeError("Could not load \"%s\"", raw->chars);
       return NULL;
     } else {
-      return raw->chars;
+      return realpath;
     }
   }
 

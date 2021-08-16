@@ -35,10 +35,29 @@ void join(char* dest, const char* p1, const char* p2) {
       }
     }
   }
-  else if (p2 && *p2)
+  else if (p2 && *p2) {
     strcpy(dest, p2);
-  else
+  } else {
     dest[0] = '\0';
+  }
+}
+
+char* real(char* p) {
+  char* realpath = malloc(sizeof(char) * _MAX);
+#ifdef _WIN32
+  if (_fullpath(realpath, p, _MAX) != NULL) {
+    return realpath;
+  }
+
+#else
+  if (realpath(p, realpath) != NULL) {
+    return realpath;
+  }
+#endif
+
+  //help???
+  free(realpath);
+  return NULL;
 }
 
 char* resolveLibrary(char* name) {

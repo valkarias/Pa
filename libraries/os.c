@@ -121,11 +121,9 @@ static Value getCwdLib(int argCount, Value *args) {
     }
 
     char cwdPath[100];
-
     if (getcwd(cwdPath, sizeof(cwdPath)) != NULL) {
         return OBJ_VAL(copyString(cwdPath, strlen(cwdPath)));
     }
-
     return FAILED;
 }
 
@@ -147,7 +145,7 @@ static Value setCwdLib(int argCount, Value *args) {
 }
 
 static void mkdirs(const char* path) {
-    char tmp[260]; //ugh
+    char tmp[_MAX]; //ugh
     char* p = NULL;
     size_t len;
 
@@ -214,12 +212,11 @@ static Value getHomeLib(int argCount, Value *args) {
         return NOTCLEAR;
     }
 
-    char home[260];
-
+    char home[_MAX];
 #ifdef _WIN32
-    snprintf(home, 260, "%s%s", getenv("HOMEDRIVE"), getenv("HOMEPATH"));
+    snprintf(home, _MAX, "%s%s", getenv("HOMEDRIVE"), getenv("HOMEPATH"));
 #else
-    snprintf(home, 260, "%s", getenv("HOME"));
+    snprintf(home, _MAX, "%s", getenv("HOME"));
 #endif
 
     return OBJ_VAL(copyString(home, strlen(home)));

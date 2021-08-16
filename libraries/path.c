@@ -110,6 +110,21 @@ static Value isFileLib(int argCount, Value *args) {
     return FALSE_VAL;
 }
 
+static Value realLib(int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError("Expected 1 argument but got %d from 'real()'.", argCount);
+        return NOTCLEAR;
+    }
+
+    if (!IS_STRING(args[0])) {
+        runtimeError("Argument must be a string from 'real()'.");
+        return NOTCLEAR;
+    }
+
+    char* path = AS_CSTRING(args[0]);
+    char* realpath = real(path);
+    return OBJ_VAL(copyString(realpath, strlen(realpath)));
+}
 //
 ObjLibrary* createPathLibrary() {
     ObjString* name = copyString("Path", 4);
@@ -122,6 +137,7 @@ ObjLibrary* createPathLibrary() {
     defineNative("dirname", dirLib, &library->values);
     defineNative("isDir", isDirLib, &library->values);
     defineNative("isFile", isFileLib, &library->values);
+    defineNative("real", realLib, &library->values);
 
 #ifdef _WIN32
     defineProperty("separator", OBJ_VAL(copyString("\\", 1)), &library->values);
