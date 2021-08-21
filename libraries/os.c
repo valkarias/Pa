@@ -261,6 +261,9 @@ ObjLibrary* createOsLibrary() {
     defineNative("rmdir", rmdirLib, &library->values);
     defineNative("makeDirs", makeDirsLib, &library->values);
 
+    defineProperty("EXIT_FAILURE", NUMBER_VAL(EXIT_FAILURE), &library->values);
+    defineProperty("EXIT_SUCCESS", NUMBER_VAL(EXIT_SUCCESS), &library->values);
+
     defineProperty("F_OK", NUMBER_VAL(F_OK), &library->values);
     defineProperty("X_OK", NUMBER_VAL(X_OK), &library->values);
     defineProperty("W_OK", NUMBER_VAL(W_OK), &library->values);

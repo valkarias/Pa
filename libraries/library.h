@@ -6,6 +6,7 @@
 #include "random.h"
 #include "pcrap_time.h"
 #include "pcrap_path.h"
+#include "pcrap_ascii.h"
 
 typedef ObjLibrary *(*NativeLibrary)();
 

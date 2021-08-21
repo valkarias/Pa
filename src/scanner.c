@@ -18,15 +18,13 @@ void initScanner(const char* source) {
   scanner.current = source;
   scanner.line = 1;
 }
-//< init-scanner
-//> is-alpha
+
 static bool isAlpha(char c) {
   return (c >= 'a' && c <= 'z') ||
          (c >= 'A' && c <= 'Z') ||
           c == '_';
 }
-//< is-alpha
-//> is-digit
+
 static bool isDigit(char c) {
   return (c >= '0' && c <= '9');
 }
@@ -39,13 +37,19 @@ static bool isHex(char c) {
     (c == '_')
   );
 }
-//< is-digit
-//> is-at-end
+
+static bool isOct(char c) {
+  return (
+    (c >= '0' && c <= '9') ||
+    (c >= 'O' && c <= 'o') ||
+    (c == '_')
+  );
+}
+
 static bool isAtEnd() {
   return *scanner.current == '\0';
 }
-//< is-at-end
-//> advance
+
 static char advance() {
   scanner.current++;
   return scanner.current[-1];
@@ -207,6 +211,17 @@ static Token number() {
   return makeToken(TOKEN_NUMBER);
 }
 
+static Token octal() {
+  while (peek() == '_') advance();
+  if (peek() == '0') advance();
+  if ((peek() == 'o') || (peek() == 'O')) {
+    advance();
+    if (!isOct(peek())) return errorToken("Invalid octal literal");
+    while (isOct(peek())) advance();
+    return makeToken(TOKEN_NUMBER);
+  } else return number();
+}
+
 static Token hex() {
   while (peek() == '_') advance();
   if (peek() == '0') advance();
@@ -215,10 +230,9 @@ static Token hex() {
     if (!isHex(peek())) return errorToken("Invalid hex literal");
     while (isHex(peek())) advance();
     return makeToken(TOKEN_NUMBER);
-  } else return number();
+  } else return octal();
 }
-//< number
-//> string
+
 static Token string(char stringToken) {
   while (peek() != stringToken && !isAtEnd()) {
     if (peek() == '\n') scanner.line++;

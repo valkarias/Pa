@@ -560,7 +560,7 @@ static bool isHex() {
   int isDigit = c.start[0] >= '0' && c.start[0] <= '9';
 
   if (isDigit) {
-    if (c.start[1] == 'x') {
+    if (c.start[1] == 'x' || c.start[1] == 'X') {
       return true;
     }
   }
@@ -568,11 +568,43 @@ static bool isHex() {
   return false;
 }
 
+static bool isOct() {
+  Token c = parser.previous;
+  int isDigit = c.start[0] >= '0' && c.start[0] <= '9';
+
+  if (isDigit) {
+    if (c.start[1] == 'o' || c.start[1] == 'O') {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+//from the trashcan.
+static double toOct(const char* c) {
+  long int oc = 0;
+  char* temp = (char*)c;
+
+  for (int i = 0; i < strlen(c); i++) {
+    if (c[i] == ';' || c[i] == '\n') {
+      temp[i] = '\0';
+    }
+  }
+  
+  for (int i = 0; i < strlen(c); i++) {
+    if (c[i] == 'o' || c[i] == 'O') {
+      temp += 2;
+    }
+  }
+
+  oc = strtol(temp, NULL, 8);
+  return (double)oc;
+}
 
 static void literal(bool canAssign) {
   switch (parser.previous.type) {
     case TOKEN_FALSE: emitByte(OP_FALSE); break;
-    // case TOKEN_NIL: emitByte(OP_NIL); break;
     case TOKEN_TRUE: emitByte(OP_TRUE); break;
     default: return;
   }
@@ -585,7 +617,6 @@ static void grouping(bool canAssign) {
   expression();
   consume(TOKEN_RIGHT_PAREN, "Expected ')' after expression.");
   current->lastCall = false;
-  
 }
 
 static void number(bool canAssign) {
@@ -593,6 +624,8 @@ static void number(bool canAssign) {
 
   if (isHex()) {
     value = (double)strtol(parser.previous.start, NULL, 16);
+  } else if (isOct()) { 
+    value = toOct(parser.previous.start);
   } else {
     value = strtod(parser.previous.start, NULL);
   }
@@ -828,30 +861,24 @@ static void body() {
 
 ParseRule rules[] = {
   [TOKEN_LEFT_PAREN]    = {grouping, call,   PREC_CALL},
-  [TOKEN_RIGHT_PAREN]   = {NULL,     NULL,   PREC_NONE},
-  [TOKEN_LEFT_BRACE]    = {NULL,     NULL,   PREC_NONE}, 
-  [TOKEN_RIGHT_BRACE]   = {NULL,     NULL,   PREC_NONE},
-  [TOKEN_COMMA]         = {NULL,     NULL,   PREC_NONE},
+  [TOKEN_RIGHT_PAREN]   = NONE,
+  [TOKEN_LEFT_BRACE]    = NONE, 
+  [TOKEN_RIGHT_BRACE]   = NONE,
+  [TOKEN_COMMA]         = NONE,
   [TOKEN_DOT]           = {NULL,     dot,    PREC_CALL},
-
-  [TOKEN_SEMICOLON]     = {NULL,     NULL,   PREC_NONE},
-
+  [TOKEN_SEMICOLON]     = NONE,
   [TOKEN_POW]           = {NULL,     binary, PREC_EXPONENT},
   [TOKEN_SLASH]         = {NULL,     binary, PREC_FACTOR},
   [TOKEN_STAR]          = {NULL,     binary, PREC_FACTOR},
   [TOKEN_MODULO]        = {NULL,     binary, PREC_FACTOR},
   [TOKEN_PLUS]          = {NULL,     binary, PREC_TERM},
   [TOKEN_MINUS]         = {unary,    binary, PREC_TERM},
-
   [TOKEN_BANG]          = {unary,    NULL,   PREC_NONE},
   [TOKEN_BANG_EQUAL]    = {NULL,     binary, PREC_EQUALITY},
-
   [TOKEN_LEFT_BRACK]    = {list, subscript, PREC_SUBSCRIPT},
   [TOKEN_RIGHT_BRACK]   = {NULL, NULL, PREC_NONE},
-
-  [TOKEN_EQUAL]         = {NULL,     NULL,   PREC_NONE},
-  [TOKEN_COLON]         = {NULL,     NULL, PREC_NONE},
-
+  [TOKEN_EQUAL]         = NONE,
+  [TOKEN_COLON]         = NONE,
   [TOKEN_EQUAL_EQUAL]   = {NULL,     binary, PREC_EQUALITY},
   [TOKEN_GREATER]       = {NULL,     binary, PREC_COMPARISON},
   [TOKEN_GREATER_EQUAL] = {NULL,     binary, PREC_COMPARISON},
@@ -861,35 +888,28 @@ ParseRule rules[] = {
   [TOKEN_STRING]        = {string,   NULL,   PREC_NONE},
   [TOKEN_NUMBER]        = {number,   NULL,   PREC_NONE},
   [TOKEN_AND]           = {NULL,     and_,   PREC_AND},
-  [TOKEN_CLASS]         = {NULL,     NULL,   PREC_NONE},
-  [TOKEN_ELSE]          = {NULL,     NULL,   PREC_NONE},
+  [TOKEN_CLASS]         = NONE,
+  [TOKEN_ELSE]          = NONE,
   [TOKEN_FALSE]         = {literal,  NULL,   PREC_NONE},
-  [TOKEN_FOR]           = {NULL,     NULL,   PREC_NONE},
-
-  [TOKEN_FUN]           = {NULL,     NULL,   PREC_NONE},
-
+  [TOKEN_FOR]           = NONE,
+  [TOKEN_FUN]           = NONE,
   [TOKEN_LAMBDA]        = {arrow,    NULL,   PREC_NONE},
-  [TOKEN_ARROW]         = {NULL,     NULL,   PREC_NONE},
-
-  [TOKEN_IF]            = {NULL,     NULL,   PREC_NONE},
-  [TOKEN_USE]           = {NULL,     NULL,   PREC_NONE},
-
+  [TOKEN_ARROW]         = NONE,
+  [TOKEN_IF]            = NONE,
+  [TOKEN_USE]           = NONE,
   [TOKEN_PLUS_PLUS]     = {NULL,     increment, PREC_TERM},
   [TOKEN_MINUS_MINUS]   = {NULL,     decrement, PREC_TERM},
-
-  [TOKEN_CONTINUE]      = {NULL, NULL, PREC_NONE},
-  [TOKEN_BREAK]         = {NULL, NULL, PREC_NONE},
-
-  // [TOKEN_NIL]           = {literal,  NULL,   PREC_NONE},
+  [TOKEN_CONTINUE]      = NONE,
+  [TOKEN_BREAK]         = NONE,
   [TOKEN_OR]            = {NULL,     or_,    PREC_OR},
-  [TOKEN_PRINT]         = {NULL,     NULL,   PREC_NONE},
-  [TOKEN_RETURN]        = {NULL,     NULL,   PREC_NONE},
-  [TOKEN_THIS]          = {this_,    NULL,   PREC_NONE},
+  [TOKEN_PRINT]         = NONE,
+  [TOKEN_RETURN]        = NONE,
+  [TOKEN_THIS]          = NONE,
   [TOKEN_TRUE]          = {literal,  NULL,   PREC_NONE},
-  [TOKEN_VAR]           = {NULL,     NULL,   PREC_NONE},
-  [TOKEN_WHILE]         = {NULL,     NULL,   PREC_NONE},
-  [TOKEN_ERROR]         = {NULL,     NULL,   PREC_NONE},
-  [TOKEN_EOF]           = {NULL,     NULL,   PREC_NONE},
+  [TOKEN_VAR]           = NONE,
+  [TOKEN_WHILE]         = NONE,
+  [TOKEN_ERROR]         = NONE,
+  [TOKEN_EOF]           = NONE,
 };
 
 static void parsePrecedence(Precedence precedence) {

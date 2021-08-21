@@ -1,5 +1,7 @@
 // brainf_ck interpreter.
 
+use Ascii;
+
 define bf (src, min, max, data, index) {
     if src.length() == 0 return -1;
 
@@ -33,7 +35,7 @@ define bf (src, min, max, data, index) {
             arr[ptr]--;
         }
 
-        if s == '.' print arr[ptr];
+        if s == '.' print Ascii.ascii(arr[ptr]);
         if s == ',' {
             if index >= 0 {
                 arr[ptr] = input().number();

@@ -6,6 +6,7 @@ NativeLibraries libraries[] = {
     {"Random", &createRandomLibrary},
     {"Time", &createTimeLibrary},
     {"Path", &createPathLibrary},
+    {"Ascii", &createAsciiLibrary},
 
     // -1
     {NULL, NULL}
