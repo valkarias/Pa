@@ -17,6 +17,8 @@
 #define SEP_C "/"
 #define SEP '/'
 #include <libgen.h>
+#include <limits.h>
+#include <stdlib.h>
 #define _dirname(c1) dirname(c1)
 #endif
 

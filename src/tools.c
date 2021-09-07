@@ -43,20 +43,20 @@ void join(char* dest, const char* p1, const char* p2) {
 }
 
 char* real(char* p) {
-  char* realpath = malloc(sizeof(char) * _MAX);
+  char* rp = malloc(sizeof(char) * _MAX);
 #ifdef _WIN32
-  if (_fullpath(realpath, p, _MAX) != NULL) {
-    return realpath;
+  if (_fullpath(rp, p, _MAX) != NULL) {
+    return rp;
   }
 
 #else
-  if (realpath(p, realpath) != NULL) {
-    return realpath;
+  if (realpath(p, rp) != NULL) {
+    return rp;
   }
 #endif
 
   //help???
-  free(realpath);
+  free(rp);
   return NULL;
 }
 
