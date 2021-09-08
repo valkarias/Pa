@@ -661,11 +661,9 @@ static void namedVariable(Token name, bool canAssign) {
   if (arg != -1) {
     getOp = OP_GET_LOCAL;
     setOp = OP_SET_LOCAL;
-
   } else if ((arg = resolveUpvalue(current, &name)) != -1) {
     getOp = OP_GET_UPVALUE;
     setOp = OP_SET_UPVALUE;
-
   } else {
     arg = identifierConstant(&name);
     ObjString* string = copyString(name.start, name.length);
@@ -701,9 +699,7 @@ static void namedVariable(Token name, bool canAssign) {
 
 static void variable(bool canAssign) {
   namedVariable(parser.previous, canAssign);
-
   current->lastCall = false;
-  
 }
 
 static Token syntheticToken(const char* text) {
@@ -719,9 +715,7 @@ static void this_(bool canAssign) {
     return;
   }
   
-//< this-outside-class
   variable(false);
-  
 }
 static void unary(bool canAssign) {
 //< Global Variables unary
@@ -904,7 +898,7 @@ ParseRule rules[] = {
   [TOKEN_OR]            = {NULL,     or_,    PREC_OR},
   [TOKEN_PRINT]         = NONE,
   [TOKEN_RETURN]        = NONE,
-  [TOKEN_THIS]          = NONE,
+  [TOKEN_THIS]          = {this_, NULL, PREC_NONE},
   [TOKEN_TRUE]          = {literal,  NULL,   PREC_NONE},
   [TOKEN_VAR]           = NONE,
   [TOKEN_WHILE]         = NONE,
