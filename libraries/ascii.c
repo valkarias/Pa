@@ -42,6 +42,7 @@ ObjLibrary* createAsciiLibrary() {
     defineProperty("lower", OBJ_VAL(copyString("abcdefghijklmnopqrstuvwxyz", 26)), &library->values);
     defineProperty("digits", OBJ_VAL(copyString("0123456789", 10)), &library->values);
     defineProperty("hex", OBJ_VAL(copyString("0123456789abcdefABCDEF", 22)), &library->values);
+    defineProperty("octal", OBJ_VAL(copyString("01234567", 8)), &library->values);
     // local.
     defineProperty("punctuation", OBJ_VAL(copyString("!#$%%&'()*+,-./:;<=>?@[\\]^_`{|}~", 32)), &library->values);
     

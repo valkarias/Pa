@@ -41,6 +41,8 @@ typedef enum {
   OP_DIVIDE,
   OP_MOD,
   OP_POW,
+  OP_BIT_AND,
+  OP_BIT_OR,
 
   OP_NOT,
 

@@ -280,6 +280,8 @@ Token scanToken() {
     case '/': return makeToken(TOKEN_SLASH);
     case ':': return makeToken(TOKEN_COLON);
     case '%': return makeToken(TOKEN_MODULO);
+    case '&': return makeToken(TOKEN_BIT_AND);
+    case '|': return makeToken(TOKEN_BIT_OR);
 
     case '+':
       return makeToken(

@@ -23,14 +23,30 @@ static Value stringMethod(int argCount, Value *args) {
     return OBJ_VAL(takeString(numString, numLength - 1)); 
 }
 
+static Value boolMethod(int argCount, Value* args) {
+    if (argCount != 0) {
+        runtimeError("Expected 0 arguments but got %d from 'bool()'.", argCount);
+        return NOTCLEAR;
+    }
+
+    double num = AS_NUMBER(args[0]);
+    if (num) {
+        return TRUE_VAL;
+    }
+
+    return FALSE_VAL;
+}
+
 //
 void initNumberMethods() {
     char* numberMethodStrings[] = {
         "string",
+        "bool",
     };
 
     NativeFn numberMethods[] = {
         stringMethod,
+        boolMethod
     };
 
     for (uint8_t i = 0; i < sizeof(numberMethodStrings) / sizeof(numberMethodStrings[0]); i++) {
