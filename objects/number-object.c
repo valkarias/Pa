@@ -52,4 +52,14 @@ void initNumberMethods() {
     for (uint8_t i = 0; i < sizeof(numberMethodStrings) / sizeof(numberMethodStrings[0]); i++) {
         defineNative(numberMethodStrings[i], numberMethods[i], &vm.numberNativeMethods);
     }
+
+    interpret(NUMBER_EXTRA, "Number");
+
+    Value val;
+    tableGet(&vm.libraries, copyString("Number", 6), &val);
+
+    ObjLibrary* library = AS_LIBRARY(val);
+    push(val);
+    tableAddAll(&library->values, &vm.numberNativeMethods);
+    pop();
 }

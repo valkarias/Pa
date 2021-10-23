@@ -367,10 +367,20 @@ static bool invoke(ObjString* name, int argCount) {
     if (IS_NUMBER(receiver)) {
       Value value;
       if (tableGet(&vm.numberNativeMethods, name, &value)) {
-        return callMethod(value, argCount);
+        if (IS_NATIVE(value)) {
+          return callMethod(value, argCount);
+        }
+
+        //For in-lang written natives. [Dictu!]
+        push(peek(0));
+        for (int i = 2; i <= argCount + 1; i++) {
+          vm.stackTop[-i] = peek(i);
+        }
+
+        return call(AS_CLOSURE(value), argCount + 1);
       }
 
-      runtimeError("Undefined method '%s' from number values.", name->chars);
+      runtimeError("Undefined method '%s' from number object.", name->chars);
       return false;
     }
   }
