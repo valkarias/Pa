@@ -1,9 +1,20 @@
 import click
 import subprocess
 import os
+import sys
 import platform
 import shutil
-import requests
+try:
+    import requests
+except:
+    click.echo("Could not find the requests module...")
+    click.echo("Installing the 'requests' module via pip..Hold on!")
+
+    import importlib
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "requests"])
+    print("\n")
+    click.secho("Installing finished", fg='green')
+    globals()["requests"] = importlib.import_module("requests")
 import json
 
 #
