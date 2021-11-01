@@ -651,9 +651,52 @@ static void or_(bool canAssign) {
   
 }
 
+static int analyzeString(char* str, int len) {
+  for (int i = 0; i < len - 1; i++) {
+    if (str[i] == '\\') {
+      switch(str[i + 1]) {
+        case 'n': str[i + 1] = '\n'; break;
+        case 'a': str[i + 1] = '\a'; break;
+        case 't': str[i + 1] = '\t'; break;
+        case 'r': str[i + 1] = '\r'; break;
+        case '\\': str[i + 1] = '\\'; break;
+
+        case '\'':
+        case '"': {
+          break;
+        }
+
+        default:
+          continue;
+      }
+
+      memmove(&str[i], &str[i + 1], len - i);
+      len -= 1;
+    }
+
+  }
+
+  return len;
+}
+
+static Value refine(bool canAssign) {
+  int len = parser.previous.length - 2;
+
+  char* buffer = ALLOCATE(char, len + 1);
+  memcpy(buffer, parser.previous.start + 1, len);
+  int refinedLen = analyzeString(buffer, len);
+
+  if (refinedLen != len) {
+    buffer = GROW_ARRAY(char, buffer, len + 1, refinedLen + 1);
+  }
+  buffer[refinedLen] = '\0';
+
+  return OBJ_VAL(takeString(buffer, refinedLen));
+}
+
 static void string(bool canAssign) {
   staticCheck.listCount = 0;
-  emitConstant(OBJ_VAL(copyString(parser.previous.start + 1, parser.previous.length - 2)));
+  emitConstant(refine(canAssign));
 
   staticCheck.listCount = parser.previous.length - 2;
   

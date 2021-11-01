@@ -235,7 +235,11 @@ static Token hex() {
 
 static Token string(char stringToken) {
   while (peek() != stringToken && !isAtEnd()) {
-    if (peek() == '\n') scanner.line++;
+    if (peek() == '\n') {
+      scanner.line++;
+    } else if (peek() == '\\') {
+      scanner.current++;
+    }
     advance();
   }
 

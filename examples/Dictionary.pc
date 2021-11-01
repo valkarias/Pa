@@ -9,7 +9,7 @@ class Dict {
 
     Get (key) {
         let i = this.keys.index(key);
-        if (i) {
+        if i {
             return this.values[i];
         }
 

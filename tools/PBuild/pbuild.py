@@ -3,6 +3,8 @@ import subprocess
 import os
 import platform
 import shutil
+import requests
+import json
 
 #
 home = os.path.expanduser('~')
@@ -18,6 +20,7 @@ opts = "-Ofast -flto"
 flags = "-o"
 
 LINUX_BUILD = False
+REPO_NAME = "valkarias/PCrap"
 
 exe = ""
 if platform.system() == "Windows":
@@ -72,6 +75,30 @@ def validateCompiler(cc):
     
     return True
 
+def get_latest_release_name():
+    try:
+        req = requests.get(f"https://api.github.com/repos/{REPO_NAME}/releases")
+    except Exception as e:
+        click.secho(f"An unknown exception occured during request", fg='red')
+        click.echo(f"-> {e}")
+        return False
+    trailing = [
+        "-windows-latest",
+        "-ubuntu-latest",
+        "-macOS-latest"
+    ]
+    if req.status_code == 200:
+        data = req.json()
+        release_name = data[0]["name"]
+        for i in trailing:
+            if i in release_name:
+                return release_name.replace(i, "")
+    else:
+        click.secho(f"Could not get the latest release from the repository", fg='red')
+        click.echo(f"-> request status code: {req.status_code}")
+
+    return False
+
 def execute(command):
     process = os.popen(command)
     output = process.read()
@@ -96,7 +123,7 @@ def cli():
 
 @click.command()
 def download():
-    repo = "https://github.com/valkarias/PCrap.git" # lmao
+    repo = f"https://github.com/{REPO_NAME}.git" # lmao
 
     os.chdir(home)
     execute(
@@ -116,7 +143,7 @@ def build(cc_type):
         return
 
     if validateCompiler(cc_type) == False:
-        printf("\n")
+        print("\n")
         click.secho("Building failed", fg='red')
         return
     
@@ -126,11 +153,22 @@ def build(cc_type):
     click.secho("Building finished", fg='green')
 
 @click.command()
+def version():
+    release = get_latest_release_name()
+    if release == False:
+        print("\n")
+        click.echo("Please try checking the repository instead.")
+        click.echo("-> https://github.com/valkarias/PCrap/releases")
+        return
+    
+    click.echo(f"Pcrap {release} on {platform.system()}")
+
+@click.command()
 def uninstall():
     p = os.path.join(home, "PCrap")
     
     if os.path.exists(p) == False:
-        click.secho("PCrap Directory is missing: ", fg='red')
+        click.secho("PCrap Directory is missing", fg='red')
         return
     
     if (os.path.isdir(p)) and len(os.listdir(p)) == 0:
@@ -143,6 +181,7 @@ def uninstall():
     click.secho("Uninstalling finished", fg='green')
 
 if __name__ == '__main__':
+    cli.add_command(version)
     cli.add_command(download)
     cli.add_command(build)
     cli.add_command(uninstall)

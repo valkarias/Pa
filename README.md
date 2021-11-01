@@ -5,7 +5,7 @@
 
 You are welcomed to the holy lands of PCrap.  
 
-Pcrap is a hobby project, its designed to be small the goal was to make a language that i can use in my daily life.    
+Pcrap is a hobby project, it's designed to be small the goal was to make a language that I can use in my daily life.    
 Huge thanks to Jérémie Astor and his language [Gwion](https://github.com/Gwion/Gwion) for helping PCrap!
 
 ## Documentation
@@ -24,7 +24,7 @@ Assuming you downloaded PBuild from [releases](https://github.com/valkarias/PCra
 
 The executable is located in `PBuild_(platform) -> pbuild -> pbuild(.exe)`  
 
-PBuild have 3 commands as of now: 
+PBuild have 4 commands as of now: 
 
 
 #### download 
@@ -38,16 +38,21 @@ pbuild download
 This command builds the cloned PCrap repo. It takes a required option specifying the compiler to build with. 
 ```bash
 pbuild build --cc-type=<compiler name>
-```  
+``` 
+There are two compilers supported as of now:  
+[Gnu Compiler Collection](https://gcc.gnu.org) (gcc) & [Tiny C Compiler](https://bellard.org/tcc/) (tcc). 
 
 #### uninstall 
-And this command erases and uninstalls the pcrap repo from you computer :(
+This command erases and uninstalls the pcrap repo from you computer :(
 ```bash
 pbuild uninstall
 ```  
 
-There are two compilers supported as of now.  
-[Gnu Compiler Collection](https://gcc.gnu.org) (gcc) & [Tiny C Compiler](https://bellard.org/tcc/) (tcc).
+#### version
+And this one displays the latest release version from [here](https://github.com/valkarias/PCrap/releases)
+```bash
+pbuild version
+```
 
 ### Tooling
 - A more versatile tooling is planned! 
@@ -74,7 +79,7 @@ define fib (n, a, b) {
 
 ## Performance  
 Thanks [Gwion-Benchmarks](https://github.com/Gwion/gwion-benchmark) for benchmarking PCrap.  
-Here is the results of a full benchmark suite for pcrap against other languages -> [benchmarks](https://gwion.github.io/Gwion/Benchmarks.html).
+Here are the results of a full benchmark suite for pcrap against other languages -> [benchmarks](https://gwion.github.io/Gwion/Benchmarks.html).
 
 ## Thanks to
 - [Dictu](https://github.com/dictu-lang/Dictu) By Jason Hall.  
