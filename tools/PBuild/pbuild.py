@@ -4,18 +4,8 @@ import os
 import sys
 import platform
 import shutil
-try:
-    import requests
-except:
-    click.echo("Could not find the requests module...")
-    click.echo("Installing the 'requests' module via pip..Hold on!")
-
-    import importlib
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "requests"])
-    print("\n")
-    click.secho("Installing finished", fg='green')
-    globals()["requests"] = importlib.import_module("requests")
 import json
+from urllib.request import urlopen, Request
 
 #
 home = os.path.expanduser('~')
@@ -87,26 +77,27 @@ def validateCompiler(cc):
     return True
 
 def get_latest_release_name():
-    try:
-        req = requests.get(f"https://api.github.com/repos/{REPO_NAME}/releases")
-    except Exception as e:
-        click.secho(f"An unknown exception occured during request", fg='red')
-        click.echo(f"-> {e}")
+    url = f"https://api.github.com/repos/{REPO_NAME}/releases"
+    if not url.startswith("http"):
+        click.secho("Unknown protocol", fg='red')
         return False
+
+    req_class = Request(url, headers={"Accept": "application/json"})
+    req = urlopen(req_class)
     trailing = [
         "-windows-latest",
         "-ubuntu-latest",
         "-macOS-latest"
     ]
-    if req.status_code == 200:
-        data = req.json()
+    if req.status == 200:
+        data = json.loads(req.read().decode())
         release_name = data[0]["name"]
         for i in trailing:
             if i in release_name:
                 return release_name.replace(i, "")
     else:
         click.secho(f"Could not get the latest release from the repository", fg='red')
-        click.echo(f"-> request status code: {req.status_code}")
+        click.echo(f"-> request status code: {req.status}")
 
     return False
 
