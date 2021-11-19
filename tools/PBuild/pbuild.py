@@ -115,7 +115,7 @@ def setPath():
     #There is no way you can set the actual path via pure python.
     #Only works on windows.
     binp = os.path.join(master, "bin")
-    commands = ["setx", "/M", "path", f"%path%;{binp}"]
+    commands = ["setx", "/M", "path", f"{os.environ["Path"]};{binp}"]
 
     process = subprocess.Popen(commands, 
         stdout=subprocess.PIPE,
