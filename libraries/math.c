@@ -136,13 +136,16 @@ static Value asinLib(int argCount, Value *args) {
 
     double number = AS_NUMBER(args[0]);
 
-    double res = asin(number);
+    if (number == 0) {
+        return CLEAR;
+    }
 
-    if (errno) {
+    if (number < -1 || number > 1) {
         runtimeError("Math domain error from 'asin()'.");
         return NOTCLEAR;
     }
 
+    double res = asin(number);
     return NUMBER_VAL(res);
 }
 
@@ -174,13 +177,13 @@ static Value acosLib(int argCount, Value *args) {
     }
 
     double number = AS_NUMBER(args[0]);
-    double res = acos(number);
 
-    if (errno) {
+    if (number < -1 || number > 1) {
         runtimeError("Math domain error from 'acos()'.");
         return NOTCLEAR;
     }
 
+    double res = acos(number);
     return NUMBER_VAL(res);
 }
 

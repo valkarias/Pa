@@ -35,7 +35,7 @@ pbuild download
 - the build command will not work if the download command was not executed.     
 
 #### build
-This command builds the cloned PCrap repo. It takes a required option specifying the compiler to build with. 
+This command builds the cloned PCrap repo and modifies the Path environment variable to the executable. It takes a required option specifying the compiler to build with. 
 ```bash
 pbuild build --cc-type=<compiler name>
 ``` 

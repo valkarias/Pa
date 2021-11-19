@@ -108,6 +108,23 @@ def execute(command):
     print(output)
 
 
+def setPath():
+    #There is no way you can set the actual path via pure python.
+    binp = os.path.join(master, "bin")
+    commands = ["setx", "/M", "path", f"%path%;{binp}"]
+
+    process = subprocess.Popen(commands, 
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE)
+    
+    stdout,stderr = process.communicate()
+
+    if stderr:
+        click.secho(f"Could not modify the 'Path' environment variable.", fg='red')
+    elif stdout:
+        click.secho("Modified 'Path' environment variable!", fg="green")
+
+
 def compile(cc):
     binp = os.path.join(master, "bin")
     os.chdir(binp)
@@ -115,8 +132,7 @@ def compile(cc):
     if LINUX_BUILD:
         execute( f"{cc} {objects} {libraries} {source} {opts} {flags} {exe} -lm" )
     else:
-        execute( f"{cc} {objects} {libraries} {source} {opts} {flags} {exe}" )
-    
+        execute( f"{cc} {objects} {libraries} {source} {opts} {flags} {exe}" )    
 
 @click.group()
 def cli():
@@ -153,6 +169,7 @@ def build(cc_type):
     compile(cc_type)
 
     click.secho("Building finished", fg='green')
+    setPath()
 
 @click.command()
 def version():
