@@ -21,10 +21,13 @@ opts = "-Ofast -flto"
 flags = "-o"
 
 LINUX_BUILD = False
+WINDOWS_BUILD = False
+
 REPO_NAME = "valkarias/PCrap"
 
 exe = ""
 if platform.system() == "Windows":
+    WINDOWS_BUILD = True
     exe = "pcrap.exe"
 else:
     LINUX_BUILD = True
@@ -110,6 +113,7 @@ def execute(command):
 
 def setPath():
     #There is no way you can set the actual path via pure python.
+    #Only works on windows.
     binp = os.path.join(master, "bin")
     commands = ["setx", "/M", "path", f"%path%;{binp}"]
 
@@ -169,7 +173,8 @@ def build(cc_type):
     compile(cc_type)
 
     click.secho("Building finished", fg='green')
-    setPath()
+    if WINDOWS_BUILD:
+        setPath()
 
 @click.command()
 def version():
