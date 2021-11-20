@@ -177,7 +177,7 @@ static ObjList* copyList(ObjList* list) {
         }
 
         push(val);
-        writeValueArray(&copy->items, val);
+        appendToList(copy, val);
         pop();
     }
 
@@ -202,18 +202,20 @@ static ObjList* flattenList(ObjList* list) {
     }
 
     ObjList* res = newList();
+    push(OBJ_VAL(res));
 
     for (int i = 0; i < list->items.count; i++) {
         if (IS_LIST(list->items.values[i])) {
             ObjList* temp = flattenList(AS_LIST(list->items.values[i]));
             for (int j = 0; j < temp->items.count; j++) {
-                writeValueArray(&res->items, temp->items.values[j]);
+                appendToList(res, temp->items.values[j]);
             }
         } else {
-            writeValueArray(&res->items, list->items.values[i]);
+            appendToList(res, list->items.values[i]);
         }
     }
 
+    pop();
     return res;
 }
 
@@ -225,6 +227,34 @@ static Value flattenMethod(int argCount, Value* args) {
 
     ObjList* list = AS_LIST(args[0]);
     return OBJ_VAL(flattenList(list));
+}
+
+static Value sliceMethod(int argCount, Value* args) {
+    if (argCount != 1) {
+        runtimeError("Expected 1 argument but got %d from 'slice()'.", argCount);
+        return NOTCLEAR;
+    }
+
+    if (!IS_NUMBER(args[1])) {
+        runtimeError("Argument must be a number from 'slice()'.");
+        return NOTCLEAR;
+    }
+
+    int limit = AS_NUMBER(args[1]);
+    ObjList* list = AS_LIST(args[0]);
+
+    ObjList* res = newList();
+    push(OBJ_VAL(res));
+
+    if (list->items.count <= limit) {
+        limit = list->items.count;
+    }
+    for (int i = 0; i < limit; i++) {
+        appendToList(res, list->items.values[i]);
+    }
+
+    pop(res);
+    return OBJ_VAL(res);
 }
 
 //
@@ -241,6 +271,7 @@ void initListMethods() {
         "reverse",
         "copy",
         "flatten",
+        "slice"
     };
 
     NativeFn listMethods[] = {
@@ -255,6 +286,7 @@ void initListMethods() {
         reverseMethod,
         copyMethod,
         flattenMethod,
+        sliceMethod,
     };
 
     for (uint8_t i = 0; i < sizeof(listMethodStrings) / sizeof(listMethodStrings[0]); i++) {

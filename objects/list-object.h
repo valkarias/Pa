@@ -21,20 +21,5 @@ void initListMethods();
 "   return 0;\n" \
 "}\n" \
 "\n"\
-"define slice(list, limit) {\n" \
-"   assertShow(type(limit) == \"number\", \"Argument must be a number from 'slice'.\");\n" \
-"\n"\
-"   let temp = [];\n"\
-"   if list.length() <= limit {\n" \
-"       limit = list.length();\n" \
-"   }\n" \
-"\n"\
-"   for let i = 0; i < limit; i++ {\n"\
-"       temp.append(list[i]);\n"\
-"   }\n" \
-"\n"\
-"   return temp;\n" \
-"}\n" \
-"\n" \
 
 #endif

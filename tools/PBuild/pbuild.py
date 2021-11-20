@@ -14,6 +14,7 @@ master = os.path.join(home, "PCrap")
 
 objects = os.path.join(master, "objects", "*.c")
 libraries = os.path.join(master, "libraries", "*.c")
+other_libraries = os.path.join(os.environ['APPDATA'], "PCRAP_LIBS")
 
 source = os.path.join(master, "src", "*.c")
 # >:)
@@ -111,6 +112,25 @@ def execute(command):
     print(output)
 
 
+def initLibs():
+    click.echo("Moving libraries...")
+    src = os.path.join(master, "libraries", "APIS")
+
+    try:
+        os.mkdir(other_libraries)
+    except OSError:
+        pass
+    
+    files = os.listdir(src)
+    print("\n")
+    for file in files:
+        try:
+            shutil.move(os.path.join(src, file), other_libraries)
+            click.echo(f"Moved '{file}'")
+        except:
+            click.echo(f"'{file}' already exists")
+
+
 def setPath():
     #There is no way you can set the actual path via pure python.
     #Only works on windows.
@@ -132,6 +152,8 @@ def setPath():
 def compile(cc):
     binp = os.path.join(master, "bin")
     os.chdir(binp)
+
+    initLibs()
 
     if LINUX_BUILD:
         execute( f"{cc} {objects} {libraries} {source} {opts} {flags} {exe} -lm" )

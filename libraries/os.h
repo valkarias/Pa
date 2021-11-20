@@ -29,6 +29,7 @@
 #define REMOVE(p) unlink(p)
 #define ACCESS(p, m) access(p, m)
 #define MKDIR(p, m) mkdir(p, m)
+#define rmdir(p) rmdir(p)
 #endif
 
 ObjLibrary* createOsLibrary();

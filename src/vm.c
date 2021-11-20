@@ -1085,8 +1085,9 @@ static InterpretResult run() {
         pop();
         
         FREE_ARRAY(char, api_ref, strlen(api_ref) + 1);
-
         push(OBJ_VAL(library));
+        
+        //compileModule() will pop 'library' and frees 'source'
         ObjClosure* closure = compileModule(library, source);
         if (!closure) return INTERPRET_COMPILE_ERROR;
 

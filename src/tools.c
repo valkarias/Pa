@@ -61,22 +61,14 @@ char* real(char* p) {
 }
 
 char* resolveLibrary(char* name) {
-  char* apis_dir = malloc(sizeof(char) * _MAX);
-  char* EXT = basename(name);
+  char* location = getenv("APPDATA");
+  char* lib = basename(name);
 
-  // ???
-  if (getcwd(apis_dir, _MAX) == NULL) {
-    return NULL;
-  }
-  
-  join(apis_dir, apis_dir, "libraries");
-  join(apis_dir, apis_dir, "APIs");
-  strcat(EXT, ".pc");
-  join(apis_dir, apis_dir, EXT);
-  //
+  join(location, location, "PCRAP_LIBS");
+  join(location, location, strcat(lib, ".pc"));
 
-  if (checkPath(apis_dir)) {
-    return apis_dir;
+  if (checkPath(location)) {
+    return location;
   }
 
   return NULL;
