@@ -49,6 +49,15 @@ void runtimeError(const char* format, ...) {
   resetStack();
 }
 
+void info(const char* extra, ...) {
+  va_list args;
+  va_start(args, extra);
+  fprintf(stderr, " -> ");
+  vfprintf(stderr, extra, args);
+  va_end(args);
+  fputs("\n", stderr);
+}
+
 void dryError(const char* error) {
   fprintf(stderr, "%s\n", error);
 
@@ -71,6 +80,8 @@ static char* resolveUse(ObjString* raw) {
     char* realpath = real(raw->chars);
     if (checkPath(realpath) == false) {
       runtimeError("Could not load \"%s\"", raw->chars);
+      info("Could not open or access the file.");
+      info("It can be either that the file does not exist or an issue in your system.");
       return NULL;
     } else {
       return realpath;
@@ -192,13 +203,13 @@ static Value peek(int distance) {
 static bool call(ObjClosure* closure, int argCount) {
   if (argCount != closure->function->arity) {
     runtimeError("Expected %d arguments but got %d.", closure->function->arity, argCount);
-
     return false;
   }
 
 
   if (vm.frameCount == FRAMES_MAX) {
     runtimeError("Stack overflow.");
+    info("Max frame count is %d", FRAMES_MAX);
     return false;
   }
 
@@ -272,6 +283,7 @@ static bool callValue(Value callee, int argCount) {
     }
   }
   runtimeError("Can only call functions and classes.");
+  info("Called a type '%s' instead", typeValue(callee));
   return false;
 }
 
@@ -279,7 +291,7 @@ static bool callValue(Value callee, int argCount) {
 static bool invokeFromClass(ObjClass* klass, ObjString* name, int argCount) {
   Value method;
   if (!tableGet(&klass->methods, name, &method)) {
-    runtimeError("Undefined property '%s' from '%s'.", name->chars, klass->name->chars);
+    runtimeError("Undefined property '%s' from '%s'.", name->chars, klass->name->chars); 
     return false;
   }
 
@@ -322,7 +334,9 @@ static bool invoke(ObjString* name, int argCount) {
           return call(AS_CLOSURE(value), argCount + 1);
         }
 
-        runtimeError("Undefined method '%s' from list object.", name->chars);
+        runtimeError("Undefined method '%s' from list objects.", name->chars);
+        info("Please check the list object documentation");
+        info("https://valkarias.github.io/contents/chapters/lists.html");
         return false;
       }
 
@@ -345,6 +359,8 @@ static bool invoke(ObjString* name, int argCount) {
         }
 
         runtimeError("Undefined method '%s' from string objects.", name->chars);
+        info("Please check the string object documentation");
+        info("https://valkarias.github.io/contents/chapters/strings.html");
         return false;
       }
 
@@ -353,7 +369,7 @@ static bool invoke(ObjString* name, int argCount) {
         Value value;
 
         if (!tableGet(&library->values, name, &value)) {
-          runtimeError("Undefined property '%s'.", name->chars);
+          runtimeError("Undefined property '%s' from '%s'.", name->chars, library->name->chars);
           return false;
         }
 
@@ -380,12 +396,12 @@ static bool invoke(ObjString* name, int argCount) {
         return call(AS_CLOSURE(value), argCount + 1);
       }
 
-      runtimeError("Undefined method '%s' from number object.", name->chars);
+      runtimeError("Undefined method '%s' from number objects.", name->chars);
       return false;
     }
   }
 
-  runtimeError("Only instances have methods.");
+  runtimeError("Type '%s' can not have methods.", typeValue(receiver));
   return false;
 }
 
@@ -628,7 +644,8 @@ static InterpretResult run() {
         Value receiver = peek(0);
 
         if (!IS_OBJ(receiver)) {
-          runtimeError("Values can not have properties");
+          runtimeError("Type '%s' can not have properties", typeValue(receiver));
+          info("Only instances and libraries can have properties.");
           return INTERPRET_RUNTIME_ERROR;
         }
         
@@ -668,7 +685,7 @@ static InterpretResult run() {
           }
 
           default:
-            runtimeError("Given Type has no properties.");
+            runtimeError("Type '%s' has no properties.", typeValue(receiver));
             return INTERPRET_RUNTIME_ERROR;
 
         }
@@ -678,7 +695,8 @@ static InterpretResult run() {
 
       case OP_SET_PROPERTY: {
         if (!IS_OBJ(peek(1))) {
-          runtimeError("Values can not have fields");
+          runtimeError("Type '%s' can not have fields", typeValue(peek(1)));
+          info("Only instances can have fields.");
           return INTERPRET_RUNTIME_ERROR;
         }
 
@@ -691,7 +709,7 @@ static InterpretResult run() {
           break;
         }
 
-        runtimeError("Given type can not have properties.");
+        runtimeError("Type '%s' has no properties.", typeValue(peek(1)));
         return INTERPRET_RUNTIME_ERROR;
       }
 
@@ -711,7 +729,7 @@ static InterpretResult run() {
           double a = AS_NUMBER(pop());
           push(NUMBER_VAL(a + b));
         } else {
-          runtimeError("Operands must be two numbers or two strings.");
+          runtimeError("Operands must be either two numbers or two strings.");
           return INTERPRET_RUNTIME_ERROR;
         }
         break;
@@ -758,6 +776,7 @@ static InterpretResult run() {
 
         if (a == 0 || b == 0) {
           runtimeError("Can not divide by 0.");
+          info("What???");
           return INTERPRET_RUNTIME_ERROR;
         }
 
@@ -921,7 +940,7 @@ static InterpretResult run() {
         Value subscrVal = peek(1);
 
         if (!IS_LIST(subscrVal)) {
-          runtimeError("Invalid type for subscripting.");
+          runtimeError("Type '%s' does not allow for subscripting.", typeValue(subscrVal));
           return INTERPRET_RUNTIME_ERROR;
         }
 
@@ -950,7 +969,8 @@ static InterpretResult run() {
         Value result;
 
         if (!IS_OBJ(objVal)) {
-          runtimeError("Invalid type for subscripting.");
+          runtimeError("Type '%s' does not allow for subscripting.", typeValue(objVal));
+          info("Only lists and strings allow it.");
           return INTERPRET_RUNTIME_ERROR;
         }
 
@@ -1002,7 +1022,7 @@ static InterpretResult run() {
         Value listVal = pop();
 
         if (!IS_LIST(listVal)) {
-          runtimeError("Cannot store value in a non-list.");
+          runtimeError("Can not store value in a non-list.");
           return INTERPRET_RUNTIME_ERROR;
         }
         ObjList* list = AS_LIST(listVal);

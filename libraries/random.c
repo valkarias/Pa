@@ -1,6 +1,6 @@
 #include "random.h"
 
-// S.O.F :)
+// i dont remember adding these?? eh.
 static unsigned int g_seed;
 
 static inline void fastsrand(int seed) {

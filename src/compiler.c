@@ -284,7 +284,7 @@ static ObjFunction* endCompiler() {
   emitReturn();
   ObjFunction* function = current->function;
 
-  if (staticCheck.returned != true) {
+  if (staticCheck.returned != true && function->type != TYPE_INITIALIZER) {
     error("Function unprotected");
     staticCheck.returned = false;
   }

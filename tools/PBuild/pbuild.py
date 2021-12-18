@@ -82,9 +82,6 @@ def validateCompiler(cc):
 
 def get_latest_release_name():
     url = f"https://api.github.com/repos/{REPO_NAME}/releases"
-    if not url.startswith("http"):
-        click.secho("Unknown protocol", fg='red')
-        return False
 
     req_class = Request(url, headers={"Accept": "application/json"})
     req = urlopen(req_class)
