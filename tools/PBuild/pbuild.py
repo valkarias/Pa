@@ -14,7 +14,6 @@ master = os.path.join(home, "PCrap")
 
 objects = os.path.join(master, "objects", "*.c")
 libraries = os.path.join(master, "libraries", "*.c")
-other_libraries = os.path.join(os.environ['APPDATA'], "PCRAP_LIBS")
 
 source = os.path.join(master, "src", "*.c")
 # >:)
@@ -27,12 +26,15 @@ WINDOWS_BUILD = False
 REPO_NAME = "valkarias/PCrap"
 
 exe = ""
+other_libraries = ""
 if platform.system() == "Windows":
     WINDOWS_BUILD = True
     exe = "pcrap.exe"
+    other_libraries = os.path.join(os.environ['APPDATA'], "PCRAP_LIBS")
 else:
     LINUX_BUILD = True
     exe = "pcrap"
+    other_libraries = os.path.join(home, "PCRAP_LIBS")
 #
 
 def check():
