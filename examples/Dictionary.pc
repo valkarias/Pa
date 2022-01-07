@@ -1,10 +1,12 @@
-// -1 = failed
-// 0 = success
-
 class Dict {
-    init () {
+    init (raw) {
         this.keys = [];
         this.values = [];
+        for let i = 0; i < raw.length(); i++ {
+            let pair = raw[i];
+            this.keys.append(pair[0]);
+            this.values.append(pair[1]);
+        }
     }
 
     Get (key) {
@@ -14,7 +16,7 @@ class Dict {
         }
 
         // failed
-        return -1;
+        return none;
     }
 
     Set (key, value) {
@@ -41,7 +43,6 @@ class Dict {
             this.values.remove(i);
         }
 
-        //success
         return 0;
     }
 
@@ -50,8 +51,16 @@ class Dict {
     }
 
     Show () {
-        print this.keys, this.values;
-        return 0;
+        //todo: convert various types to strings
+        print "{";
+        for let i = 0; i < this.keys.length(); i++ {
+            if i < this.keys.length() - 1 {
+                print "\t" + this.keys[i] + ": " + this.values[i] + ",";
+            } else {
+                print "\t" + this.keys[i] + ": " + this.values[i];
+            }
+        }
+        print "}";
     }
 
 
@@ -59,3 +68,15 @@ class Dict {
         return this.keys.contains(key) == false;
     }
 }
+
+let myDict = Dict([
+    ["Value1", "1"],
+    ["Value2", "2"]
+]);
+
+
+myDict.Show();
+// {
+//      Value1: 1,
+//      Value2: 2
+// }

@@ -72,6 +72,4 @@ define bf (src, min, max, data, index) {
 
         i++;
     } 
-
-    return 0;
 }

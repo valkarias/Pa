@@ -99,14 +99,13 @@ ObjLibrary* newLibrary(ObjString* name) {
   return library;
 }
 
-ObjFunction* newFunction(ObjLibrary* library, FunctionProtection protection, FunctionType type) {
+ObjFunction* newFunction(ObjLibrary* library, FunctionType type) {
   ObjFunction* function = ALLOCATE_OBJ(ObjFunction, OBJ_FUNCTION);
   function->arity = 0;
   function->upvalueCount = 0;
 
   function->library = library;
   function->type = type;
-  function->protection = protection;
 
   function->name = NULL;
   initChunk(&function->chunk);

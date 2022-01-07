@@ -574,6 +574,11 @@ static InterpretResult run() {
           runtimeError("Undefined variable '%s'.", name->chars);
           return INTERPRET_RUNTIME_ERROR;
         }
+        if (valuesEqual(value, NIL_VAL)) {
+          runtimeError("Can't use variable with a nil state.");
+          info("The variable '%s' is none.", name->chars);
+          return INTERPRET_RUNTIME_ERROR;
+        }
         push(value);
         break;
       }
@@ -676,6 +681,10 @@ static InterpretResult run() {
 
             if (tableGet(&library->values, name, &value)) {
               pop();
+              if (valuesEqual(value, NIL_VAL)) {
+                runtimeError("Can't use property with a nil state.");
+                return INTERPRET_RUNTIME_ERROR;
+              }
               push(value);
               break;
             }

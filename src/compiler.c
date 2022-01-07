@@ -18,10 +18,6 @@
 typedef struct {
   int innermostLoopStart;
   int innermostLoopScopeDepth;
-
-  int listCount;
-
-  int returned;
 } Static;
 
 typedef struct {
@@ -230,10 +226,6 @@ static void patchJump(int offset) {
 static void initStaticChecks(Static* s) {
   s->innermostLoopStart = -1;
   s->innermostLoopScopeDepth = 0;
-
-  s->listCount = 0;
-
-  s->returned = false;
 }
 
 static void initCompiler(Compiler* compiler, FunctionType type) {
@@ -246,7 +238,7 @@ static void initCompiler(Compiler* compiler, FunctionType type) {
 
 
   compiler->type = type;
-  compiler->function = newFunction(parser.library, FUNCTION_NOT_PROTECTED, type);
+  compiler->function = newFunction(parser.library, type);
 
   current = compiler;
   switch (type) {
@@ -284,12 +276,6 @@ static ObjFunction* endCompiler() {
   emitReturn();
   ObjFunction* function = current->function;
 
-  if (staticCheck.returned != true && function->type != TYPE_INITIALIZER) {
-    error("Function unprotected");
-    staticCheck.returned = false;
-  }
-
-  staticCheck.returned = false;
 #ifdef DEBUG_PRINT_CODE
   if (!parser.hadError) {
     disassembleChunk(currentChunk(), function->name != NULL ? function->name->chars : function->library->name->chars);
@@ -610,6 +596,7 @@ static void literal(bool canAssign) {
   switch (parser.previous.type) {
     case TOKEN_FALSE: emitByte(OP_FALSE); break;
     case TOKEN_TRUE: emitByte(OP_TRUE); break;
+    case TOKEN_NONE: emitByte(OP_NIL); break;
     default: return;
   }
 
@@ -695,11 +682,7 @@ static Value refine(bool canAssign) {
 }
 
 static void string(bool canAssign) {
-  staticCheck.listCount = 0;
   emitConstant(refine(canAssign));
-
-  staticCheck.listCount = parser.previous.length - 2;
-  
 }
 
 static void namedVariable(Token name, bool canAssign) {
@@ -789,7 +772,6 @@ static void decrement(bool canAssign) {
 }
 
 static void list(bool canAssign) {
-  staticCheck.listCount = 0;
   int count = 0;
 
   if (!check(TOKEN_RIGHT_BRACK)) {
@@ -806,8 +788,6 @@ static void list(bool canAssign) {
 
   consume(TOKEN_RIGHT_BRACK, "Expected ']' after list.");
   emitBytes(OP_BUILD_LIST, count);
-  
-  staticCheck.listCount = count;
   current->lastCall = false;
   
   
@@ -868,7 +848,6 @@ static void arrow(bool canAssign) {
   } else {
     expression();
     emitByte(OP_RETURN);
-    staticCheck.returned = true;
   }
 
   ObjFunction* function = endCompiler();
@@ -949,6 +928,7 @@ ParseRule rules[] = {
   [TOKEN_RETURN]        = NONE,
   [TOKEN_THIS]          = {this_, NULL, PREC_NONE},
   [TOKEN_TRUE]          = {literal,  NULL,   PREC_NONE},
+  [TOKEN_NONE]          = {literal,  NULL,   PREC_NONE},
   [TOKEN_VAR]           = NONE,
   [TOKEN_WHILE]         = NONE,
   [TOKEN_ERROR]         = NONE,
@@ -1012,12 +992,10 @@ static void method() {
 
   if (parser.previous.length == 4 && memcmp(parser.previous.start, "init", 4) == 0) {
     type = TYPE_INITIALIZER;
-    staticCheck.returned = true;
   }
   
   function(type);
   emitBytes(OP_METHOD, constant);
-  staticCheck.returned = false;
 }
 
 static void classDeclaration() {
@@ -1242,10 +1220,6 @@ static void returnStatement() {
   }
 
   emitByte(OP_RETURN);
-
-  if (current->scopeDepth < 2) {
-    staticCheck.returned = true;
-  }
 }
 
 static void whileStatement() {
@@ -1437,7 +1411,6 @@ ObjFunction* compile(const char* source, ObjLibrary* library) {
     declaration();
   }
 
-  staticCheck.returned = true;
   ObjFunction* function = endCompiler();
   return parser.hadError ? NULL : function;
 }

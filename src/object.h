@@ -97,11 +97,6 @@ typedef enum {
   TYPE_UNKNOWN,
 } FunctionType;
 
-typedef enum {
-  FUNCTION_PROTECTED,
-  FUNCTION_NOT_PROTECTED,
-
-} FunctionProtection;
 
 typedef struct {
   Obj obj;
@@ -115,7 +110,6 @@ typedef struct {
   ObjLibrary* library;
 
   FunctionType type;
-  FunctionProtection protection;
 } ObjFunction;
 
 
@@ -189,7 +183,7 @@ ObjLibrary* newLibrary(ObjString* name);
 
 ObjClosure* newClosure(ObjFunction* function);
 
-ObjFunction* newFunction(ObjLibrary* library, FunctionProtection protection, FunctionType type);
+ObjFunction* newFunction(ObjLibrary* library, FunctionType type);
 
 ObjInstance* newInstance(ObjClass* klass);
 
