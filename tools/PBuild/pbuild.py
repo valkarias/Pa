@@ -113,7 +113,7 @@ def execute(command):
 
 def initLibs():
     click.echo("Moving libraries...")
-    src = os.path.join(master, "libraries", "APIS")
+    src = os.path.join(master, "libraries", "APIs")
 
     try:
         os.mkdir(other_libraries)
