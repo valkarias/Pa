@@ -330,13 +330,7 @@ char* typeObject(Value value) {
       return generateType("list");
 
     case OBJ_INSTANCE: {
-      //god damit.
-      ObjInstance* instance = AS_INSTANCE(value);
-      char* c = malloc(sizeof(char) * (instance->klass->name->length + 11));
-      memcpy(c, instance->klass->name->chars, instance->klass->name->length);
-      memcpy(c + instance->klass->name->length, " instance", 9);
-      c[instance->klass->name->length + 10] = '\0';
-      return c;
+      return generateType("instance");
     }
 
     case OBJ_NATIVE:
@@ -377,9 +371,10 @@ void printObject(Value value) {
       ObjList* list = AS_LIST(value);
       printf("[");
       for (int i = 0; i < list->items.count; i++) {
-        printf(" ");
         printValue(list->items.values[i]);
-        printf(" ");
+        if (i != list->items.count - 1) {
+            printf(", ");
+        }
       }
 
       printf("]");
