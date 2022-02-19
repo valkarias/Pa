@@ -29,10 +29,12 @@
 
 #define IS_LIST(value)       isObjType(value, OBJ_LIST)
 #define IS_LIBRARY(value)    isObjType(value, OBJ_LIBRARY)
+#define IS_FILE(value)       isObjType(value, OBJ_FILE)
 
 
 
 #define AS_LIBRARY(value)       ((ObjLibrary*)AS_OBJ(value))
+#define AS_FILE(value)       ((ObjFile*)AS_OBJ(value))
 #define AS_BOUND_METHOD(value) ((ObjBoundMethod*)AS_OBJ(value))
 #define AS_CLASS(value)        ((ObjClass*)AS_OBJ(value))
 #define AS_LIST(value)        ((ObjList*)AS_OBJ(value))
@@ -70,6 +72,8 @@ typedef enum {
   OBJ_LIST,
 
   OBJ_LIBRARY,
+
+  OBJ_FILE,
 } ObjType;
 
 
@@ -141,6 +145,13 @@ typedef struct ObjUpvalue {
 
 typedef struct {
   Obj obj;
+  FILE* file;
+  char* path;
+  char* openType;
+} ObjFile;
+
+typedef struct {
+  Obj obj;
   ObjFunction* function;
 //> upvalue-fields
   ObjUpvalue** upvalues;
@@ -186,6 +197,8 @@ ObjClosure* newClosure(ObjFunction* function);
 ObjFunction* newFunction(ObjLibrary* library, FunctionType type);
 
 ObjInstance* newInstance(ObjClass* klass);
+
+ObjFile* newFile();
 
 ObjList* newList();
 void appendToList(ObjList* list, Value value);

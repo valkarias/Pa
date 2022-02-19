@@ -1,0 +1,6 @@
+use File;
+
+let path = "/path/to/your/file.txt";
+let my_file = File.open(path, "r");
+print File.read(my_file);
+File.close(my_file);

@@ -7,6 +7,7 @@ NativeLibraries libraries[] = {
     {"Time", &createTimeLibrary},
     {"Path", &createPathLibrary},
     {"Ascii", &createAsciiLibrary},
+    {"File",  &createFileioLibrary},
 
     // -1
     {NULL, NULL}

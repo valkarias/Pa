@@ -107,6 +107,11 @@ static void blackenObject(Obj* object) {
 //< Methods and Initializers mark-methods
       break;
     }
+
+    case OBJ_FILE: {
+      break;
+    }
+
 //< Classes and Instances blacken-class
 //> blacken-closure
     case OBJ_CLOSURE: {
@@ -174,6 +179,11 @@ static void freeObject(Obj* object) {
       ObjClass* klass = (ObjClass*)object;
       freeTable(&klass->methods);
       FREE(ObjClass, object);
+      break;
+    }
+
+    case OBJ_FILE: {
+      FREE(ObjFile, object);
       break;
     }
 

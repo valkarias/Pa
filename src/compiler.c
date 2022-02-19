@@ -104,21 +104,19 @@ static Chunk* currentChunk() {
 }
 
 static void errorAt(Token* token, const char* message) {
-//> check-panic-mode
   if (parser.panicMode) return;
   parser.panicMode = true;
-//< set-panic-mode
-  fprintf(stderr, "[line %d] in '%s'", token->line, parser.library->name->chars);
+  fprintf(stderr, "\n%s::", parser.library->name->chars);
 
   if (token->type == TOKEN_EOF) {
-    fprintf(stderr, " at end");
+    fprintf(stderr, " at the end");
   } else if (token->type == TOKEN_ERROR) {
     // Nothing.
   } else {
-    fprintf(stderr, " at '%.*s'", token->length, token->start);
+    fprintf(stderr, "%d | %.*s", token->line, token->length,token->start);
   }
 
-  fprintf(stderr, ": %s\n", message);
+  fprintf(stderr, "\n    -> %s\n", message);
   parser.hadError = true;
 }
 
@@ -358,7 +356,7 @@ static int addUpvalue(Compiler* compiler, uint8_t index,
 
 
   if (upvalueCount == UINT8_COUNT) {
-    error("Too many closure variables in function.");
+    error("Too many closure variables in one function.");
     return 0;
   }
 
@@ -390,7 +388,7 @@ static int resolveUpvalue(Compiler* compiler, Token* name) {
 static void addLocal(Token name) {
 //> too-many-locals
   if (current->localCount == UINT8_COUNT) {
-    error("Too many local variables in function.");
+    error("Too many local variables in one function.");
     return;
   }
 
@@ -417,7 +415,7 @@ static void declareVariable() {
     }
     
     if (identifiersEqual(name, &local->name)) {
-      error("Already variable with this name in this scope.");
+      error("Already a defined variable with this name in this scope.");
     }
   }
 
@@ -457,13 +455,13 @@ static uint8_t argumentList() {
       expression();
 
       if (argCount == 30) {
-        error("Can't have more than 30 arguments.");
+        error("Can't have more than 30 arguments within a function.");
       }
 
       argCount++;
     } while (match(TOKEN_COMMA));
   }
-  consume(TOKEN_RIGHT_PAREN, "Expected ')' after arguments.");
+  consume(TOKEN_RIGHT_PAREN, "Expected a ')' after arguments.");
   return argCount;
 }
 
@@ -515,7 +513,7 @@ static void call(bool canAssign) {
 }
 
 static void dot(bool canAssign) {
-  consume(TOKEN_IDENTIFIER, "Expected property name after '.'.");
+  consume(TOKEN_IDENTIFIER, "Expected a property name after '.'");
   uint8_t name = identifierConstant(&parser.previous);
 
   if (canAssign && match(TOKEN_EQUAL)) {
@@ -606,7 +604,7 @@ static void literal(bool canAssign) {
 
 static void grouping(bool canAssign) {
   expression();
-  consume(TOKEN_RIGHT_PAREN, "Expected ')' after expression.");
+  consume(TOKEN_RIGHT_PAREN, "Expected a ')' after the expression.");
   current->lastCall = false;
 }
 
@@ -741,7 +739,7 @@ static Token syntheticToken(const char* text) {
 
 static void this_(bool canAssign) {
   if (currentClass == NULL) {
-    error("Can't use 'this' outside of a class.");
+    error("Can't use the keyword 'this' outside of a class.");
     return;
   }
   
@@ -786,7 +784,7 @@ static void list(bool canAssign) {
     } while(match(TOKEN_COMMA));
   }
 
-  consume(TOKEN_RIGHT_BRACK, "Expected ']' after list.");
+  consume(TOKEN_RIGHT_BRACK, "Expected a ']' after list.");
   emitBytes(OP_BUILD_LIST, count);
   current->lastCall = false;
   
@@ -810,7 +808,7 @@ static void functionArguments() {
 static void subscript(bool canAssign) {
   parsePrecedence(PREC_OR);
 
-  consume(TOKEN_RIGHT_BRACK, "Expected ']' after index.");
+  consume(TOKEN_RIGHT_BRACK, "Expected a ']' after the index value.");
 
   if (canAssign && match(TOKEN_EQUAL)) {
     expression();
@@ -837,11 +835,11 @@ static void arrow(bool canAssign) {
   initCompiler(&compiler, TYPE_UNKNOWN);
   beginScope();
 
-  consume(TOKEN_LEFT_PAREN, "Expected '(' after 'lambda'.");
+  consume(TOKEN_LEFT_PAREN, "Expected a '(' after the 'lambda' keyword.");
   functionArguments();
-  consume(TOKEN_RIGHT_PAREN, "Expected ')'.");
+  consume(TOKEN_RIGHT_PAREN, "Expected a ')'.");
 
-  consume(TOKEN_ARROW, "Expected '->' after ')'.");
+  consume(TOKEN_ARROW, "Expected an arrow ('->') after ')'.");
 
   if (match(TOKEN_LEFT_BRACE)) {
     block();
@@ -864,8 +862,8 @@ static void arrow(bool canAssign) {
 static void body() {
   functionArguments();
 
-  consume(TOKEN_RIGHT_PAREN, "Expected ')'.");
-  consume(TOKEN_LEFT_BRACE, "Expected '{' after ')'.");
+  consume(TOKEN_RIGHT_PAREN, "Expected a ')'.");
+  consume(TOKEN_LEFT_BRACE, "Expected a '{' after the closing ')'.");
 
   block();
 
@@ -940,7 +938,7 @@ static void parsePrecedence(Precedence precedence) {
   advance();
   ParseFn prefixRule = getRule(parser.previous.type)->prefix;
   if (prefixRule == NULL) {
-    error("Expected expression.");
+    error("Expected an expression.");
     return;
   }
 
@@ -973,19 +971,19 @@ static void block() {
     declaration();
   }
 
-  consume(TOKEN_RIGHT_BRACE, "Expected '}' after block.");
+  consume(TOKEN_RIGHT_BRACE, "Expected a closing '}' after block.");
 }
 
 static void function(FunctionType type) {
   Compiler compiler;
   initCompiler(&compiler, type);
-  consume(TOKEN_LEFT_PAREN, "Expected '(' after function name.");
+  consume(TOKEN_LEFT_PAREN, "Expected a '(' after function name.");
   beginScope();
   body();
 }
 
 static void method() {
-  consume(TOKEN_IDENTIFIER, "Expected method name.");
+  consume(TOKEN_IDENTIFIER, "Expected a method name.");
   uint8_t constant = identifierConstant(&parser.previous);
 
   FunctionType type = TYPE_METHOD;
@@ -999,7 +997,7 @@ static void method() {
 }
 
 static void classDeclaration() {
-  consume(TOKEN_IDENTIFIER, "Expected class name.");
+  consume(TOKEN_IDENTIFIER, "Expected a class name.");
   Token className = parser.previous;
   uint8_t nameConstant = identifierConstant(&parser.previous);
   declareVariable();
@@ -1012,12 +1010,12 @@ static void classDeclaration() {
   currentClass = &classCompiler;
 
   namedVariable(className, false);
-  consume(TOKEN_LEFT_BRACE, "Expected '{' before class body.");
+  consume(TOKEN_LEFT_BRACE, "Expected an opening '{' before the class body.");
   while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF)) {
     method();
   }
 
-  consume(TOKEN_RIGHT_BRACE, "Expected '}' after class body.");
+  consume(TOKEN_RIGHT_BRACE, "Expected a closing '}' after the class body.");
   emitByte(OP_POP);
 
   currentClass = currentClass->enclosing;
@@ -1033,16 +1031,16 @@ static void funDeclaration() {
 static void varDeclaration() {
   uint8_t global = parseVariable("Expected a variable name.");
 
-  consume(TOKEN_EQUAL, "Expected '=' after variable name.");
+  consume(TOKEN_EQUAL, "Expected an '=' after the variable name.");
   expression();
-  consume(TOKEN_SEMICOLON, "Expected ';' after variable declaration.");
+  consume(TOKEN_SEMICOLON, "Expected a ';' after variable declaration.");
 
   defineVariable(global);
 }
 
 static void expressionStatement() {
   expression();
-  consume(TOKEN_SEMICOLON, "Expected ';' after expression.");
+  consume(TOKEN_SEMICOLON, "Expected a ';' after the previous expression.");
   emitByte(OP_POP);
 }
 
@@ -1060,10 +1058,10 @@ static void breakLoop() {
 }
 static void breakStatement() {
   if (staticCheck.innermostLoopStart == -1) {
-    error("Can't use 'break' outside of a loop.");
+    error("Can't use the keyword 'break' outside of a loop.");
   }
 
-  consume(TOKEN_SEMICOLON, "Expected ';' after 'break'.");
+  consume(TOKEN_SEMICOLON, "Expected a ';' after the keyword 'break'.");
   for (int i = current->localCount - 1; i >= 0 && current->locals[i].depth > staticCheck.innermostLoopScopeDepth; i--) {
     emitByte(OP_POP);
   }
@@ -1073,10 +1071,10 @@ static void breakStatement() {
 
 static void continueStatement() {
   if (staticCheck.innermostLoopStart == -1) {
-    error("Can't use 'continue' outside of a loop.");
+    error("Can't use the keyword 'continue' outside of a loop.");
   }
 
-  consume(TOKEN_SEMICOLON, "Expected ';' after 'continue'.");
+  consume(TOKEN_SEMICOLON, "Expected a ';' after keyword 'continue'.");
   for (int i = current->localCount - 1; i >= 0 && current->locals[i].depth > staticCheck.innermostLoopScopeDepth; i--) {
     emitByte(OP_POP);
   }
@@ -1106,7 +1104,7 @@ static void forStatement() {
   int exitJump = -1;
   if (!match(TOKEN_SEMICOLON)) {
     expression();
-    consume(TOKEN_SEMICOLON, "Expected ';' after loop condition.");
+    consume(TOKEN_SEMICOLON, "Expected a ';' after the loop condition.");
 
     // Jump out of the loop if the condition is false.
     exitJump = emitJump(OP_JUMP_IF_FALSE);
@@ -1155,7 +1153,7 @@ static void useStatement() {
       defineVariable(library);
     }
   } else {
-    consume(TOKEN_IDENTIFIER, "Expected library identifier.");
+    consume(TOKEN_IDENTIFIER, "Expected a library's name identifier.");
     uint8_t libName = identifierConstant(&parser.previous);
     declareVariable();
 
@@ -1171,7 +1169,7 @@ static void useStatement() {
     defineVariable(libName);
   }
 
-  consume(TOKEN_SEMICOLON, "Expected ';' after use statement.");
+  consume(TOKEN_SEMICOLON, "Expected a ';' after the 'use' statement.");
   emitByte(OP_RECENT_USE);
 }
 
@@ -1198,7 +1196,7 @@ static void printStatement() {
     emitByte(OP_PRINT);
   } while(match(TOKEN_COMMA));
 
-  consume(TOKEN_SEMICOLON, "Expected ';' after value.");
+  consume(TOKEN_SEMICOLON, "Expected a ';' after 'print' statement's value.");
 }
 
 static void returnStatement() {
@@ -1211,7 +1209,7 @@ static void returnStatement() {
   }
 
   expression();
-  consume(TOKEN_SEMICOLON, "Expected ';' after return value.");
+  consume(TOKEN_SEMICOLON, "Expected a ';' after the return value.");
 
 
   if (current->lastCall) {

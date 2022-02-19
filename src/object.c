@@ -88,8 +88,10 @@ ObjLibrary* newLibrary(ObjString* name) {
   // garbage collectors are a nightmare.
   push(OBJ_VAL(library));
   ObjString* __name__ = copyString("__name__", 8); 
+  ObjString* __doc__ = copyString("__doc__", 7); 
   push(OBJ_VAL(__name__));
   tableSet(&library->values, __name__, OBJ_VAL(name));
+  tableSet(&library->values, __doc__, OBJ_VAL(takeString("", 0)));
   //
 
   tableSet(&vm.libraries, name, OBJ_VAL(library));
@@ -123,6 +125,10 @@ ObjNative* newNative(NativeFn function) {
   ObjNative* native = ALLOCATE_OBJ(ObjNative, OBJ_NATIVE);
   native->function = function;
   return native;
+}
+
+ObjFile* newFile() {
+  return ALLOCATE_OBJ(ObjFile, OBJ_FILE);
 }
 
 ObjList* newList() {
@@ -320,6 +326,9 @@ char* typeObject(Value value) {
     case OBJ_CLOSURE:
       return generateType("function");
     
+    case OBJ_FILE:
+      return generateType("file");
+
     case OBJ_CLASS:
       return generateType("class");
     
@@ -390,10 +399,14 @@ void printObject(Value value) {
     case OBJ_FUNCTION:
       printFunction(AS_FUNCTION(value));
       break;
+
+    case OBJ_FILE:
+      printf("<file %s>", AS_FILE(value)->path);
+      break;
 //< Calls and Functions print-function
 //> Classes and Instances print-instance
     case OBJ_INSTANCE:
-      printf("%s instance",
+      printf("<%s instance>",
              AS_INSTANCE(value)->klass->name->chars);
       break;
 //< Classes and Instances print-instance

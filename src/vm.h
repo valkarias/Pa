@@ -73,6 +73,7 @@ InterpretResult interpret(const char* source, char* libName);
 void defineNative(const char* name, NativeFn function, Table* table);
 void defineProperty(const char* name, Value value, Table* table);
 void runtimeError(const char* format, ...);
+void info(const char* extra, ...);
 void push(Value value);
 Value pop();
 

@@ -1,11 +1,11 @@
 # PCrap
-![maintenance](https://img.shields.io/maintenance/yes/2021?style=flat-square)
+![maintenance](https://img.shields.io/maintenance/yes/2022?style=flat-square)
 ![CI](https://img.shields.io/github/workflow/status/valkarias/PCrap/Release-builds?style=flat-square)
 
 
 You are welcomed to the holy lands of PCrap.  
 
-Pcrap is a hobby project, it's designed to be small the goal was to make a language that I can use in my daily life.    
+Pcrap is a hobby project designed mainly for familiarity and prototyping and the goal was to make a language that I can use in my daily life.    
 Huge thanks to Jérémie Astor and his language [Gwion](https://github.com/Gwion/Gwion) for helping PCrap!
 
 ## Documentation
@@ -79,7 +79,7 @@ define fib (n, a, b) {
 
 ## Performance  
 Thanks [Gwion-Benchmarks](https://github.com/Gwion/gwion-benchmark) for benchmarking PCrap.  
-Here are the results of a full benchmark suite for pcrap against other languages -> [benchmarks](https://gwion.github.io/Gwion/Benchmarks.html).
+Here are the results of a full benchmark suite for pcrap against some other languages -> [benchmarks](https://gwion.github.io/Gwion/Benchmarks.html).
 
 ## Thanks to
 - [Dictu](https://github.com/dictu-lang/Dictu) By Jason Hall.  
