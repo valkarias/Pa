@@ -68,36 +68,48 @@ static Value typeNative(int argCount, Value *args) {
 }
 
 static Value assertNative(int argCount, Value *args) {
+    if (argCount != 1 && argCount != 2) {
+        runtimeError("Expected 1 or 2 arguments but got %d from 'assert()'.", argCount);
+        return NOTCLEAR;
+    }
+
+    char* message = "No Source.";
+    if (!IS_BOOL(args[0])) {
+        runtimeError("First argument must be a boolean from 'assert()'.");
+        return NOTCLEAR;
+    }
+
+    if (argCount == 2) {
+        if (!IS_STRING(args[1])) {
+            runtimeError("Second argument must be a string from 'assert()'.");
+            return NOTCLEAR;
+        }
+
+        message = AS_CSTRING(args[1]);
+    }
+
+    if (isFalsey(args[0])) {
+        ERROR(message);
+        return NOTCLEAR;
+    }
+
+    return CLEAR;
+}
+
+static Value toStringNative(int argCount, Value *args) {
     if (argCount != 1) {
-        runtimeError("Expected 1 argument but got %d from 'assert()'.", argCount);
+        runtimeError("Expected 1 argument but got %d from 'toString()'.", argCount);
         return NOTCLEAR;
     }
 
-    if (isFalsey(args[0])) {
-        ERROR("Assertion Failed");
-        return NOTCLEAR;
+    if (IS_STRING(args[0])) {
+        return args[0];
     }
 
-    return CLEAR;
+    char* c = stringValue(args[0]);
+    return OBJ_VAL(takeString(c, strlen(c)));
 }
 
-static Value assertShowNative(int argCount, Value *args) {
-    if (argCount != 2) {
-        runtimeError("Expected 2 arguments but got %d from 'assertShow()'.", argCount);
-        return NOTCLEAR;
-    }
-    if (!IS_STRING(args[1])) {
-        runtimeError("Argument must be a string from 'assertShow()'.");
-        return NOTCLEAR;
-    }
-
-    if (isFalsey(args[0])) {
-        ERROR(AS_CSTRING(args[1]));
-        return NOTCLEAR;
-    }
-
-    return CLEAR;
-}
 
 ///////////////////
 
@@ -105,17 +117,15 @@ void defineAllNatives() {
     char* nativeStrings[] = {
         "input",
         "type",
-
+        "toString",
         "assert",
-        "assertShow"
     };
 
     NativeFn nativeFunctions[] = {
         inputNative,
         typeNative,
-        
+        toStringNative,
         assertNative,
-        assertShowNative,
     };
 
     for (uint8_t i = 0; i < sizeof(nativeStrings) / sizeof(nativeStrings[0]); i++) {

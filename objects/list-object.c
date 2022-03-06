@@ -271,7 +271,7 @@ void initListMethods() {
         "reverse",
         "copy",
         "flatten",
-        "slice"
+        "slice",
     };
 
     NativeFn listMethods[] = {

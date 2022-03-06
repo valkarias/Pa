@@ -51,14 +51,13 @@ class Dict {
     }
 
     Show () {
-        //todo: convert various types to strings
         print "{";
         for let i = 0; i < this.keys.length(); i++ {
+	    let pair = "\t" + this.keys[i] + ": " + toString(this.values[i]);
             if i < this.keys.length() - 1 {
-                print "\t" + this.keys[i] + ": " + this.values[i] + ",";
-            } else {
-                print "\t" + this.keys[i] + ": " + this.values[i];
+                 pair = pair + ",";
             }
+	    print pair;
         }
         print "}";
     }
@@ -70,8 +69,8 @@ class Dict {
 }
 
 let myDict = Dict([
-    ["Value1", "1"],
-    ["Value2", "2"]
+    ["Value1", 1],
+    ["Value2", 2]
 ]);
 
 

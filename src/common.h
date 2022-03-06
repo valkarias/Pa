@@ -1,4 +1,3 @@
-//> Chunks of Bytecode common-h
 #ifndef pcrap_common_h
 #define pcrap_common_h
 

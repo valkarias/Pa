@@ -1,4 +1,6 @@
 # PCrap
+<img src="https://user-images.githubusercontent.com/70243457/156932366-71635391-789e-4c5d-8b79-d17beef5d387.png" alt="logo" height="300">
+
 ![maintenance](https://img.shields.io/maintenance/yes/2022?style=flat-square)
 ![CI](https://img.shields.io/github/workflow/status/valkarias/PCrap/Release-builds?style=flat-square)
 
@@ -12,7 +14,8 @@ Huge thanks to Jérémie Astor and his language [Gwion](https://github.com/Gwion
 If you are completely new, Please head to the [Pcrap Documentation](https://valkarias.github.io/contents/toc.html).
 The website is not completely responsive & the standard library documentation will be gradually added and is in progress.
 
-Examples are all in the [examples folder](https://github.com/valkarias/PCrap/tree/master/examples).
+Examples are all in the [examples folder](https://github.com/valkarias/PCrap/tree/master/examples).  
+Check the [Update Log](https://github.com/valkarias/PCrap/blob/master/LOG.md) page for any major or minor changes added!
 
 ## Up & Running
 - PCrap uses a tool called [PBuild](https://github.com/valkarias/PCrap/releases) to download & build.  

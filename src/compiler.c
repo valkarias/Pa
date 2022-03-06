@@ -497,6 +497,7 @@ static void binary(bool canAssign) {
     case TOKEN_SLASH:         emitByte(OP_DIVIDE); break;
     case TOKEN_MODULO:        emitByte(OP_MOD); break;
     case TOKEN_POW:           emitByte(OP_POW); break;
+    
     case TOKEN_BIT_AND:       emitByte(OP_BIT_AND); break;
     case TOKEN_BIT_OR:        emitByte(OP_BIT_OR); break;
     default: return; // Unreachable.
@@ -784,7 +785,7 @@ static void list(bool canAssign) {
     } while(match(TOKEN_COMMA));
   }
 
-  consume(TOKEN_RIGHT_BRACK, "Expected a ']' after list.");
+  consume(TOKEN_RIGHT_BRACK, "Expected a closing ']' at the list's end.");
   emitBytes(OP_BUILD_LIST, count);
   current->lastCall = false;
   
@@ -808,7 +809,7 @@ static void functionArguments() {
 static void subscript(bool canAssign) {
   parsePrecedence(PREC_OR);
 
-  consume(TOKEN_RIGHT_BRACK, "Expected a ']' after the index value.");
+  consume(TOKEN_RIGHT_BRACK, "Expected a closing ']' after the index value.");
 
   if (canAssign && match(TOKEN_EQUAL)) {
     expression();

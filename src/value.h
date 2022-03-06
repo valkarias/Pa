@@ -169,8 +169,8 @@ void freeValueArray(ValueArray* array);
 //< array-fns-h
 //> print-value-h
 void printValue(Value value);
-
 char* typeValue(Value value);
+char* stringValue(Value value);
 //< print-value-h
 
 #endif

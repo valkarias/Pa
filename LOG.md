@@ -1,32 +1,35 @@
 # Pcrap Update Log
-## File i/o
-File input & output is finally possible in pcrap via providing a new module that contains  
-5 total functions and 3 properties which are:
+## Sorting Lists
+Some sorting functionality should've been implemented a long time ago, but here we are!  
+ Sorting lists is finally possible and is provided by the *Sort* module (which is coded in Pcrap itself!)  
+
+**{+}:** Remember to update Pcrap before importing it!    
+
+Using it is as simple as doing:
+```
+use "Sort";
+```  
 
 ### Functions
-- open
-- write
-- read
-- isEOF
-- seek
+- quickSort
+- selectionSort
 
-### Properties
-- SEEK_SET
-- SEEK_CUR
-- SEEK_END
+**{+}:** The selection sort method was added for smaller arrays and to add a bit of variety  
+since its a module, so expect more functions in the future.
 
-**{+}:** Better explained in the up-coming documentation page for the *File* module.
-
-## Compiler errors
-A complete overhaul of the compiler errors, the current structure is not finalized BUT,
-its better than before:
-```
-file.pc::line | where
-   -> error message
-```
-**{+}:** Improved almost all of the errors' messages!
+## String Conversion
+This means converting various types to a string type which is very useful in different situations.  
+A new ``toString`` native function has been added that does exactly just that.  
+It takes one argument which is the value and will return a string representation from it.
 
 ## Misc
-Improved the description in the readme.  
-Added The *Path* module documentation -> [seen here](https://valkarias.github.io/contents/chapters/stdlib/path.html).  
-Added update logs from now on, to better express the new minor and major changes.
+- Removed  ``assertShow`` function and added one optional argument to ``assert`` to display a message instead.   
+- Improved ``assert`` function to display neat and less confusing error messages  
+```
+//assert(false)
+Assertion Failed: No Source
+
+//assert(false, message)
+Assertion Failed: message
+```
+- Added documentation for the Os module.

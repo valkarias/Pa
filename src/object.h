@@ -223,6 +223,7 @@ void printObject(Value value);
 
 char* typeObject(Value value);
 void* generateType (char* type);
+char* objectString(Value value);
 
 static inline bool isObjType(Value value, ObjType type) {
   return IS_OBJ(value) && AS_OBJ(value)->type == type;

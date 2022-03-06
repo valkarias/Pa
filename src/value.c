@@ -34,6 +34,31 @@ void freeValueArray(ValueArray* array) {
   initValueArray(array);
 }
 
+char* stringValue(Value value) {
+  if (IS_BOOL(value)) {
+    char* str = AS_BOOL(value) ? "true" : "false";
+    char* valueStr = malloc(sizeof(char) * (strlen(str) + 1));
+    snprintf(valueStr, strlen(str) + 1, "%s", str);
+    return valueStr;
+
+  } else if (IS_NIL(value)) {
+    //4 for 'none' + 1 for '\0'
+    char* valueStr = malloc(sizeof(char) * 5);
+    snprintf(valueStr, 5, "%s", "none");
+    return valueStr;
+
+  } else if (IS_NUMBER(value)) {
+    double num = AS_NUMBER(value);
+    int length = snprintf(NULL, 0, "%.15g", num) + 1;
+    char* valueStr = malloc(sizeof(char) * length);
+    snprintf(valueStr, length, "%.15g", num);
+    return valueStr;
+
+  } else if (IS_OBJ(value)) {
+    return objectString(value);
+  }
+}
+
 char* typeValue(Value value) {
   if (IS_BOOL(value)) {
     return generateType("bool");

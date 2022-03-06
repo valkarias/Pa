@@ -88,10 +88,8 @@ ObjLibrary* newLibrary(ObjString* name) {
   // garbage collectors are a nightmare.
   push(OBJ_VAL(library));
   ObjString* __name__ = copyString("__name__", 8); 
-  ObjString* __doc__ = copyString("__doc__", 7); 
   push(OBJ_VAL(__name__));
   tableSet(&library->values, __name__, OBJ_VAL(name));
-  tableSet(&library->values, __doc__, OBJ_VAL(takeString("", 0)));
   //
 
   tableSet(&vm.libraries, name, OBJ_VAL(library));
@@ -307,7 +305,7 @@ static void printFunction(ObjFunction* function) {
     return;
   }
 //< print-script
-  printf("<fn %s>", function->name->chars);
+  printf("<function %s>", function->name->chars);
 }
 
 void* generateType (char* type) {
@@ -353,6 +351,160 @@ char* typeObject(Value value) {
   }
 
   return generateType("unknown");
+}
+
+char* stringList(Value value) {
+  ObjList* list = AS_LIST(value);
+  int size = 50;
+  char* objectString = malloc(sizeof(char) * size);
+  memmove(objectString, "[", 1);
+  int length = 1;
+
+  for (int i = 0; i < list->items.count; ++i) {
+    Value item = list->items.values[i];
+
+    char* itemString;
+    int itemSize;
+
+    if (IS_STRING(item)) {
+      ObjString* s = AS_STRING(item);
+      itemString = s->chars;
+      itemSize = s->length;
+    } else {
+      itemString = stringValue(item);
+      itemSize = strlen(itemString);
+    }
+
+    if (itemSize > (size - length - 6)) {
+      if (itemSize > size) {
+        size = size + itemSize * 2 + 6;
+      } else {
+        size = size * 2 + 6;
+      }
+
+      char* rel = realloc(objectString, sizeof(char) * size);
+
+      if (!rel) {
+        printf("An issue occured during string conversion\n");
+        exit(71);
+      }
+
+      objectString = rel;
+    }
+
+    if (IS_STRING(item)) {
+      memmove(objectString + length, "\"", 1);
+      memmove(objectString + length + 1, itemString, itemSize);
+      memmove(objectString + length + 1 + itemSize, "\"", 1);
+      length += itemSize + 2;
+    } else {
+      memmove(objectString + length, itemString, itemSize);
+      length += itemSize;
+      free(itemString);
+    }
+
+    if (i != list->items.count - 1) {
+      memmove(objectString + length, ", ", 2);
+      length += 2;
+    }
+  }
+
+  memmove(objectString + length, "]", 1);
+  objectString[length + 1] = '\0';
+
+  return objectString;
+}
+
+char* objectString(Value value) {
+  switch (OBJ_TYPE(value)) {
+    case OBJ_LIBRARY: {
+      ObjLibrary* library = AS_LIBRARY(value);
+      char* objectString = malloc(sizeof(char) * (library->name->length + 12));
+      snprintf(objectString, (library->name->length + 11), "<library %s>", library->name->chars);
+      return objectString;
+    }
+
+    case OBJ_CLASS: {
+      ObjClass* klass = AS_CLASS(value);
+      char* objectString = malloc(sizeof(char) * (klass->name->length + 10));
+      memmove(objectString, "<class ", 7);
+      memmove(objectString + 7, klass->name->chars, klass->name->length);
+      memmove(objectString + 7 + klass->name->length, ">", 1);
+      objectString[klass->name->length + 8] = '\0';
+      return objectString; 
+    }
+
+    case OBJ_CLOSURE: {
+      ObjClosure* closure = AS_CLOSURE(value);
+      char* objectString;
+
+      if (closure->function->name != NULL) {
+        objectString = malloc(sizeof(char) * (closure->function->name->length + 13));
+        snprintf(objectString, (closure->function->name->length + 12), "<function %s>", closure->function->name->chars);
+      } else {
+        objectString = malloc(sizeof(char) * 9);
+        memmove(objectString, "<script>", 8);
+        objectString[8] = '\0';
+      }
+
+      return objectString; 
+    }
+
+    case OBJ_FUNCTION: {
+      ObjFunction* function = AS_FUNCTION(value);
+      char* objectString;
+
+      if (function->name != NULL) {
+        objectString = malloc(sizeof(char) * (function->name->length + 13));
+        snprintf(objectString, (function->name->length + 12), "<function %s>", function->name->chars);
+      } else {
+        objectString = malloc(sizeof(char) * 10);
+        memmove(objectString, "<function>", 9);
+        objectString[9] = '\0';
+      }
+
+      return objectString;
+    }
+
+    case OBJ_INSTANCE: {
+      ObjInstance* instance = AS_INSTANCE(value);
+      char* objectString = malloc(sizeof(char) * (instance->klass->name->length + 12));
+      memmove(objectString, "<instance ", 10);
+      memmove(objectString + 1, instance->klass->name->chars, instance->klass->name->length);
+      memmove(objectString + 1 + instance->klass->name->length, ">", 1);
+      objectString[instance->klass->name->length + 11] = '\0';
+      return objectString; 
+    }
+
+    case OBJ_NATIVE: {
+      char* objectString = malloc(sizeof(char) * 18);
+      memmove(objectString, "<native function>", 17);
+      objectString[17] = '\0';
+      return objectString;
+    }
+    
+    case OBJ_FILE: {
+      ObjFile* file = AS_FILE(value);
+      char* objectString = malloc(sizeof(char) * ( strlen(file->path) + 8 ));
+      snprintf(objectString, strlen(file->path) + 8, "<file %s>", file->path);
+      return objectString;
+    }
+
+    case OBJ_LIST: {
+      return stringList(value);
+    }
+
+    case OBJ_UPVALUE: {
+      char* objectString = malloc(sizeof(char) * 8);
+      memmove(objectString, "upvalue", 7);
+      objectString[7] = '\0';
+      return objectString;
+    }
+  }
+
+  char* unknown = malloc(sizeof(char) * 9);
+  snprintf(unknown, 8, "%s", "unknown");
+  return unknown;
 }
 
 void printObject(Value value) {

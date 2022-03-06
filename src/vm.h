@@ -78,4 +78,6 @@ void push(Value value);
 Value pop();
 
 bool isFalsey(Value value);
+
+bool callValue(Value callee, int argCount);
 #endif

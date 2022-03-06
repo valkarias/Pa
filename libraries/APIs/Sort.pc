@@ -1,0 +1,78 @@
+//Other libraries written in pcrap...
+//Supported by the VM.
+
+// Selection Sort: Suitable for smaller arrays.
+define selectionSort(list) {
+    if list.length() > 20 {
+        print "Warning: selectionSort may not be suitable for its given array.";
+        print " -> Try a more smaller array (under 20 elements).";
+    }
+
+    for let i = 0; i < list.length(); i++ {
+        let min = i;
+
+        for let j = i+1; j < list.length(); j++ {
+            if list[i] > list[j] {
+                min = j;
+            }
+
+        }
+
+        let temp = list[min];
+        list[min] = list[i];
+        list[i] = temp;
+    }
+}
+//
+
+// Quick Sort
+define __partition(list, low, high) {
+    let pivot = list[high];
+    let stored = low - 1;
+
+    for let i = low; i < high; i++ {
+        if list[i] <= pivot {
+            stored++;
+            //
+            let temp = list[stored];
+            list[stored] = list[i];
+            list[i] = temp;
+        }
+    }
+
+    //
+    let temp = list[stored + 1];
+    list[stored + 1] = list[high];
+    list[high] = temp;
+
+    return (stored + 1);
+}
+define __sort(list, low, high) {
+    let start = low;
+    let end = high;
+    while start < end {
+        let part = __partition(list, start, end);
+
+        if part - start < end - part {
+            __sort(list, start, part);
+            
+            start++;
+        } else {
+            __sort(list, part + 1, end);
+
+            end--;
+        }
+    }
+}
+
+define quickSort(list) {
+    for let i = 0; i < list.length(); i++ {
+        if type(list[i]) != "number" { 
+            assertShow(false, "List should be numeric from 'quickSort'.");
+            return none;
+        }
+    }
+
+    __sort(list, 0, list.length() - 1);
+}
+//

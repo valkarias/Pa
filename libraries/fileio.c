@@ -130,7 +130,7 @@ static Value seekLib(int argCount, Value *args) {
     }
 
     if (!IS_NUMBER(args[1]) || !IS_NUMBER(args[2])) {
-        runtimeError("First && Second arguments must be file objects from 'seek()'.");
+        runtimeError("Second && Third arguments must be numbers from 'seek()'.");
         return NOTCLEAR;
     }
 

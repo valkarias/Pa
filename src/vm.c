@@ -237,7 +237,7 @@ static bool keepFrame(CallFrame* frame, int argCount) {
   return true;
 }
 
-static bool callValue(Value callee, int argCount) {
+ bool callValue(Value callee, int argCount) {
   if (IS_OBJ(callee)) {
     switch (OBJ_TYPE(callee)) {
 
