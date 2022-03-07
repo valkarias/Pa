@@ -33,3 +33,8 @@ Assertion Failed: No Source
 Assertion Failed: message
 ```
 - Added documentation for the Os module.
+
+## Late Patches
+- Added ``exists`` function to the File module.
+- Added the ``stdin``, ``stdout`` and ``stderr`` file objects as constants to the File module.
+- Removed the functions of the Time module, currently it only contains constants which should be enough. A Complete overhaul is in mind but not confirmed (documentation soon).

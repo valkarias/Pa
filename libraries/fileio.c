@@ -142,6 +142,27 @@ static Value seekLib(int argCount, Value *args) {
     return CLEAR;
 }
 
+static Value existsLib(int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError("Expected 1 argument but got %d from 'exists()'.", argCount);
+        return NOTCLEAR;
+    }
+
+    if (!IS_STRING(args[0])) {
+        runtimeError("First argument must be a string from 'exists()'.");
+        return NOTCLEAR;
+    }
+
+    char* path = AS_CSTRING(args[0]);
+
+    int status = checkPath(path);
+    if (status == false) {
+        return FALSE_VAL;
+    }
+
+    return TRUE_VAL;
+}
+
 static Value closeLib(int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError("Expected 1 argument but got %d from 'close()'.", argCount);
@@ -159,6 +180,36 @@ static Value closeLib(int argCount, Value *args) {
     return CLEAR;
 }
 
+void initIOFiles(Table* table) {
+    ObjFile* Stdout = newFile();
+    ObjFile* Stdin = newFile();
+    ObjFile* Stderr = newFile();
+
+    push(OBJ_VAL(Stdout));
+    push(OBJ_VAL(Stdin));
+    push(OBJ_VAL(Stderr));
+
+    Stdout->file = stdout;
+    Stdin->file = stdin;
+    Stderr->file = stderr;
+
+    Stdout->openType = "w";
+    Stdin->openType = "r";
+    Stderr->openType = "w";
+
+    Stdout->path = "stdout";
+    Stdin->path = "stdin";
+    Stderr->path = "stderr";
+    
+    defineProperty("stdout", OBJ_VAL(Stdout), table);
+    defineProperty("stdin", OBJ_VAL(Stdin), table);
+    defineProperty("stderr", OBJ_VAL(Stderr), table);
+
+    pop();
+    pop();
+    pop();
+}
+
 ObjLibrary* createFileioLibrary() {
     ObjString* name = copyString("File", 4);
     push(OBJ_VAL(name));
@@ -170,11 +221,14 @@ ObjLibrary* createFileioLibrary() {
     defineNative("write", writeLib, &library->values);
     defineNative("read", readLib, &library->values);
     defineNative("seek", seekLib, &library->values);
+    defineNative("exists", existsLib, &library->values);
     defineNative("isEOF", isEOFLib, &library->values);
     
     defineProperty("SEEK_SET", NUMBER_VAL(SEEK_SET), &library->values);
     defineProperty("SEEK_CUR", NUMBER_VAL(SEEK_CUR), &library->values);
     defineProperty("SEEK_END", NUMBER_VAL(SEEK_END), &library->values);
+
+    initIOFiles(&library->values);
 
     pop();
     pop();

@@ -11,7 +11,7 @@ void initNumberMethods();
 //Written in PCrap instead for the sake of simplicity too.
 #define NUMBER_EXTRA "//\n" \
 "define repeat(num, action) {\n" \
-"   assertShow(type(action) == \"function\", \"Argument must be a function from 'repeat'.\");\n" \
+"   assert(type(action) == \"function\", \"Argument must be a function from 'repeat'.\");\n" \
 "\n"\
 "   for let i = 0; i < num; i++ {\n" \
 "       action(i);\n" \
