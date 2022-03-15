@@ -13,6 +13,27 @@ char* toAscii(int n) {
     return string;
 }
 
+static Value codeLib(int argCount, Value *args) {
+    if (argCount != 1) {
+        runtimeError("Expected 1 argument but got %d from 'code()'.", argCount);
+        return NOTCLEAR;
+    }
+
+    if (!IS_STRING(args[0])) {
+        runtimeError("First argument must be a number from 'code()'.");
+        return NOTCLEAR;
+    }
+
+    if (AS_STRING(args[0])->length > 1) {
+        runtimeError("Expected 1 character but got a string of %d from 'code()'.", AS_STRING(args[0])->length);
+        return NOTCLEAR;
+    }
+
+    ObjString* character = AS_STRING(args[0]);
+    int code = character->chars[0];
+    return NUMBER_VAL(code);
+}
+
 static Value asciiLib(int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError("Expected 1 argument but got %d from 'ascii()'.", argCount);
@@ -37,6 +58,7 @@ ObjLibrary* createAsciiLibrary() {
     push(OBJ_VAL(library));
 
     defineNative("ascii", asciiLib, &library->values);
+    defineNative("code", codeLib, &library->values);
 
     defineProperty("upper", OBJ_VAL(copyString("ABCDEFGHIJKLMNOPQRSTUVWXYZ", 26)), &library->values);
     defineProperty("lower", OBJ_VAL(copyString("abcdefghijklmnopqrstuvwxyz", 26)), &library->values);

@@ -104,6 +104,7 @@ static void blackenObject(Obj* object) {
       markObject((Obj*)klass->name);
 //> Methods and Initializers mark-methods
       markTable(&klass->methods);
+      markTable(&klass->privateMethods);
 //< Methods and Initializers mark-methods
       break;
     }
@@ -141,6 +142,7 @@ static void blackenObject(Obj* object) {
       ObjLibrary* library = (ObjLibrary*)object;
       markObject((Obj*)library->name);
       markTable(&library->values);
+      markTable(&library->privateValues);
       break;
     }
 //< blacken-function
@@ -149,6 +151,7 @@ static void blackenObject(Obj* object) {
       ObjInstance* instance = (ObjInstance*)object;
       markObject((Obj*)instance->klass);
       markTable(&instance->fields);
+      markTable(&instance->privateFields);
       break;
     }
 //< Classes and Instances blacken-instance
@@ -177,7 +180,8 @@ static void freeObject(Obj* object) {
     case OBJ_CLASS: {
 
       ObjClass* klass = (ObjClass*)object;
-      freeTable(&klass->methods);
+      markTable(&klass->methods);
+      freeTable(&klass->privateMethods);
       FREE(ObjClass, object);
       break;
     }
@@ -206,6 +210,7 @@ static void freeObject(Obj* object) {
     case OBJ_LIBRARY: {
       ObjLibrary* library = (ObjLibrary*)object;
       freeTable(&library->values);
+      freeTable(&library->privateValues);
       FREE(ObjLibrary, object);
       break;
     }
@@ -221,6 +226,7 @@ static void freeObject(Obj* object) {
     case OBJ_INSTANCE: {
       ObjInstance* instance = (ObjInstance*)object;
       freeTable(&instance->fields);
+      freeTable(&instance->privateFields);
       FREE(ObjInstance, object);
       break;
     }

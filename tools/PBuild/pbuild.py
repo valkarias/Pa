@@ -1,21 +1,22 @@
 import click
 import subprocess
 import os
-import sys
 import platform
 import shutil
 import json
-from urllib.request import urlopen, Request
+import zipfile
+from urllib.request import urlopen, Request, urlretrieve
 
 #
 home = os.path.expanduser('~')
 
 master = os.path.join(home, "PCrap")
+master_c = os.path.join(master, "PCrap-master")
 
-objects = os.path.join(master, "objects", "*.c")
-libraries = os.path.join(master, "libraries", "*.c")
+objects = os.path.join(master_c, "objects", "*.c")
+libraries = os.path.join(master_c, "libraries", "*.c")
 
-source = os.path.join(master, "src", "*.c")
+source = os.path.join(master_c, "src", "*.c")
 # >:)
 opts = "-Ofast -flto"
 flags = "-o"
@@ -104,6 +105,22 @@ def get_latest_release_name():
 
     return False
 
+def download_source():
+    url = "https://github.com/valkarias/PCrap/archive/master.zip"
+    req, headers = urlretrieve(url, filename=master + ".zip")
+    file = open(req)
+    with zipfile.ZipFile(master + ".zip", 'r') as zip:
+        extracted = os.path.join(home, "PCrap")
+        os.mkdir(extracted)
+        click.echo("Extracting ZIP file..")
+        try:
+            zip.extractall(extracted)
+        except:
+            click.secho("Extraction failed.", fg='red')
+            return False
+    file.close()
+    return True
+
 def execute(command):
     process = os.popen(command)
     output = process.read()
@@ -113,7 +130,7 @@ def execute(command):
 
 def initLibs():
     click.echo("Moving libraries...")
-    src = os.path.join(master, "libraries", "APIs")
+    src = os.path.join(master_c, "libraries", "APIs")
 
     try:
         os.mkdir(other_libraries)
@@ -133,7 +150,7 @@ def initLibs():
 def setPath():
     #There is no way you can set the actual path via pure python.
     #Only works on windows.
-    binp = os.path.join(master, "bin")
+    binp = os.path.join(master_c, "bin")
     commands = ["setx", "/M", "path", f"{os.environ['Path']};{binp}"]
 
     process = subprocess.Popen(commands, 
@@ -149,7 +166,7 @@ def setPath():
 
 
 def compile(cc):
-    binp = os.path.join(master, "bin")
+    binp = os.path.join(master_c, "bin")
     os.chdir(binp)
 
     initLibs()
@@ -166,12 +183,11 @@ def cli():
 
 @click.command()
 def download():
-    repo = f"https://github.com/{REPO_NAME}.git" # lmao
-
     os.chdir(home)
-    execute(
-        f"git clone {repo}"
-    )
+    if not download_source():
+        click.secho("Downloading failed", fg='red')
+        return
+
 
     click.secho("Downloading finished", fg='green')
 

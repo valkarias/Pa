@@ -4,8 +4,8 @@
 // Selection Sort: Suitable for smaller arrays.
 define selectionSort(list) {
     if list.length() > 20 {
-        print "Warning: selectionSort may not be suitable for its given array.";
-        print " -> Try a more smaller array (under 20 elements).";
+        print("Warning: selectionSort may not be suitable for its given array.");
+        print(" -> Try a more smaller array (under 20 elements).");
     }
 
     for let i = 0; i < list.length(); i++ {
@@ -26,7 +26,7 @@ define selectionSort(list) {
 //
 
 // Quick Sort
-define __partition(list, low, high) {
+private define __partition(list, low, high) {
     let pivot = list[high];
     let stored = low - 1;
 
@@ -47,7 +47,7 @@ define __partition(list, low, high) {
 
     return (stored + 1);
 }
-define __sort(list, low, high) {
+private define __sort(list, low, high) {
     let start = low;
     let end = high;
     while start < end {
@@ -68,7 +68,7 @@ define __sort(list, low, high) {
 define quickSort(list) {
     for let i = 0; i < list.length(); i++ {
         if type(list[i]) != "number" { 
-            assertShow(false, "List should be numeric from 'quickSort'.");
+            assert(false, "List should be numeric from 'quickSort'.");
             return none;
         }
     }

@@ -37,12 +37,9 @@ static Obj* allocateObject(size_t size, ObjType type) {
 //< Garbage Collection debug-log-allocate
   return object;
 }
-//< allocate-object
-//> Methods and Initializers new-bound-method
-ObjBoundMethod* newBoundMethod(Value receiver,
-                               ObjClosure* method) {
-  ObjBoundMethod* bound = ALLOCATE_OBJ(ObjBoundMethod,
-                                       OBJ_BOUND_METHOD);
+
+ObjBoundMethod* newBoundMethod(Value receiver, ObjClosure* method) {
+  ObjBoundMethod* bound = ALLOCATE_OBJ(ObjBoundMethod, OBJ_BOUND_METHOD);
   bound->receiver = receiver;
   bound->method = method;
   return bound;
@@ -53,6 +50,7 @@ ObjClass* newClass(ObjString* name) {
   ObjClass* klass = ALLOCATE_OBJ(ObjClass, OBJ_CLASS);
   klass->name = name;
   initTable(&klass->methods);
+  initTable(&klass->privateMethods);
   return klass;
 }
 
@@ -82,6 +80,7 @@ ObjLibrary* newLibrary(ObjString* name) {
 
   ObjLibrary* library = ALLOCATE_OBJ(ObjLibrary, OBJ_LIBRARY);
   initTable(&library->values);
+  initTable(&library->privateValues);
   library->name = name;
 
 
@@ -106,6 +105,7 @@ ObjFunction* newFunction(ObjLibrary* library, FunctionType type) {
 
   function->library = library;
   function->type = type;
+  function->accessLevel = PUBLIC_METHOD;
 
   function->name = NULL;
   initChunk(&function->chunk);
@@ -116,6 +116,7 @@ ObjInstance* newInstance(ObjClass* klass) {
   ObjInstance* instance = ALLOCATE_OBJ(ObjInstance, OBJ_INSTANCE);
   instance->klass = klass;
   initTable(&instance->fields);
+  initTable(&instance->privateFields);
   return instance;
 }
 

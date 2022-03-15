@@ -13,4 +13,4 @@ define fib (n, a, b) {
 
 // To understand recursion, read the comment above
 
-print fib(40, 0, 1);
+print(fib(40, 0, 1));

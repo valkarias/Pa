@@ -230,26 +230,32 @@ static Value flattenMethod(int argCount, Value* args) {
 }
 
 static Value sliceMethod(int argCount, Value* args) {
-    if (argCount != 1) {
-        runtimeError("Expected 1 argument but got %d from 'slice()'.", argCount);
+    if (argCount != 2) {
+        runtimeError("Expected 2 arguments but got %d from 'slice()'.", argCount);
         return NOTCLEAR;
     }
 
-    if (!IS_NUMBER(args[1])) {
-        runtimeError("Argument must be a number from 'slice()'.");
+    if (!IS_NUMBER(args[1]) || !IS_NUMBER(args[2])) {
+        runtimeError("First and second arguments must be numbers from 'slice()'.");
         return NOTCLEAR;
     }
 
-    int limit = AS_NUMBER(args[1]);
+    int start = AS_NUMBER(args[1]);
+    int limit = AS_NUMBER(args[2]) + 1;
+
     ObjList* list = AS_LIST(args[0]);
 
     ObjList* res = newList();
     push(OBJ_VAL(res));
 
+    if (start < 0) {
+        start = 0;
+    }
     if (list->items.count <= limit) {
         limit = list->items.count;
     }
-    for (int i = 0; i < limit; i++) {
+
+    for (int i = start; i < limit; i++) {
         appendToList(res, list->items.values[i]);
     }
 

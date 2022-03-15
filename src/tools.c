@@ -55,7 +55,6 @@ char* real(char* p) {
   }
 #endif
 
-  //help???
   free(rp);
   return NULL;
 }
@@ -76,7 +75,7 @@ char* resolveLibrary(char* name) {
 
 char* basename(char* path) {
   char* bfname = ALLOCATE(char, strlen(path) + 1);
-  memcpy(bfname, path, strlen(path));
+  memmove(bfname, path, strlen(path) + 1);
   bfname[strlen(path)] = '\0';
 
 #ifdef _WIN32
@@ -86,6 +85,7 @@ char* basename(char* path) {
   return strrchr(bfname, '/');
 #endif
 
+  FREE_ARRAY(char, bfname, strlen(path) + 1);
   return NULL;
 }
 

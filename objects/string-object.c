@@ -13,9 +13,9 @@ static Value lengthMethod(int argCount, Value *args) {
     return NUMBER_VAL(string->length);
 }
 
-static Value numberMethod(int argCount, Value *args) {
+static Value toNumberMethod(int argCount, Value *args) {
     if (argCount != 0) {
-        runtimeError("Expected 0 arguments but got %d from 'number()'.", argCount);
+        runtimeError("Expected 0 arguments but got %d from 'toNumber()'.", argCount);
         return NOTCLEAR;
     } 
 
@@ -25,7 +25,7 @@ static Value numberMethod(int argCount, Value *args) {
     double num = strtod(numString, &err);
 
     if (err == numString) {
-        runtimeError("A Conversion error occured on number()?!");
+        runtimeError("A Conversion error occured on 'toNumber()'?!");
         return NOTCLEAR;
     }
 
@@ -273,30 +273,92 @@ static Value trimSpaceMethod(int argCount, Value *args) {
     return OBJ_VAL(takeString(alloc, string->length));
 }
 
-void replace_(char* src, char* str, char* rep) {
-    char* p = strstr(src, str);
-
-    if (p) {
-        int repLen = strlen (rep);
-        int len = strlen(src) + repLen - strlen(str);
-
-        char r[len];
-        memset (r, 0, len);
-
-        if ( p >= src ) {
-            strncpy (r, src, p-src);
-            r[p - src] = '\0';
-
-            memcpy(r, rep, repLen);
-            strncat(r, p + strlen (str), p + strlen (str) - src + strlen(src));
-
-            strcpy(src, r);
-            replace_(p + repLen, str, rep);
-        }
+static Value formatMethod (int argCount, Value *args) {
+    if (argCount == 0) {
+        runtimeError("Expected 1 or more arguments but got exactly 0 from 'format()'.", argCount);
+        return NOTCLEAR;
     }
+
+    int varLength = 0;
+    //an array of characters (strings).
+    char** variableStrings = ALLOCATE(char*, argCount);
+
+    for (int arg = 1; arg < argCount + 1; arg++) {
+        Value val = args[arg];
+        if (!IS_STRING(val)) {
+            // convert value to a string.
+            variableStrings[arg - 1] = stringValue(val);
+        } else {
+            //otherwise, copy the original string.
+            ObjString* object = AS_STRING(val);
+            char* string = malloc(object->length + 1);
+            memmove(string, object->chars, object->length + 1);
+            variableStrings[arg - 1] = string;
+        }
+
+        varLength += strlen(variableStrings[arg - 1]);
+    }
+
+    ObjString* string = AS_STRING(args[0]);
+    int sLen = string->length + 1;
+    char* tmp = ALLOCATE(char, sLen);
+    char* ref = tmp;
+    memmove(tmp, string->chars, sLen);
+
+    int count = 0;
+    while ( (tmp = strstr(tmp, "{}"))) {
+        count++;
+        tmp++;
+    }
+
+    //reset
+    tmp = ref;
+
+    if (count != argCount) {
+        runtimeError("Placeholders count must match the arguments from 'format()'.");
+        
+        //free variableStrings' content.
+        for (int i = 0; i < argCount; ++i) {
+            free(variableStrings[i]);
+        }
+
+
+        FREE_ARRAY(char, tmp, sLen);
+        //free variableStrings itself.
+        FREE_ARRAY(char*, variableStrings, argCount);
+        return NOTCLEAR;
+    } 
+
+    //Dictu!
+    int fLength = string->length - count * 2 + varLength + 1;
+    //
+    char* tmpPos;
+    char* new = ALLOCATE(char, fLength);
+    int stringLength = 0;
+
+    for (int i = 0; i < argCount; ++i) {
+        tmpPos = strstr(tmp, "{}");
+        if (tmpPos != NULL)
+            *tmpPos = '\0';
+        
+        int tmpLength = strlen(tmp);
+        int rlen = strlen(variableStrings[i]);
+        memmove(new + stringLength, tmp, tmpLength);
+        memmove(new + stringLength + tmpLength, variableStrings[i], rlen);
+        stringLength += tmpLength + rlen;
+        tmp = tmpPos + 2;
+        //no need to store them anymore since we already constructed our new string.
+        free(variableStrings[i]);
+    }
+
+    FREE_ARRAY(char*, variableStrings, argCount);
+    memmove(new + stringLength, tmp, strlen(tmp));
+    new[fLength - 1] = '\0';
+    FREE_ARRAY(char, ref, sLen);
+
+    return OBJ_VAL(takeString(new, fLength - 1));
 }
 
-//TODO: more testing.
 static Value replaceMethod (int argCount, Value *args) {
     if (argCount != 2) {
         runtimeError("Expected 2 arguments but got %d from 'replace()'.", argCount);
@@ -313,25 +375,63 @@ static Value replaceMethod (int argCount, Value *args) {
         return NOTCLEAR;
     }
 
-    ObjString* string = AS_STRING(args[0]);
+    Value value = args[0];
+    ObjString* toReplace = AS_STRING(args[1]);
+    ObjString* replace = AS_STRING(args[2]);
+    char* string = AS_CSTRING(value);
 
-    char* alloc = ALLOCATE(char, string->length + 1);
-    memcpy(alloc, string->chars, string->length + 1);
+    int count = 0;
+    int len = toReplace->length;
+    int rlen = replace->length;
+    int sLen = strlen(string) + 1;
 
-    ObjString* input = AS_STRING(args[1]);
-    ObjString* output = AS_STRING(args[2]);
+    char* tmp = ALLOCATE(char, sLen + 1);
+    char* ref = tmp;
+    memmove(tmp, string, sLen);
+    tmp[sLen] = '\0';
 
-    alloc[string->length] = '\0';
 
-    replace_(alloc, input->chars, output->chars);
-    string->length = strlen(alloc);
-    return OBJ_VAL(takeString(alloc, string->length));
+    while ((tmp = strstr(tmp, toReplace->chars)) != NULL) {
+        count++;
+        tmp += len;
+    }
+
+    // reset
+    tmp = ref;
+
+    if (count == 0) {
+        FREE_ARRAY(char, ref, sLen + 1);
+        return value;
+    }
+
+    int length = strlen(tmp) - count * (len - rlen) + 1;
+    char* tmpPos;
+    char* new = ALLOCATE(char, length);
+    int stringLength = 0;
+
+    for (int i = 0; i < count; ++i) {
+        tmpPos = strstr(tmp, toReplace->chars);
+        if (tmpPos != NULL)
+            *tmpPos = '\0';
+
+        int tmpLength = strlen(tmp);
+        memmove(new + stringLength, tmp, tmpLength);
+        memmove(new + stringLength + tmpLength, replace->chars, rlen);
+        stringLength += tmpLength + rlen;
+        tmp = tmpPos + len;
+    }
+
+    memmove(new + stringLength, tmp, strlen(tmp));
+    FREE_ARRAY(char, ref, sLen + 1);
+    new[length - 1] = '\0';
+
+    return OBJ_VAL(takeString(new, length - 1));
 }
 
 //
 void initStringMethods() {
     char* stringMethodStrings[] = {
-        "number",
+        "toNumber",
         "length",
         "split",
 
@@ -349,10 +449,11 @@ void initStringMethods() {
 
         "trimSpace",
         "replace",
+        "format"
     };
 
     NativeFn stringMethods[] = {
-        numberMethod,
+        toNumberMethod,
         lengthMethod,
         splitMethod,
 
@@ -370,6 +471,7 @@ void initStringMethods() {
 
         trimSpaceMethod,
         replaceMethod,
+        formatMethod,
     };
 
     for (uint8_t i = 0; i < sizeof(stringMethodStrings) / sizeof(stringMethodStrings[0]); i++) {

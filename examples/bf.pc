@@ -35,10 +35,10 @@ define bf (src, min, max, data, index) {
             arr[ptr]--;
         }
 
-        if s == '.' print Ascii.ascii(arr[ptr]);
+        if s == '.' print(Ascii.ascii(arr[ptr]), "");
         if s == ',' {
             if index >= 0 {
-                arr[ptr] = input().number();
+                arr[ptr] = input().toNumber();
                 index++;
             } else {
                 arr[ptr] = 0;

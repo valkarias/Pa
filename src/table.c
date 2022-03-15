@@ -8,10 +8,7 @@
 #include "value.h"
 #include "vm.h"
 
-//> max-load
-#define TABLE_MAX_LOAD 0.75
 
-//< max-load
 void initTable(Table* table) {
   table->count = 0;
   table->capacity = 0;

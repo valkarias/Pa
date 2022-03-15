@@ -173,7 +173,7 @@ static TokenType identifierType() {
     case 'i': return checkKeyword(1, 1, "f", TOKEN_IF);
     case 'u': return checkKeyword(1, 2, "se", TOKEN_USE);
     case 'o': return checkKeyword(1, 1, "r", TOKEN_OR);
-    case 'p': return checkKeyword(1, 4, "rint", TOKEN_PRINT);
+    case 'p': return checkKeyword(1, 6, "rivate", TOKEN_PRIVATE);
     case 'r': return checkKeyword(1, 5, "eturn", TOKEN_RETURN);
     case 'n': return checkKeyword(1, 3, "one", TOKEN_NONE);
 
@@ -287,11 +287,12 @@ Token scanToken() {
     case '%': return makeToken(TOKEN_MODULO);
     case '&': return makeToken(TOKEN_BIT_AND);
     case '|': return makeToken(TOKEN_BIT_OR);
+    case '^': return makeToken(TOKEN_BIT_XOR);
 
     case '+':
       return makeToken(
         match('+') ? TOKEN_PLUS_PLUS : TOKEN_PLUS);
-    case '-':
+    case '-': {
       if (match('-')) {
         return makeToken(TOKEN_MINUS_MINUS);
       } else if (match('>')) {
@@ -299,6 +300,7 @@ Token scanToken() {
       } else {
         return makeToken(TOKEN_MINUS);
       }
+    }
 
     case '!':
       return makeToken(
@@ -310,11 +312,21 @@ Token scanToken() {
       return makeToken(
           match('=') ? TOKEN_EQUAL_EQUAL : TOKEN_EQUAL);
     case '<':
-      return makeToken(
-          match('=') ? TOKEN_LESS_EQUAL : TOKEN_LESS);
+      if (match('=')) {
+        return makeToken(TOKEN_LESS_EQUAL);
+      } else if (match('<')) {
+        return makeToken(TOKEN_BIT_LEFT);
+      } else {
+        return makeToken(TOKEN_LESS);
+      }
     case '>':
-      return makeToken(
-          match('=') ? TOKEN_GREATER_EQUAL : TOKEN_GREATER);
+      if (match('=')) {
+        return makeToken(TOKEN_GREATER_EQUAL);
+      } else if (match('>')) {
+        return makeToken(TOKEN_BIT_RIGHT);
+      } else {
+        return makeToken(TOKEN_GREATER);
+      }
 //< two-char
 //> scan-string
     case '"': return string('"');

@@ -17,6 +17,6 @@ define replace (s1, s2, s3) {
     return s1l;
 }
 
-print replace("Apple", "A", "B");
+print(replace("Apple", "A", "B"));
 
 //"Apple".replace("A", "B");

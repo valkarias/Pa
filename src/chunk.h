@@ -29,6 +29,10 @@ typedef enum {
   OP_GET_PROPERTY,
   OP_SET_PROPERTY,
 
+  OP_PRIVATE_PROPERTY_SET,
+  OP_PRIVATE_GET_PROPERTY_NO_POP,
+  OP_PRIVATE_PROPERTY_GET,
+
   OP_GET_PROPERTY_NO_POP,
 
   OP_EQUAL,
@@ -50,18 +54,16 @@ typedef enum {
 
   OP_NEGATE,
 
-  OP_PRINT,
 
   OP_JUMP,
-
   OP_JUMP_IF_FALSE,
-
   OP_LOOP,
 
   OP_CALL,
   OP_TAIL_CALL,
 
   OP_INVOKE,
+  OP_INVOKE1,
 
   OP_CLOSURE,
 
@@ -71,6 +73,7 @@ typedef enum {
 
   OP_CLASS,
   OP_METHOD,
+  OP_PRIVATE_METHOD,
 
   OP_BUILD_LIST, 
   OP_INDEX_SUBSCR,
@@ -87,10 +90,19 @@ typedef enum {
   OP_INCREMENT,
   OP_DECREMENT,
 
+  OP_BIT_LEFT,
+  OP_BIT_RIGHT,
+  OP_BIT_XOR,
+
+  OP_FIX_INSTANCE,
 
   OP_DEFINE_LIBRARY,
   OP_GET_LIBRARY,
   OP_SET_LIBRARY,
+
+  OP_PRIVATE_DEFINE,
+  OP_PRIVATE_GET,
+  OP_PRIVATE_SET,
 
 } OpCode;
 
@@ -108,11 +120,8 @@ typedef struct {
 } Chunk;
 
 void initChunk(Chunk* chunk);
-
 void freeChunk(Chunk* chunk);
-
 void writeChunk(Chunk* chunk, uint8_t byte, int line);
-
 int addConstant(Chunk* chunk, Value value);
 
 

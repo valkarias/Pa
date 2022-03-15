@@ -1,40 +1,36 @@
 # Pcrap Update Log
-## Sorting Lists
-Some sorting functionality should've been implemented a long time ago, but here we are!  
- Sorting lists is finally possible and is provided by the *Sort* module (which is coded in Pcrap itself!)  
 
-**{+}:** Remember to update Pcrap before importing it!    
+### Privacy & Access-Level
+Pcrap now offers a brand new semantic which is access-level to modules' values as well as methods and attributes for instances & classes.  
+which allows certain functionality to be hidden. This can be used to create proper Application Programming Interfaces.  
+- This is explained in detail in the documentation website.
 
-Using it is as simple as doing:
+### Print
+This deserves its very own section. The print keyword has been removed and replaced with a new fresh native built-in function which does exactly the same thing. The reason was behind the fact that it was very difficult to parse the keyword ``private`` and ``print`` seperately.  
+
+It also got one more optional argument now,
+the signature can be represented as ``print(value, end?)``. 
 ```
-use "Sort";
-```  
-
-### Functions
-- quickSort
-- selectionSort
-
-**{+}:** The selection sort method was added for smaller arrays and to add a bit of variety  
-since its a module, so expect more functions in the future.
-
-## String Conversion
-This means converting various types to a string type which is very useful in different situations.  
-A new ``toString`` native function has been added that does exactly just that.  
-It takes one argument which is the value and will return a string representation from it.
-
-## Misc
-- Removed  ``assertShow`` function and added one optional argument to ``assert`` to display a message instead.   
-- Improved ``assert`` function to display neat and less confusing error messages  
+print("No new line", "");
 ```
-//assert(false)
-Assertion Failed: No Source
 
-//assert(false, message)
-Assertion Failed: message
+### Bitwise Shifts & XOR
+- Added bitwise shift operators & ``Exclusive Or`` and, they function as you expect!
 ```
-- Added documentation for the Os module.
+25 << 5 //800
+60 >> 2 //15
 
-## Late Patches
-- Added ``exists`` function to the File module.
-- Added the ``stdin``, ``stdout`` and ``stderr`` file objects as constants to the File module.
-- Removed the functions of the Time module, currently it only contains constants which should be enough. A Complete overhaul is in mind but not confirmed (documentation soon).
+900 ^ 2 //902
+```
+
+### PBuild
+PBuild no more uses ``git`` to get the repository downloaded into your computer, Instead it downloads it as a zipfile via an http request.  
+It also extracts the zipfile and updates the paths to build it correctly.
+
+### Misc
+- The ``list.slice`` function now requires 2 arguments instead of 1 which represents ``list.slice(start, end)``.  
+- New ``string.format``.
+- Revamped & fixed the ``string.replace`` function.
+- Refactors of the language's core code.
+
+**{+}** Fixed Parsing of octal numbers.

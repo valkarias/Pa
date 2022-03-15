@@ -4,7 +4,7 @@
 //Stack.new() is better than Stack.Stack().
 class new {
     init() { 
-      this._values = []; 
+      private _values = []; 
     } 
  
     isEmpty() { 

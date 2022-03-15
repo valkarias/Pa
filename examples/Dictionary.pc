@@ -51,15 +51,15 @@ class Dict {
     }
 
     Show () {
-        print "{";
+        print("{");
         for let i = 0; i < this.keys.length(); i++ {
-	    let pair = "\t" + this.keys[i] + ": " + toString(this.values[i]);
+	        let pair = "\t" + this.keys[i] + ": " + toString(this.values[i]);
             if i < this.keys.length() - 1 {
-                 pair = pair + ",";
+                pair = pair + ",";
             }
-	    print pair;
+	        print(pair);
         }
-        print "}";
+        print("}");
     }
 
 

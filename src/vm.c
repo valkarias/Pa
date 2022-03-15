@@ -290,7 +290,8 @@ static bool keepFrame(CallFrame* frame, int argCount) {
 
 static bool invokeFromClass(ObjClass* klass, ObjString* name, int argCount) {
   Value method;
-  if (!tableGet(&klass->methods, name, &method)) {
+  bool isDefined = tableGet(&klass->methods, name, &method);
+  if (!isDefined) {
     runtimeError("Undefined property '%s' from '%s'.", name->chars, klass->name->chars); 
     return false;
   }
@@ -310,6 +311,26 @@ static bool callMethod(Value method, int argCount) {
   vm.stackTop -= argCount + 1;
   push(result);
   return true;
+}
+
+static bool invokePrivate(ObjString* name, int argCount) {
+  Value receiver = peek(argCount);
+
+  if (!IS_INSTANCE(receiver)) {
+    runtimeError("Type '%s' can not have methods.", typeValue(receiver));
+    return false;
+  }
+
+  ObjInstance* instance = AS_INSTANCE(receiver);
+  Value value;
+
+  if (tableGet(&instance->klass->privateMethods, name, &value)) {
+    return call(AS_CLOSURE(value), argCount);
+  }
+
+  if (tableGet(&instance->klass->methods, name, &value)) {
+    return call(AS_CLOSURE(value), argCount);
+  }
 }
 
 static bool invoke(ObjString* name, int argCount) {
@@ -344,6 +365,12 @@ static bool invoke(ObjString* name, int argCount) {
         ObjInstance* instance = AS_INSTANCE(receiver);
 
         Value value;
+
+        if (tableGet(&instance->klass->privateMethods, name, &value)) {
+          runtimeError("Can't access private property '%s' from '%s'.", name->chars, instance->klass->name->chars);
+          return false;
+        }
+
         if (tableGet(&instance->fields, name, &value)) {
           vm.stackTop[-argCount - 1] = value;
           return callValue(value, argCount);
@@ -369,7 +396,8 @@ static bool invoke(ObjString* name, int argCount) {
         Value value;
 
         if (!tableGet(&library->values, name, &value)) {
-          runtimeError("Undefined property '%s' from '%s'.", name->chars, library->name->chars);
+          runtimeError("Undefined method '%s' from '%s'.", name->chars, library->name->chars);
+          info("It's either undefined or private");
           return false;
         }
 
@@ -409,6 +437,7 @@ static bool bindMethod(ObjClass* klass, ObjString* name) {
   Value method;
   if (!tableGet(&klass->methods, name, &method)) {
     runtimeError("Undefined property '%s' from '%s'.", name->chars, klass->name->chars);
+    info("'%s' is either undefined or private", name->chars);
     return false;
   }
 
@@ -459,10 +488,14 @@ static void closeUpvalues(Value* last) {
   }
 }
 
-static void defineMethod(ObjString* name) {
+static void defineMethod(ObjString* name, AccessLevel level) {
   Value method = peek(0);
   ObjClass* klass = AS_CLASS(peek(1));
-  tableSet(&klass->methods, name, method);
+  if (level == PUBLIC_METHOD) {
+    tableSet(&klass->methods, name, method);
+  } else {
+    tableSet(&klass->privateMethods, name, method);
+  }
   pop();
 }
 
@@ -583,6 +616,29 @@ static InterpretResult run() {
         break;
       }
 
+      case OP_PRIVATE_DEFINE: {
+        ObjString* name = READ_STRING();
+        tableSet(&frame->closure->function->library->privateValues, name, peek(0));
+        pop();
+        break;
+      }
+
+      case OP_PRIVATE_GET: {
+        ObjString* name = READ_STRING();
+        Value value;
+        if (!tableGet(&frame->closure->function->library->privateValues, name, &value)) {
+          runtimeError("Undefined private variable '%s'.", name->chars);
+          return INTERPRET_RUNTIME_ERROR;
+        }
+        if (valuesEqual(value, NIL_VAL)) {
+          runtimeError("Can't use private variable with a nil state.");
+          info("The variable '%s' is none.", name->chars);
+          return INTERPRET_RUNTIME_ERROR;
+        }
+        push(value);
+        break;
+      }
+
       case OP_DEFINE_LIBRARY: {
         ObjString* name = READ_STRING();
         tableSet(&frame->closure->function->library->values, name, peek(0));
@@ -645,11 +701,57 @@ static InterpretResult run() {
         break;
       }
 
+      case OP_PRIVATE_PROPERTY_GET: {
+        if (!IS_INSTANCE(peek(0))) {
+          runtimeError("Only instances have private properties.");
+          return INTERPRET_RUNTIME_ERROR;
+        }
+
+        ObjInstance* instance = AS_INSTANCE(peek(0));
+        ObjString* name = READ_STRING();
+        Value val;
+
+        if (tableGet(&instance->privateFields, name, &val)) {
+          pop();
+          push(val);
+          break;
+        }
+
+        if (!bindMethod(instance->klass, name)) {
+          return INTERPRET_RUNTIME_ERROR;
+        }
+
+        break;
+      }
+
+      case OP_PRIVATE_GET_PROPERTY_NO_POP: {
+        if (!IS_INSTANCE(peek(0))) {
+          runtimeError("Only instances have private properties.");
+          return INTERPRET_RUNTIME_ERROR;
+        }
+
+        ObjInstance* instance = AS_INSTANCE(peek(0));
+        ObjString* name = READ_STRING();
+        Value val;
+
+        if (tableGet(&instance->privateFields, name, &val)) {
+          push(val);
+          break;
+        }
+
+        if (!bindMethod(instance->klass, name)) {
+          return INTERPRET_RUNTIME_ERROR;
+        }
+
+        break;
+      }
+
       case OP_GET_PROPERTY: {
         Value receiver = peek(0);
 
         if (!IS_OBJ(receiver)) {
           runtimeError("Type '%s' can not have properties", typeValue(receiver));
+          info("The property that was tried to get accessed is '%s'", READ_STRING()->chars);          
           info("Only instances and libraries can have properties.");
           return INTERPRET_RUNTIME_ERROR;
         }
@@ -690,6 +792,7 @@ static InterpretResult run() {
             }
 
             runtimeError("Undefined property '%s' from '%s'", name->chars, library->name->chars);
+            info("It's either undefined or private");
             return INTERPRET_RUNTIME_ERROR;
           }
 
@@ -700,6 +803,33 @@ static InterpretResult run() {
         }
 
         break;
+      }
+
+      case OP_FIX_INSTANCE: {
+        int argCount = frame->closure->function->arity;
+        Value value = peek(argCount);
+        if (IS_INSTANCE(value)) push(value);
+        else pop();
+        break;
+      }
+
+
+      case OP_PRIVATE_PROPERTY_SET: {
+        if (!IS_OBJ(peek(1))) {
+          runtimeError("Type '%s' can not have private fields", typeValue(peek(1)));
+          info("Only instances can have private fields.");
+          return INTERPRET_RUNTIME_ERROR;
+        }
+
+        if (IS_INSTANCE(peek(1))) {
+          ObjInstance* instance = AS_INSTANCE(peek(1));
+          tableSet(&instance->privateFields, READ_STRING(), peek(0));
+          pop();
+          break;
+        }
+
+        runtimeError("Type '%s' has no properties.", typeValue(peek(1)));
+        return INTERPRET_RUNTIME_ERROR;
       }
 
       case OP_SET_PROPERTY: {
@@ -721,6 +851,10 @@ static InterpretResult run() {
         runtimeError("Type '%s' has no properties.", typeValue(peek(1)));
         return INTERPRET_RUNTIME_ERROR;
       }
+
+      case OP_BIT_LEFT:   BINARY_OP(NUMBER_VAL, <<, int); break;
+      case OP_BIT_RIGHT:  BINARY_OP(NUMBER_VAL, >>, int); break;
+      case OP_BIT_XOR:    BINARY_OP(NUMBER_VAL, ^, int); break;
 
       case OP_EQUAL: {
         Value b = pop();
@@ -804,12 +938,6 @@ static InterpretResult run() {
         push(NUMBER_VAL(-AS_NUMBER(pop())));
         break;
 
-      case OP_PRINT: {
-        printValue(pop());
-        printf("\n");
-        break;
-      }
-
       case OP_JUMP: {
         uint16_t offset = READ_SHORT();
         frame->ip += offset;
@@ -866,9 +994,21 @@ static InterpretResult run() {
         break;
       }
 
-      case OP_INVOKE: {
-        ObjString* method = READ_STRING();
+      case OP_INVOKE1: {
         int argCount = READ_BYTE();
+        ObjString* method = READ_STRING();
+
+        if (!invokePrivate(method, argCount)) {
+          return INTERPRET_RUNTIME_ERROR;
+        }
+
+        frame = &vm.frames[vm.frameCount - 1];
+        break;
+      }
+
+      case OP_INVOKE: {
+        int argCount = READ_BYTE();
+        ObjString* method = READ_STRING();
 
         if (!invoke(method, argCount)) {
           return INTERPRET_RUNTIME_ERROR;
@@ -922,7 +1062,11 @@ static InterpretResult run() {
         break;
 
       case OP_METHOD:
-        defineMethod(READ_STRING());
+        defineMethod(READ_STRING(), PUBLIC_METHOD);
+        break;
+
+      case OP_PRIVATE_METHOD:
+        defineMethod(READ_STRING(), PRIVATE_METHOD);
         break;
 
       case OP_BREAK:

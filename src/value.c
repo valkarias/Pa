@@ -79,7 +79,7 @@ void printValue(Value value) {
   if (IS_BOOL(value)) {
     printf(AS_BOOL(value) ? "true" : "false");
   } else if (IS_NIL(value)) {
-    printf("nil");
+    printf("none");
   } else if (IS_NUMBER(value)) {
     printf("%.15g", AS_NUMBER(value));
   } else if (IS_OBJ(value)) {

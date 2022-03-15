@@ -88,6 +88,7 @@ typedef struct {
 
   ObjString* name;
   Table values;
+  Table privateValues;
 
 } ObjLibrary;
 
@@ -101,6 +102,10 @@ typedef enum {
   TYPE_UNKNOWN,
 } FunctionType;
 
+typedef enum {
+  PRIVATE_METHOD,
+  PUBLIC_METHOD,
+} AccessLevel;
 
 typedef struct {
   Obj obj;
@@ -114,6 +119,7 @@ typedef struct {
   ObjLibrary* library;
 
   FunctionType type;
+  AccessLevel accessLevel;
 } ObjFunction;
 
 
@@ -165,6 +171,7 @@ typedef struct {
   ObjString* name;
 
   Table methods;
+  Table privateMethods;
 
 } ObjClass;
 
@@ -177,7 +184,9 @@ typedef struct {
   Obj obj;
   ObjClass* klass;
   Table fields;
+  Table privateFields;
 } ObjInstance;
+
 
 typedef struct {
   Obj obj;

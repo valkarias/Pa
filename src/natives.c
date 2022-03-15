@@ -7,6 +7,27 @@
 #include "vm.h"
 #include "memory.h"
 
+static Value printNative(int argCount, Value *args) {
+    if (argCount == 0 || argCount > 2) {
+        runtimeError("Expected 1 or 2 arguments but got %d from 'print()'.", argCount);
+        return NOTCLEAR;
+    }
+
+    printValue(args[0]);
+    if (argCount == 2) {
+        if (!IS_STRING(args[1])) {
+            runtimeError("Second Argument must be a string from 'print()'.");
+            return NOTCLEAR;
+        }
+        printValue(args[1]);
+    } else {
+        printf("\n");
+    }
+
+    return CLEAR;
+}
+
+
 static Value inputNative(int argCount, Value *args) {
     if (argCount > 1) {
         runtimeError("Expected 1 or 0 arguments but got %d from 'input()'.", argCount);
@@ -115,6 +136,7 @@ static Value toStringNative(int argCount, Value *args) {
 
 void defineAllNatives() {
     char* nativeStrings[] = {
+        "print",
         "input",
         "type",
         "toString",
@@ -122,6 +144,7 @@ void defineAllNatives() {
     };
 
     NativeFn nativeFunctions[] = {
+        printNative,
         inputNative,
         typeNative,
         toStringNative,

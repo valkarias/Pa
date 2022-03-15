@@ -96,7 +96,10 @@ int disassembleInstruction(Chunk* chunk, int offset) {
       return simpleInstruction("OP_INDEX_SUBSCR_NO_POP", offset);
 
     case OP_USE_NAME:
-        return simpleInstruction("OP_USE_NAME", offset);
+      return simpleInstruction("OP_USE_NAME", offset);
+
+    case OP_FIX_INSTANCE:
+      return simpleInstruction("OP_FIX_INSTANCE", offset);
 
     case OP_BUILD_LIST:
       return byteInstruction("OP_BUILD_LIST", chunk, offset);
@@ -108,12 +111,16 @@ int disassembleInstruction(Chunk* chunk, int offset) {
 
     case OP_GET_LIBRARY:
       return constantInstruction("OP_GET_LIBRARY", chunk, offset);
+    case OP_PRIVATE_GET:
+      return constantInstruction("OP_PRIVATE_GET", chunk, offset);
 
     case OP_GET_GLOBAL:
       return constantInstruction("OP_GET_GLOBAL", chunk, offset);
 
     case OP_DEFINE_LIBRARY:
       return constantInstruction("OP_DEFINE_LIBRARY", chunk, offset);
+    case OP_PRIVATE_DEFINE:
+      return constantInstruction("OP_PRIVATE_DEFINE", chunk, offset);
 
     case OP_USE:
       return constantInstruction("OP_USE", chunk, offset);
@@ -123,6 +130,8 @@ int disassembleInstruction(Chunk* chunk, int offset) {
 
     case OP_SET_LIBRARY:
       return constantInstruction("OP_SET_LIBRARY", chunk, offset);
+    case OP_PRIVATE_SET:
+      return constantInstruction("OP_PRIVATE_SET", chunk, offset);
 
     case OP_GET_UPVALUE:
       return byteInstruction("OP_GET_UPVALUE", chunk, offset);
@@ -133,8 +142,15 @@ int disassembleInstruction(Chunk* chunk, int offset) {
       return constantInstruction("OP_GET_PROPERTY", chunk, offset);
     case OP_GET_PROPERTY_NO_POP:
       return constantInstruction("OP_GET_PROPERTY_NO_POP", chunk, offset);
+    case OP_PRIVATE_GET_PROPERTY_NO_POP:
+      return constantInstruction("OP_PRIVATE_GET_PROPERTY_NO_POP", chunk, offset);
     case OP_SET_PROPERTY:
       return constantInstruction("OP_SET_PROPERTY", chunk, offset);
+
+    case OP_PRIVATE_PROPERTY_GET:
+      return constantInstruction("OP_PRIVATE_PROPERTY_GET", chunk, offset);
+    case OP_PRIVATE_PROPERTY_SET:
+      return constantInstruction("OP_PRIVATE_PROPERTY_SET", chunk, offset);
 
     case OP_USE_BUILTIN:
       return simpleInstruction("OP_USE_BUILTIN", offset);
@@ -157,6 +173,12 @@ int disassembleInstruction(Chunk* chunk, int offset) {
       return simpleInstruction("OP_BIT_AND", offset);
     case OP_BIT_OR:
       return simpleInstruction("OP_BIT_OR", offset);
+    case OP_BIT_XOR:
+      return simpleInstruction("OP_BIT_XOR", offset);
+    case OP_BIT_LEFT:
+      return simpleInstruction("OP_BIT_LEFT", offset);
+    case OP_BIT_RIGHT:
+      return simpleInstruction("OP_BIT_RIGHT", offset);
     case OP_SUBTRACT:
       return simpleInstruction("OP_SUBTRACT", offset);
     case OP_MULTIPLY:
@@ -169,9 +191,6 @@ int disassembleInstruction(Chunk* chunk, int offset) {
 
     case OP_NEGATE:
       return simpleInstruction("OP_NEGATE", offset);
-
-    case OP_PRINT:
-      return simpleInstruction("OP_PRINT", offset);
 
     case OP_JUMP:
       return jumpInstruction("OP_JUMP", 1, chunk, offset);
@@ -188,6 +207,8 @@ int disassembleInstruction(Chunk* chunk, int offset) {
 
     case OP_INVOKE:
       return invokeInstruction("OP_INVOKE", chunk, offset);
+    case OP_INVOKE1:
+      return invokeInstruction("OP_INVOKE1", chunk, offset);  
 
 
     case OP_CLOSURE: {
@@ -222,6 +243,8 @@ int disassembleInstruction(Chunk* chunk, int offset) {
 
     case OP_METHOD:
       return constantInstruction("OP_METHOD", chunk, offset);
+    case OP_PRIVATE_METHOD:
+      return constantInstruction("OP_PRIVATE_METHOD", chunk, offset);
 
     default:
       printf("Unknown opcode %d\n", instruction);

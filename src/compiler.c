@@ -4,7 +4,6 @@
 #include "compiler.h"
 #include "object.h"
 #include "memory.h"
-#include "scanner.h"
 
 #include "vm.h"
 
@@ -13,85 +12,6 @@
 #ifdef DEBUG_PRINT_CODE
 #include "debug.h"
 #endif
-
-
-typedef struct {
-  int innermostLoopStart;
-  int innermostLoopScopeDepth;
-} Static;
-
-typedef struct {
-  Token current;
-  Token previous;
-
-  bool hadError;
-
-  bool panicMode;
-
-  ObjLibrary* library;
-} Parser;
-//> precedence
-
-typedef enum {
-  PREC_NONE,
-  PREC_ASSIGNMENT,  // =
-  PREC_OR,          // or
-  PREC_AND,         // and
-  PREC_EQUALITY,    // == !=
-  PREC_COMPARISON,  // < > <= >=
-  PREC_BIT_OR,
-  PREC_BIT_AND,     // &
-  PREC_TERM,        // + -
-  PREC_FACTOR,      // * /
-  PREC_UNARY,       // ! -
-  PREC_EXPONENT,    // **
-  PREC_SUBSCRIPT,   // []
-  PREC_CALL,        // . ()
-  PREC_PRIMARY
-} Precedence;
-
-
-typedef void (*ParseFn)(bool canAssign);
-
-typedef struct {
-  ParseFn prefix;
-  ParseFn infix;
-  Precedence precedence;
-} ParseRule;
-
-typedef struct {
-  Token name;
-  int depth;
-
-  bool isCaptured;
-} Local;
-
-typedef struct {
-  uint8_t index;
-  bool isLocal;
-} Upvalue;
-
-typedef struct Compiler {
-  struct Compiler* enclosing;
-
-  ObjFunction* function;
-  FunctionType type;
-
-  bool lastCall;
-
-  Local locals[UINT8_COUNT];
-  int localCount;
-
-  Upvalue upvalues[UINT8_COUNT];
-
-  int scopeDepth;
-} Compiler;
-
-//lol??
-typedef struct ClassCompiler {
-  struct ClassCompiler* enclosing;
-} ClassCompiler;
-
 
 Parser parser;
 Compiler* current = NULL;
@@ -425,7 +345,6 @@ static void declareVariable() {
 
 static uint8_t parseVariable(const char* errorMessage) {
   consume(TOKEN_IDENTIFIER, errorMessage);
-
   declareVariable();
   if (current->scopeDepth > 0) return 0;
 
@@ -438,14 +357,25 @@ static void markInitialized() {
   current->locals[current->localCount - 1].depth = current->scopeDepth;
 }
 
-static void defineVariable(uint8_t global) {
+static void setPrivateVariable(Token name) {
+  tableSet(&parser.library->privateValues, copyString(name.start, name.length), OP_NIL);
+}
 
+static void setPrivateProperty(Token name) {
+  tableSet(&currentClass->privateVariables, copyString(name.start, name.length), OP_NIL);
+}
+
+static void defineVariable(uint8_t global, bool isPrivate) {
   if (current->scopeDepth > 0) {
     markInitialized();
     return;
   }
 
-  emitBytes(OP_DEFINE_LIBRARY, global);
+  if (!isPrivate) {
+    emitBytes(OP_DEFINE_LIBRARY, global);
+  } else {
+    emitBytes(OP_PRIVATE_DEFINE, global);
+  }
 }
 
 static uint8_t argumentList() {
@@ -465,7 +395,7 @@ static uint8_t argumentList() {
   return argCount;
 }
 
-static void and_(bool canAssign) {
+static void and_(bool canAssign, Token previous) {
   int endJump = emitJump(OP_JUMP_IF_FALSE);
 
   emitByte(OP_POP);
@@ -476,21 +406,20 @@ static void and_(bool canAssign) {
   current->lastCall = false;
 }
 
-static void binary(bool canAssign) {
+static void binary(bool canAssign, Token previous) {
 //< Global Variables binary
   TokenType operatorType = parser.previous.type;
   ParseRule* rule = getRule(operatorType);
   parsePrecedence((Precedence)(rule->precedence + 1));
 
   switch (operatorType) {
-//> Types of Values comparison-operators
     case TOKEN_BANG_EQUAL:    emitBytes(OP_EQUAL, OP_NOT); break;
     case TOKEN_EQUAL_EQUAL:   emitByte(OP_EQUAL); break;
     case TOKEN_GREATER:       emitByte(OP_GREATER); break;
     case TOKEN_GREATER_EQUAL: emitBytes(OP_LESS, OP_NOT); break;
     case TOKEN_LESS:          emitByte(OP_LESS); break;
     case TOKEN_LESS_EQUAL:    emitBytes(OP_GREATER, OP_NOT); break;
-//< Types of Values comparison-operators
+
     case TOKEN_PLUS:          emitByte(OP_ADD); break;
     case TOKEN_MINUS:         emitByte(OP_SUBTRACT); break;
     case TOKEN_STAR:          emitByte(OP_MULTIPLY); break;
@@ -500,44 +429,81 @@ static void binary(bool canAssign) {
     
     case TOKEN_BIT_AND:       emitByte(OP_BIT_AND); break;
     case TOKEN_BIT_OR:        emitByte(OP_BIT_OR); break;
+    case TOKEN_BIT_LEFT:      emitByte(OP_BIT_LEFT); break;
+    case TOKEN_BIT_RIGHT:     emitByte(OP_BIT_RIGHT); break;
+    case TOKEN_BIT_XOR:       emitByte(OP_BIT_XOR); break;
     default: return; // Unreachable.
   }
 
   current->lastCall = false;
 }
 
-static void call(bool canAssign) {
+static void call(bool canAssign, Token previous) {
   uint8_t argCount = argumentList();
 
   emitBytes(OP_CALL, argCount);
   current->lastCall = true;
 }
 
-static void dot(bool canAssign) {
+static bool privateDoesExist(Token nameTok, Value value) {
+  return tableGet(&currentClass->privateVariables, copyString(nameTok.start, nameTok.length), &value);
+}
+
+static void dot(bool canAssign, Token previous) {
   consume(TOKEN_IDENTIFIER, "Expected a property name after '.'");
   uint8_t name = identifierConstant(&parser.previous);
+  Token nameTok = parser.previous;
 
-  if (canAssign && match(TOKEN_EQUAL)) {
-    expression();
-    emitBytes(OP_SET_PROPERTY, name);
-
-  } else if (canAssign && match(TOKEN_PLUS_PLUS)) {
-    emitBytes(OP_GET_PROPERTY_NO_POP, name);
-    emitByte(OP_INCREMENT);
-    emitBytes(OP_SET_PROPERTY, name);
-
-  } else if (canAssign && match(TOKEN_MINUS_MINUS)) {
-    emitBytes(OP_GET_PROPERTY_NO_POP, name);
-    emitByte(OP_DECREMENT);
-    emitBytes(OP_SET_PROPERTY, name);
-
-  } else if (match(TOKEN_LEFT_PAREN)) {
+  if (match(TOKEN_LEFT_PAREN)) {
     uint8_t argCount = argumentList();
-    emitBytes(OP_INVOKE, name);
-    emitByte(argCount);
+    if (currentClass != NULL && (previous.type == TOKEN_THIS)) {
+      emitBytes(OP_INVOKE1, argCount);
+    } else {
+      emitBytes(OP_INVOKE, argCount);
+    }
 
+    emitByte(name);
+    return;
+  }
+
+  Value val;
+
+  if (currentClass != NULL && (previous.type == TOKEN_THIS && privateDoesExist(nameTok, val)) ) {
+    if (canAssign && match(TOKEN_EQUAL)) {
+      expression();
+      emitBytes(OP_PRIVATE_PROPERTY_SET, name);
+    } else if (canAssign && match(TOKEN_PLUS_PLUS)) {
+      //emitByte(OP_FIX_INSTANCE);
+      emitBytes(OP_PRIVATE_GET_PROPERTY_NO_POP, name);
+      emitByte(OP_INCREMENT);
+      emitBytes(OP_PRIVATE_PROPERTY_SET, name);
+
+    } else if (canAssign && match(TOKEN_MINUS_MINUS)) {
+      //emitByte(OP_FIX_INSTANCE);
+      emitBytes(OP_PRIVATE_GET_PROPERTY_NO_POP, name);
+      emitByte(OP_DECREMENT);
+      emitBytes(OP_PRIVATE_PROPERTY_SET, name);
+    } else {
+      emitBytes(OP_PRIVATE_PROPERTY_GET, name);
+    }
   } else {
-    emitBytes(OP_GET_PROPERTY, name);
+
+    if (canAssign && match(TOKEN_EQUAL)) {
+      expression();
+      emitBytes(OP_SET_PROPERTY, name);
+
+    } else if (canAssign && match(TOKEN_PLUS_PLUS)) {
+      emitBytes(OP_GET_PROPERTY_NO_POP, name);
+      emitByte(OP_INCREMENT);
+      emitBytes(OP_SET_PROPERTY, name);
+
+    } else if (canAssign && match(TOKEN_MINUS_MINUS)) {
+      emitBytes(OP_GET_PROPERTY_NO_POP, name);
+      emitByte(OP_DECREMENT);
+      emitBytes(OP_SET_PROPERTY, name);
+    } else {
+      emitBytes(OP_GET_PROPERTY, name);
+    }
   }
 
   current->lastCall = false;
@@ -570,17 +536,10 @@ static bool isOct() {
   return false;
 }
 
-//from the trashcan.
 static double toOct(const char* c) {
   long int oc = 0;
   char* temp = (char*)c;
 
-  for (int i = 0; i < strlen(c); i++) {
-    if (c[i] == ';' || c[i] == '\n') {
-      temp[i] = '\0';
-    }
-  }
-  
   for (int i = 0; i < strlen(c); i++) {
     if (c[i] == 'o' || c[i] == 'O') {
       temp += 2;
@@ -614,8 +573,11 @@ static void number(bool canAssign) {
 
   if (isHex()) {
     value = (double)strtol(parser.previous.start, NULL, 16);
-  } else if (isOct()) { 
-    value = toOct(parser.previous.start);
+  } else if (isOct()) {
+    Token name = parser.previous;
+    char* string = malloc(sizeof(char) * name.length + 1);
+    snprintf(string, name.length + 1, "%.*s", name.length, name.start);
+    value = toOct(string);
   } else {
     value = strtod(parser.previous.start, NULL);
   }
@@ -623,7 +585,7 @@ static void number(bool canAssign) {
   emitConstant(NUMBER_VAL(value));
 }
 
-static void or_(bool canAssign) {
+static void or_(bool canAssign, Token previous) {
   int elseJump = emitJump(OP_JUMP_IF_FALSE);
   int endJump = emitJump(OP_JUMP);
 
@@ -700,6 +662,9 @@ static void namedVariable(Token name, bool canAssign) {
     if (tableGet(&vm.globals, string, &val)) {
       getOp = OP_GET_GLOBAL;
       canAssign = false;
+    } else if (tableGet(&parser.library->privateValues, string, &val)) {
+      getOp = OP_PRIVATE_GET;
+      setOp = OP_PRIVATE_SET;
     } else {
       getOp = OP_GET_LIBRARY;
       setOp = OP_SET_LIBRARY;
@@ -762,11 +727,11 @@ static void unary(bool canAssign) {
   
 }
 
-static void increment(bool canAssign) {
+static void increment(bool canAssign, Token previous) {
   emitByte(OP_INCREMENT);
 }
 
-static void decrement(bool canAssign) {
+static void decrement(bool canAssign, Token previous) {
   emitByte(OP_DECREMENT);
 }
 
@@ -801,12 +766,12 @@ static void functionArguments() {
         errorAtCurrent("Can't have more than 30 parameters.");
       }
       uint8_t constant = parseVariable("Expected a parameter name or ')'.");
-      defineVariable(constant);
+      defineVariable(constant, false);
     } while (match(TOKEN_COMMA));
   }
 }
 
-static void subscript(bool canAssign) {
+static void subscript(bool canAssign, Token previous) {
   parsePrecedence(PREC_OR);
 
   consume(TOKEN_RIGHT_BRACK, "Expected a closing ']' after the index value.");
@@ -894,9 +859,12 @@ ParseRule rules[] = {
   [TOKEN_MINUS]         = {unary,    binary, PREC_TERM},
   [TOKEN_BIT_AND]       = {NULL,     binary, PREC_BIT_AND},
   [TOKEN_BIT_OR]        = {NULL,     binary, PREC_BIT_OR},
+  [TOKEN_BIT_XOR]       = {NULL,     binary, PREC_BIT_XOR},
+  [TOKEN_BIT_LEFT]      = {NULL,     binary, PREC_BIT_SHIFT},
+  [TOKEN_BIT_RIGHT]     = {NULL,     binary, PREC_BIT_SHIFT},
   [TOKEN_BANG]          = {unary,    NULL,   PREC_NONE},
   [TOKEN_BANG_EQUAL]    = {NULL,     binary, PREC_EQUALITY},
-  [TOKEN_LEFT_BRACK]    = {list, subscript, PREC_SUBSCRIPT},
+  [TOKEN_LEFT_BRACK]    = {list,     subscript, PREC_SUBSCRIPT},
   [TOKEN_RIGHT_BRACK]   = {NULL, NULL, PREC_NONE},
   [TOKEN_EQUAL]         = NONE,
   [TOKEN_COLON]         = NONE,
@@ -923,12 +891,12 @@ ParseRule rules[] = {
   [TOKEN_CONTINUE]      = NONE,
   [TOKEN_BREAK]         = NONE,
   [TOKEN_OR]            = {NULL,     or_,    PREC_OR},
-  [TOKEN_PRINT]         = NONE,
   [TOKEN_RETURN]        = NONE,
   [TOKEN_THIS]          = {this_, NULL, PREC_NONE},
   [TOKEN_TRUE]          = {literal,  NULL,   PREC_NONE},
   [TOKEN_NONE]          = {literal,  NULL,   PREC_NONE},
   [TOKEN_VAR]           = NONE,
+  [TOKEN_PRIVATE]       = NONE,
   [TOKEN_WHILE]         = NONE,
   [TOKEN_ERROR]         = NONE,
   [TOKEN_EOF]           = NONE,
@@ -937,7 +905,7 @@ ParseRule rules[] = {
 static void parsePrecedence(Precedence precedence) {
 
   advance();
-  ParseFn prefixRule = getRule(parser.previous.type)->prefix;
+  ParsePrefix prefixRule = getRule(parser.previous.type)->prefix;
   if (prefixRule == NULL) {
     error("Expected an expression.");
     return;
@@ -947,10 +915,11 @@ static void parsePrecedence(Precedence precedence) {
   prefixRule(canAssign);
 
   while (precedence <= getRule(parser.current.type)->precedence) {
+    Token token = parser.previous;
     advance();
-    ParseFn infixRule = getRule(parser.previous.type)->infix;
+    ParseInfix infixRule = getRule(parser.previous.type)->infix;
 
-    infixRule(canAssign);
+    infixRule(canAssign, token);
   }
 
   if (canAssign && match(TOKEN_EQUAL)) {
@@ -983,9 +952,10 @@ static void function(FunctionType type) {
   body();
 }
 
-static void method() {
+static void method(bool isPrivate) {
   consume(TOKEN_IDENTIFIER, "Expected a method name.");
-  uint8_t constant = identifierConstant(&parser.previous);
+  Token methodName = parser.previous;
+  uint8_t constant = identifierConstant(&methodName);
 
   FunctionType type = TYPE_METHOD;
 
@@ -994,26 +964,40 @@ static void method() {
   }
   
   function(type);
-  emitBytes(OP_METHOD, constant);
+  if (!isPrivate) {
+    emitBytes(OP_METHOD, constant);
+  } else {
+    setPrivateVariable(methodName);
+    emitBytes(OP_PRIVATE_METHOD, constant);
+  }
 }
 
-static void classDeclaration() {
+static void classDeclaration(bool isPrivate) {
   consume(TOKEN_IDENTIFIER, "Expected a class name.");
   Token className = parser.previous;
-  uint8_t nameConstant = identifierConstant(&parser.previous);
+  uint8_t nameConstant = identifierConstant(&className);
   declareVariable();
-
-  emitBytes(OP_CLASS, nameConstant);
-  defineVariable(nameConstant);
 
   ClassCompiler classCompiler;
   classCompiler.enclosing = currentClass;
   currentClass = &classCompiler;
+  initTable(&currentClass->privateVariables);
+
+  emitBytes(OP_CLASS, nameConstant);
+  if (isPrivate) {
+    setPrivateVariable(className);
+  }
+  defineVariable(nameConstant, isPrivate);
+
 
   namedVariable(className, false);
   consume(TOKEN_LEFT_BRACE, "Expected an opening '{' before the class body.");
   while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF)) {
-    method();
+    if (match(TOKEN_PRIVATE)) {
+      method(true);
+    } else {
+      method(false);
+    }
   }
 
   consume(TOKEN_RIGHT_BRACE, "Expected a closing '}' after the class body.");
@@ -1022,21 +1006,31 @@ static void classDeclaration() {
   currentClass = currentClass->enclosing;
 }
 
-static void funDeclaration() {
+static void funDeclaration(bool isPrivate) {
   uint8_t global = parseVariable("Expected a function name.");
+  Token name = parser.previous;
+
   markInitialized();
   function(TYPE_FUNCTION);
-  defineVariable(global);
+
+  if (isPrivate) {
+    setPrivateVariable(name);
+  }
+  defineVariable(global, isPrivate);
 }
 
-static void varDeclaration() {
+static void varDeclaration(bool isPrivate) {
   uint8_t global = parseVariable("Expected a variable name.");
+  Token name = parser.previous;
 
   consume(TOKEN_EQUAL, "Expected an '=' after the variable name.");
   expression();
   consume(TOKEN_SEMICOLON, "Expected a ';' after variable declaration.");
 
-  defineVariable(global);
+  if (isPrivate) {
+    setPrivateVariable(name);
+  }
+  defineVariable(global, isPrivate);
 }
 
 static void expressionStatement() {
@@ -1090,7 +1084,7 @@ static void forStatement() {
   if (match(TOKEN_SEMICOLON)) {
     // No initializer.
   } else if (match(TOKEN_VAR)) {
-    varDeclaration();
+    varDeclaration(false);
   } else {
     expressionStatement();
   }
@@ -1151,7 +1145,7 @@ static void useStatement() {
     if (match(TOKEN_FOR)) {
       uint8_t library = parseVariable("Expected an indentifier after library's path.");
       emitByte(OP_USE_NAME);
-      defineVariable(library);
+      defineVariable(library, false);
     }
   } else {
     consume(TOKEN_IDENTIFIER, "Expected a library's name identifier.");
@@ -1167,7 +1161,7 @@ static void useStatement() {
     emitBytes(OP_USE_BUILTIN, index);
     emitByte(libName);
 
-    defineVariable(libName);
+    defineVariable(libName, false);
   }
 
   consume(TOKEN_SEMICOLON, "Expected a ';' after the 'use' statement.");
@@ -1191,13 +1185,28 @@ static void ifStatement() {
   patchJump(elseJump);
 }
 
-static void printStatement() {
-  do {
-    expression();
-    emitByte(OP_PRINT);
-  } while(match(TOKEN_COMMA));
+static void privateStatement() {
+  if (match(TOKEN_VAR)) {
+    varDeclaration(true);
+  } else if (match(TOKEN_FUN)) {
+    funDeclaration(true);
+  } else if (match(TOKEN_CLASS)) {
+    classDeclaration(true);
+  } else if (match(TOKEN_IDENTIFIER)) {
+    if (currentClass != NULL) {
+      uint8_t name = identifierConstant(&parser.previous);
+      Token nameTok = parser.previous;
+      emitByte(OP_FIX_INSTANCE);
+      consume(TOKEN_EQUAL, "Expected an '=' after property name");
+      expression(); 
+      emitBytes(OP_PRIVATE_PROPERTY_SET, name);
+      setPrivateProperty(nameTok);
 
-  consume(TOKEN_SEMICOLON, "Expected a ';' after 'print' statement's value.");
+      consume(TOKEN_SEMICOLON, "Expected a ';' after the property value.");
+    } else {
+      error("Can't create a private property outside of a class.");
+    }
+  }
 }
 
 static void returnStatement() {
@@ -1257,9 +1266,9 @@ static void synchronize() {
       case TOKEN_BREAK:
       case TOKEN_IF:
       case TOKEN_WHILE:
-      case TOKEN_PRINT:
       case TOKEN_USE:
       case TOKEN_RETURN:
+      case TOKEN_PRIVATE:
         return;
 
       default:
@@ -1273,12 +1282,12 @@ static void synchronize() {
 
 static void declaration() {
   if (match(TOKEN_CLASS)) {
-    classDeclaration();
+    classDeclaration(false);
 
   } else if (match(TOKEN_FUN)) {
-    funDeclaration();
+    funDeclaration(false);
   } else if (match(TOKEN_VAR)) {
-    varDeclaration();
+    varDeclaration(false);
   } else {
     statement();
   }
@@ -1307,6 +1316,9 @@ static int getArgCount(uint8_t *code, const ValueArray constants, int ip) {
     case OP_MULTIPLY:
     case OP_DIVIDE:
     case OP_POW:
+    case OP_BIT_AND:
+    case OP_BIT_XOR:
+    case OP_BIT_OR:
     case OP_MOD:
     case OP_NOT:
     case OP_NEGATE:
@@ -1317,6 +1329,7 @@ static int getArgCount(uint8_t *code, const ValueArray constants, int ip) {
     case OP_USE_NAME:
     case OP_INCREMENT:
     case OP_DECREMENT:
+    case OP_FIX_INSTANCE:
       return 0;
 
     case OP_CONSTANT:
@@ -1325,12 +1338,22 @@ static int getArgCount(uint8_t *code, const ValueArray constants, int ip) {
     case OP_GET_GLOBAL:
     case OP_GET_LIBRARY:
     case OP_SET_LIBRARY:
+
     case OP_DEFINE_LIBRARY:
+    case OP_PRIVATE_DEFINE:
+    case OP_PRIVATE_SET:
+    case OP_PRIVATE_GET:
+
     case OP_GET_UPVALUE:
     case OP_SET_UPVALUE:
+
     case OP_GET_PROPERTY:
     case OP_SET_PROPERTY:
     case OP_GET_PROPERTY_NO_POP:
+    case OP_PRIVATE_GET_PROPERTY_NO_POP:
+    case OP_PRIVATE_PROPERTY_GET:
+    case OP_PRIVATE_PROPERTY_SET:
+
     case OP_CALL:
     case OP_TAIL_CALL:
     case OP_USE:
@@ -1340,7 +1363,9 @@ static int getArgCount(uint8_t *code, const ValueArray constants, int ip) {
     case OP_JUMP:
     case OP_JUMP_IF_FALSE:
     case OP_LOOP:
+
     case OP_INVOKE:
+    case OP_INVOKE1:
     case OP_CLASS:
     case OP_USE_BUILTIN:
       return 2;
@@ -1362,12 +1387,8 @@ static void statement() {
   current->lastCall = false;
   
 
-  if (match(TOKEN_PRINT)) {
-    printStatement();
-
-  } else if (match(TOKEN_FOR)) {
+  if (match(TOKEN_FOR)) {
     forStatement();
-
   } else if (match(TOKEN_USE)) {
     useStatement();
   } else if (match(TOKEN_IF)) {
@@ -1382,7 +1403,8 @@ static void statement() {
     returnStatement();
   } else if (match(TOKEN_WHILE)) {
     whileStatement();
-
+  } else if (match(TOKEN_PRIVATE)) {
+    privateStatement();
   } else if (match(TOKEN_LEFT_BRACE)) {
     beginScope();
     block();
