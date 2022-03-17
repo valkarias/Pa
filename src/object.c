@@ -471,8 +471,8 @@ char* objectString(Value value) {
       ObjInstance* instance = AS_INSTANCE(value);
       char* objectString = malloc(sizeof(char) * (instance->klass->name->length + 12));
       memmove(objectString, "<instance ", 10);
-      memmove(objectString + 1, instance->klass->name->chars, instance->klass->name->length);
-      memmove(objectString + 1 + instance->klass->name->length, ">", 1);
+      memmove(objectString + 10, instance->klass->name->chars, instance->klass->name->length);
+      memmove(objectString + 10 + instance->klass->name->length, ">", 1);
       objectString[instance->klass->name->length + 11] = '\0';
       return objectString; 
     }

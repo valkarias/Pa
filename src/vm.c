@@ -540,10 +540,18 @@ static InterpretResult run() {
 
 #define READ_STRING() AS_STRING(READ_CONSTANT())
 
+#define BINARY_ERROR_TYPES(op) \
+  char* first = typeValue(peek(1)); \
+  char* second = typeValue(peek(0)); \
+  runtimeError("Operands must be numbers."); \
+  info("Pseudo-code guessed: type '%s' "#op" type '%s'", first, second); \
+  FREE_ARRAY(char, first, strlen(first)); \
+  FREE_ARRAY(char, second, strlen(second));
+
 #define BINARY_OP(valueType, op, T) \
     do { \
       if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) { \
-        runtimeError("Operands must be numbers."); \
+        BINARY_ERROR_TYPES(op); \
         return INTERPRET_RUNTIME_ERROR; \
       } \
       T b = AS_NUMBER(pop()); \
@@ -607,11 +615,6 @@ static InterpretResult run() {
           runtimeError("Undefined variable '%s'.", name->chars);
           return INTERPRET_RUNTIME_ERROR;
         }
-        if (valuesEqual(value, NIL_VAL)) {
-          runtimeError("Can't use variable with a nil state.");
-          info("The variable '%s' is none.", name->chars);
-          return INTERPRET_RUNTIME_ERROR;
-        }
         push(value);
         break;
       }
@@ -628,11 +631,6 @@ static InterpretResult run() {
         Value value;
         if (!tableGet(&frame->closure->function->library->privateValues, name, &value)) {
           runtimeError("Undefined private variable '%s'.", name->chars);
-          return INTERPRET_RUNTIME_ERROR;
-        }
-        if (valuesEqual(value, NIL_VAL)) {
-          runtimeError("Can't use private variable with a nil state.");
-          info("The variable '%s' is none.", name->chars);
           return INTERPRET_RUNTIME_ERROR;
         }
         push(value);
@@ -783,10 +781,6 @@ static InterpretResult run() {
 
             if (tableGet(&library->values, name, &value)) {
               pop();
-              if (valuesEqual(value, NIL_VAL)) {
-                runtimeError("Can't use property with a nil state.");
-                return INTERPRET_RUNTIME_ERROR;
-              }
               push(value);
               break;
             }
@@ -802,14 +796,6 @@ static InterpretResult run() {
 
         }
 
-        break;
-      }
-
-      case OP_FIX_INSTANCE: {
-        int argCount = frame->closure->function->arity;
-        Value value = peek(argCount);
-        if (IS_INSTANCE(value)) push(value);
-        else pop();
         break;
       }
 
@@ -882,7 +868,7 @@ static InterpretResult run() {
       case OP_BIT_OR: BINARY_OP(NUMBER_VAL, |, int); break;
       case OP_MOD: {
         if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) {
-          runtimeError("Operands must be numbers.");
+          BINARY_ERROR_TYPES(%);
           return INTERPRET_RUNTIME_ERROR;
         }
 
@@ -895,7 +881,7 @@ static InterpretResult run() {
 
       case OP_POW: {
         if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) {
-          runtimeError("Operands must be numbers.");
+          BINARY_ERROR_TYPES(**);
           return INTERPRET_RUNTIME_ERROR;
         }
 
@@ -910,7 +896,7 @@ static InterpretResult run() {
       case OP_MULTIPLY: BINARY_OP(NUMBER_VAL, *, double); break;
       case OP_DIVIDE: {
         if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) {
-          runtimeError("Operands must be numbers.");
+          BINARY_ERROR_TYPES(/);
           return INTERPRET_RUNTIME_ERROR;
         }
 
@@ -1162,7 +1148,7 @@ static InterpretResult run() {
           }
 
           default:
-            runtimeError("Type not subscriptable.");
+            runtimeError("Type '%s' not subscriptable.", typeValue(objVal));
             return INTERPRET_RUNTIME_ERROR;
         }
 

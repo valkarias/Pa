@@ -27,7 +27,6 @@ static Value printNative(int argCount, Value *args) {
     return CLEAR;
 }
 
-
 static Value inputNative(int argCount, Value *args) {
     if (argCount > 1) {
         runtimeError("Expected 1 or 0 arguments but got %d from 'input()'.", argCount);
@@ -117,6 +116,33 @@ static Value assertNative(int argCount, Value *args) {
     return CLEAR;
 }
 
+static Value isInstanceNative(int argCount, Value *args) {
+    if (argCount != 2) {
+        runtimeError("Expected 2 arguments but got %d from 'isInstance()'.", argCount);
+        return NOTCLEAR;
+    }
+
+    if (!IS_INSTANCE(args[0])) {
+        runtimeError("First argument must be an instance object from 'isInstance()'.");
+        return NOTCLEAR;
+    }
+    if (!IS_CLASS(args[1])) {
+        runtimeError("Second argument must be a class object from 'isInstance()'.");
+        return NOTCLEAR;
+    }
+
+    ObjInstance* instance = AS_INSTANCE(args[0]);
+    ObjClass* klass = instance->klass;
+
+    //class to check for
+    ObjClass* target = AS_CLASS(args[1]);
+    if (klass == target) {
+        return TRUE_VAL;
+    }
+
+    return FALSE_VAL;
+}
+
 static Value toStringNative(int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError("Expected 1 argument but got %d from 'toString()'.", argCount);
@@ -141,6 +167,7 @@ void defineAllNatives() {
         "type",
         "toString",
         "assert",
+        "isInstance",
     };
 
     NativeFn nativeFunctions[] = {
@@ -149,6 +176,7 @@ void defineAllNatives() {
         typeNative,
         toStringNative,
         assertNative,
+        isInstanceNative,
     };
 
     for (uint8_t i = 0; i < sizeof(nativeStrings) / sizeof(nativeStrings[0]); i++) {

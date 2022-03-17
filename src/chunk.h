@@ -94,7 +94,6 @@ typedef enum {
   OP_BIT_RIGHT,
   OP_BIT_XOR,
 
-  OP_FIX_INSTANCE,
 
   OP_DEFINE_LIBRARY,
   OP_GET_LIBRARY,

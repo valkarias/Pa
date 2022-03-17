@@ -98,8 +98,6 @@ int disassembleInstruction(Chunk* chunk, int offset) {
     case OP_USE_NAME:
       return simpleInstruction("OP_USE_NAME", offset);
 
-    case OP_FIX_INSTANCE:
-      return simpleInstruction("OP_FIX_INSTANCE", offset);
 
     case OP_BUILD_LIST:
       return byteInstruction("OP_BUILD_LIST", chunk, offset);

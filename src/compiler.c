@@ -87,6 +87,10 @@ static void emitBytes(uint8_t byte1, uint8_t byte2) {
   emitByte(byte2);
 }
 
+static void emitSlotZero() {
+  emitBytes(OP_GET_LOCAL, (uint8_t)0);
+}
+
 static void emitLoop(int loopStart) {
   emitByte(OP_LOOP);
 
@@ -1196,7 +1200,7 @@ static void privateStatement() {
     if (currentClass != NULL) {
       uint8_t name = identifierConstant(&parser.previous);
       Token nameTok = parser.previous;
-      emitByte(OP_FIX_INSTANCE);
+      emitSlotZero();
       consume(TOKEN_EQUAL, "Expected an '=' after property name");
       expression(); 
       emitBytes(OP_PRIVATE_PROPERTY_SET, name);
@@ -1329,7 +1333,6 @@ static int getArgCount(uint8_t *code, const ValueArray constants, int ip) {
     case OP_USE_NAME:
     case OP_INCREMENT:
     case OP_DECREMENT:
-    case OP_FIX_INSTANCE:
       return 0;
 
     case OP_CONSTANT:

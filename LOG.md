@@ -34,3 +34,16 @@ It also extracts the zipfile and updates the paths to build it correctly.
 - Refactors of the language's core code.
 
 **{+}** Fixed Parsing of octal numbers.
+
+### Late Patches
+- Added Better error messages for mismatching types of a binary operation.
+```
+1 - "";
+
+Operands must be numbers.
+[line 1] in stdin
+ -> Pseudo-code guessed: type 'number' - type 'string'
+```
+- 'none' type no more gets displayed as 'unknown' for ``type()``.
+-  Fixed emiting the correct instance for private properties.
+- Added ``isInstance(instance, class)`` which checks if ``instance`` is a ``class``'s instance.

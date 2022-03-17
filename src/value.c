@@ -65,7 +65,8 @@ char* typeValue(Value value) {
 
   } else if (IS_NUMBER(value)) {
     return generateType("number");
-    
+  } else if (IS_NIL(value)) {
+    return generateType("none");
   } else if (IS_OBJ(value)) {
     return typeObject(value);
   }
