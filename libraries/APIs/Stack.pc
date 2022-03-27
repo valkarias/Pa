@@ -17,15 +17,20 @@ class new {
     } 
  
     pop() { 
-      assert(!this.isEmpty(), "Can not pop from an empty stack from 'pop()'."); 
+      assert !this.isEmpty(), 
+        "Can not pop from an empty stack from 'pop()'.";
+
       return this._values.remove(); 
     } 
  
     peek(distance) { 
       let index = -1 - distance;
 
-      assert(!this.isEmpty(), "Can not peek an empty stack from 'peek()'."); 
-      assert(index > this._values.length(), "Distance out of bounds from 'peek()'."); 
+      assert 
+        !this.isEmpty(), "Can not peek an empty stack from 'peek()'.";
+      assert index > this._values.length(), 
+        "Distance out of bounds from 'peek()'."; 
+
       return this._values[index]; 
     }
 

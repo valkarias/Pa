@@ -12,6 +12,7 @@
 
 static void repl() {
   char line[1024];
+  printf("Use Ctrl + C to exit.\n");
   for (;;) {
     printf("> ");
 

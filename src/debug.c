@@ -131,6 +131,9 @@ int disassembleInstruction(Chunk* chunk, int offset) {
     case OP_PRIVATE_SET:
       return constantInstruction("OP_PRIVATE_SET", chunk, offset);
 
+    case OP_ASSERT:
+      return constantInstruction("OP_ASSERT", chunk, offset);
+
     case OP_GET_UPVALUE:
       return byteInstruction("OP_GET_UPVALUE", chunk, offset);
     case OP_SET_UPVALUE:

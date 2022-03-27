@@ -25,52 +25,39 @@ static void resetStack() {
 
 
 void runtimeError(const char* format, ...) {
-  va_list args;
-  va_start(args, format);
-  vfprintf(stderr, format, args);
-  va_end(args);
   fputs("\n", stderr);
-
   for (int i = vm.frameCount - 1; i >= 0; i--) {
     CallFrame* frame = &vm.frames[i];
     ObjFunction* function = frame->closure->function;
 
     size_t instruction = frame->ip - function->chunk.code - 1;
-    fprintf(stderr, "[line %d] in ", function->chunk.lines[instruction]);
-    if (function->name == NULL) {
-      fprintf(stderr, "%s \n", function->library->name->chars);
-    } else {
-      fprintf(stderr, "%s(): %s \n",
+
+    fprintf(stderr, "%s::", function->library->name->chars);
+    fprintf(stderr, "%d in ", function->chunk.lines[instruction]);
+    if (function->name != NULL) {
+      fprintf(stderr, "%s()\n",
       function->name->chars,
       function->library->name->chars);
+    } else {
+      fprintf(stderr, "<script>\n    {-} ");
     }
   }
 
+  va_list args;
+  va_start(args, format);
+  vfprintf(stderr, format, args);
+  va_end(args);
+  fputs("\n\n", stderr);
   resetStack();
 }
 
 void info(const char* extra, ...) {
   va_list args;
   va_start(args, extra);
-  fprintf(stderr, " -> ");
+  fprintf(stderr, " {+} ");
   vfprintf(stderr, extra, args);
   va_end(args);
   fputs("\n", stderr);
-}
-
-void dryError(const char* error) {
-  fprintf(stderr, "%s\n", error);
-
-  for (int i = vm.frameCount - 1; i >= 0; i--) {
-    CallFrame* frame = &vm.frames[i];
-    ObjFunction* function = frame->closure->function;
-
-    fprintf(stderr, " %s() in '%s' \n",
-    function->name->chars,
-    function->library->name->chars);
-  }
-
-  resetStack();
 }
 
 static char* resolveUse(ObjString* raw) {
@@ -213,7 +200,7 @@ static bool call(ObjClosure* closure, int argCount) {
     return false;
   }
 
-//< check-overflow
+
   CallFrame* frame = &vm.frames[vm.frameCount++];
 
   frame->closure = closure;
@@ -916,13 +903,30 @@ static InterpretResult run() {
       case OP_NOT:
         push(BOOL_VAL(isFalsey(pop())));
         break;
-      case OP_NEGATE:
+
+
+      case OP_NEGATE: {
         if (!IS_NUMBER(peek(0))) {
           runtimeError("Operand must be a number.");
           return INTERPRET_RUNTIME_ERROR;
         }
-        push(NUMBER_VAL(-AS_NUMBER(pop())));
+
+        Value negated = NUMBER_VAL( -AS_NUMBER(peek(0)) );
+        vm.stackTop[-1] = negated;
         break;
+      }
+
+      case OP_ASSERT: {
+        Value condition = pop();
+        ObjString* error = READ_STRING();
+
+        if (isFalsey(condition)) {
+          runtimeError("%s %s", "Assertion Failed:", error->chars);
+          return INTERPRET_RUNTIME_ERROR;
+        }
+
+        break;
+      }
 
       case OP_JUMP: {
         uint16_t offset = READ_SHORT();
@@ -971,7 +975,7 @@ static InterpretResult run() {
           return INTERPRET_RUNTIME_ERROR;
         }
 
-        // Awkward stack cleaner hack.
+        // Awkward stack cleaner.
         Value result = pop();
         cleanCalls();
 
@@ -1164,12 +1168,12 @@ static InterpretResult run() {
           runtimeError("Can not store value in a non-list.");
           return INTERPRET_RUNTIME_ERROR;
         }
-        ObjList* list = AS_LIST(listVal);
-
         if (!IS_NUMBER(indexVal)) {
           runtimeError("List index must be a number.");
           return INTERPRET_RUNTIME_ERROR;
         }
+
+        ObjList* list = AS_LIST(listVal);
         int index = AS_NUMBER(indexVal);
 
         if (!isValidListIndex(list, index)) {
@@ -1234,7 +1238,10 @@ static InterpretResult run() {
         }
         
         char* api_ref = resolveUse(name);
-        if (!api_ref) return INTERPRET_RUNTIME_ERROR;
+        if (!api_ref) {
+          FREE_ARRAY(char, api_ref, strlen(api_ref) + 1);
+          return INTERPRET_RUNTIME_ERROR;
+        }
 
         char* source = readFile(api_ref);
 
@@ -1246,7 +1253,7 @@ static InterpretResult run() {
         FREE_ARRAY(char, api_ref, strlen(api_ref) + 1);
         push(OBJ_VAL(library));
         
-        //compileModule() will pop 'library' and frees 'source'
+        //compileModule() will pop 'library' and free 'source'
         ObjClosure* closure = compileModule(library, source);
         if (!closure) return INTERPRET_COMPILE_ERROR;
 

@@ -166,7 +166,6 @@ void defineAllNatives() {
         "input",
         "type",
         "toString",
-        "assert",
         "isInstance",
     };
 
@@ -175,7 +174,6 @@ void defineAllNatives() {
         inputNative,
         typeNative,
         toStringNative,
-        assertNative,
         isInstanceNative,
     };
 

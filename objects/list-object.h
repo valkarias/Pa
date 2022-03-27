@@ -11,7 +11,7 @@ void initListMethods();
 //Written in PCrap instead for the sake of simplicity too.
 #define LIST_EXTRA "//\n" \
 "define repeat(list, action) {\n" \
-"   assert(type(action) == \"function\", \"Argument must be a function from 'repeat'.\");\n" \
+"   assert type(action) == \"function\", \"Argument must be a function from 'repeat'.\";\n" \
 "\n"\
 "   let len = list.length();\n" \
 "   for let i = 0; i < len; i++ {\n" \

@@ -12,11 +12,6 @@
 
 ObjLibrary* createMathLibrary();
 
-//lol
-#define MIN(A,B)    ({ __typeof__(A) __a = (A); __typeof__(B) __b = (B); __a < __b ? __a : __b; })
-#define MAX(A,B)    ({ __typeof__(A) __a = (A); __typeof__(B) __b = (B); __a < __b ? __b : __a; })
-//
-
 //
 #define CLAMP(low, x, high) ({\
   __typeof__(x) __x = (x); \

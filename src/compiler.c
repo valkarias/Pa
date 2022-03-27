@@ -29,11 +29,11 @@ static void errorAt(Token* token, const char* message) {
   fprintf(stderr, "\n%s::", parser.library->name->chars);
 
   if (token->type == TOKEN_EOF) {
-    fprintf(stderr, " at the end");
+    fprintf(stderr, " at the end of line %d", token->line);
   } else if (token->type == TOKEN_ERROR) {
     // Nothing.
   } else {
-    fprintf(stderr, "%d | %.*s", token->line, token->length,token->start);
+    fprintf(stderr, "%d | %.*s", token->line, token->length, token->start);
   }
 
   fprintf(stderr, "\n    -> %s\n", message);
@@ -362,11 +362,11 @@ static void markInitialized() {
 }
 
 static void setPrivateVariable(Token name) {
-  tableSet(&parser.library->privateValues, copyString(name.start, name.length), OP_NIL);
+  tableSet(&parser.library->privateValues, copyString(name.start, name.length), NIL_VAL);
 }
 
 static void setPrivateProperty(Token name) {
-  tableSet(&currentClass->privateVariables, copyString(name.start, name.length), OP_NIL);
+  tableSet(&currentClass->privateVariables, copyString(name.start, name.length), NIL_VAL);
 }
 
 static void defineVariable(uint8_t global, bool isPrivate) {
@@ -449,7 +449,8 @@ static void call(bool canAssign, Token previous) {
   current->lastCall = true;
 }
 
-static bool privateDoesExist(Token nameTok, Value value) {
+static bool privateDoesExist(Token nameTok) {
+  Value value;
   return tableGet(&currentClass->privateVariables, copyString(nameTok.start, nameTok.length), &value);
 }
 
@@ -460,7 +461,7 @@ static void dot(bool canAssign, Token previous) {
 
   if (match(TOKEN_LEFT_PAREN)) {
     uint8_t argCount = argumentList();
-    if (currentClass != NULL && (previous.type == TOKEN_THIS)) {
+    if (currentClass != NULL && ( (previous.type == TOKEN_THIS) && privateDoesExist(nameTok) )) {
       emitBytes(OP_INVOKE1, argCount);
     } else {
       emitBytes(OP_INVOKE, argCount);
@@ -472,18 +473,16 @@ static void dot(bool canAssign, Token previous) {
 
   Value val;
 
-  if (currentClass != NULL && (previous.type == TOKEN_THIS && privateDoesExist(nameTok, val)) ) {
+  if (currentClass != NULL && (previous.type == TOKEN_THIS && privateDoesExist(nameTok)) ) {
     if (canAssign && match(TOKEN_EQUAL)) {
       expression();
       emitBytes(OP_PRIVATE_PROPERTY_SET, name);
     } else if (canAssign && match(TOKEN_PLUS_PLUS)) {
-      //emitByte(OP_FIX_INSTANCE);
       emitBytes(OP_PRIVATE_GET_PROPERTY_NO_POP, name);
       emitByte(OP_INCREMENT);
       emitBytes(OP_PRIVATE_PROPERTY_SET, name);
 
     } else if (canAssign && match(TOKEN_MINUS_MINUS)) {
-      //emitByte(OP_FIX_INSTANCE);
       emitBytes(OP_PRIVATE_GET_PROPERTY_NO_POP, name);
       emitByte(OP_DECREMENT);
       emitBytes(OP_PRIVATE_PROPERTY_SET, name);
@@ -516,12 +515,16 @@ static void dot(bool canAssign, Token previous) {
 
 static bool isHex() {
   Token c = parser.previous;
-  int isDigit = c.start[0] >= '0' && c.start[0] <= '9';
+  //Can't do '1x10', '2x10'....
+  int startPoint = c.start[0] == '0';
+  int hexDigit = (c.start[1] == 'x' || c.start[1] == 'X');
 
-  if (isDigit) {
-    if (c.start[1] == 'x' || c.start[1] == 'X') {
+  if (startPoint) {
+    if (hexDigit) {
       return true;
     }
+  } else if ( !(startPoint) && hexDigit ) {
+    error("Invalid hex literal");
   }
 
   return false;
@@ -529,12 +532,15 @@ static bool isHex() {
 
 static bool isOct() {
   Token c = parser.previous;
-  int isDigit = c.start[0] >= '0' && c.start[0] <= '9';
+  int startPoint = c.start[0] == '0';
+  int octalDigit = c.start[1] == 'o' || c.start[1] == 'O';
 
-  if (isDigit) {
-    if (c.start[1] == 'o' || c.start[1] == 'O') {
+  if (startPoint) {
+    if (octalDigit) {
       return true;
     }
+  } else if ( (!startPoint && octalDigit) ) {
+    error("Invalid octal literal");
   }
 
   return false;
@@ -900,6 +906,7 @@ ParseRule rules[] = {
   [TOKEN_TRUE]          = {literal,  NULL,   PREC_NONE},
   [TOKEN_NONE]          = {literal,  NULL,   PREC_NONE},
   [TOKEN_VAR]           = NONE,
+  [TOKEN_ASSERT]        = NONE,
   [TOKEN_PRIVATE]       = NONE,
   [TOKEN_WHILE]         = NONE,
   [TOKEN_ERROR]         = NONE,
@@ -911,7 +918,7 @@ static void parsePrecedence(Precedence precedence) {
   advance();
   ParsePrefix prefixRule = getRule(parser.previous.type)->prefix;
   if (prefixRule == NULL) {
-    error("Expected an expression.");
+    error("Expected a valid expression.");
     return;
   }
 
@@ -1014,12 +1021,11 @@ static void funDeclaration(bool isPrivate) {
   uint8_t global = parseVariable("Expected a function name.");
   Token name = parser.previous;
 
-  markInitialized();
-  function(TYPE_FUNCTION);
-
   if (isPrivate) {
     setPrivateVariable(name);
   }
+  markInitialized();
+  function(TYPE_FUNCTION);
   defineVariable(global, isPrivate);
 }
 
@@ -1136,6 +1142,21 @@ static void forStatement() {
 
   staticCheck.innermostLoopScopeDepth = MotherLoopScopeDepth; 
   staticCheck.innermostLoopStart = MotherLoopStart; 
+}
+
+static void assertStatement() {
+  int constant = addConstant(
+    currentChunk(), OBJ_VAL(copyString("No Source.", 10))
+  );
+
+  expression();
+  if (match(TOKEN_COMMA)) {
+    consume(TOKEN_STRING, "Expected an assert error string after the ','.");
+    constant = addConstant(currentChunk(), OBJ_VAL(copyString(parser.previous.start + 1, parser.previous.length - 2)));
+  }
+
+  consume(TOKEN_SEMICOLON, "Expected a ';' after assert's error string.");
+  emitBytes(OP_ASSERT, (uint8_t)constant);
 }
 
 static void useStatement() {
@@ -1273,6 +1294,7 @@ static void synchronize() {
       case TOKEN_USE:
       case TOKEN_RETURN:
       case TOKEN_PRIVATE:
+      case TOKEN_ASSERT:
         return;
 
       default:
@@ -1361,6 +1383,7 @@ static int getArgCount(uint8_t *code, const ValueArray constants, int ip) {
     case OP_TAIL_CALL:
     case OP_USE:
     case OP_METHOD:
+    case OP_ASSERT:
       return 1;
 
     case OP_JUMP:
@@ -1408,11 +1431,12 @@ static void statement() {
     whileStatement();
   } else if (match(TOKEN_PRIVATE)) {
     privateStatement();
+  } else if (match(TOKEN_ASSERT)) {
+    assertStatement();
   } else if (match(TOKEN_LEFT_BRACE)) {
     beginScope();
     block();
     endScope();
-
   } else {
     expressionStatement();
   }

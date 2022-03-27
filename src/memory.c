@@ -178,9 +178,8 @@ static void freeObject(Obj* object) {
       break;
 
     case OBJ_CLASS: {
-
       ObjClass* klass = (ObjClass*)object;
-      markTable(&klass->methods);
+      freeTable(&klass->methods);
       freeTable(&klass->privateMethods);
       FREE(ObjClass, object);
       break;

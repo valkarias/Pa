@@ -1,49 +1,24 @@
 # Pcrap Update Log
 
-### Privacy & Access-Level
-Pcrap now offers a brand new semantic which is access-level to modules' values as well as methods and attributes for instances & classes.  
-which allows certain functionality to be hidden. This can be used to create proper Application Programming Interfaces.  
-- This is explained in detail in the documentation website.
+### Assert as an Internal
+- the old ``assert`` built-in function is now a fully fledged statement in Pcrap. Asserting is so basic that it was decided to  
+be added to the language's core and this can be also considered as a micro optimization (cherry ontop!).  
+All the external & internal built-in APIs got updated to this new change.  
 
-### Print
-This deserves its very own section. The print keyword has been removed and replaced with a new fresh native built-in function which does exactly the same thing. The reason was behind the fact that it was very difficult to parse the keyword ``private`` and ``print`` seperately.  
-
-It also got one more optional argument now,
-the signature can be represented as ``print(value, end?)``. 
+The assert statement can be used as so
 ```
-print("No new line", "");
-```
+assert condition, "Optional Message/Context.";
 
-### Bitwise Shifts & XOR
-- Added bitwise shift operators & ``Exclusive Or`` and, they function as you expect!
-```
-25 << 5 //800
-60 >> 2 //15
-
-900 ^ 2 //902
+assert false, "Error!";
+assert [1,2,3].length() == 4;
 ```
 
-### PBuild
-PBuild no more uses ``git`` to get the repository downloaded into your computer, Instead it downloads it as a zipfile via an http request.  
-It also extracts the zipfile and updates the paths to build it correctly.
+### Micro-Optimizations
+- The simple negate, increment and decrement opcodes now apply their changes directly to the values in the stack, previously these opcodes  
+popped then changed and finally pushed which is a lot of operations for a simple change.
 
 ### Misc
-- The ``list.slice`` function now requires 2 arguments instead of 1 which represents ``list.slice(start, end)``.  
-- New ``string.format``.
-- Revamped & fixed the ``string.replace`` function.
-- Refactors of the language's core code.
-
-**{+}** Fixed Parsing of octal numbers.
-
-### Late Patches
-- Added Better error messages for mismatching types of a binary operation.
-```
-1 - "";
-
-Operands must be numbers.
-[line 1] in stdin
- -> Pseudo-code guessed: type 'number' - type 'string'
-```
-- 'none' type no more gets displayed as 'unknown' for ``type()``.
--  Fixed emiting the correct instance for private properties.
-- Added ``isInstance(instance, class)`` which checks if ``instance`` is a ``class``'s instance.
+- Fixed GC not collecting a class' methods.
+- Minor improvements to display runtime errors.
+- Fixed not freeing allocated resources incase of an import failure.
+- Fixed private functions not being able to call themselves in their bodies.

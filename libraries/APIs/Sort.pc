@@ -3,6 +3,9 @@
 
 // Selection Sort: Suitable for smaller arrays.
 define selectionSort(list) {
+    assert type(list) == "list", 
+        "Argument must be a list object from 'selectionSort'.";
+
     if list.length() > 20 {
         print("Warning: selectionSort may not be suitable for its given array.");
         print(" -> Try a more smaller array (under 20 elements).");
@@ -66,11 +69,13 @@ private define __sort(list, low, high) {
 }
 
 define quickSort(list) {
+    assert type(list) == "list", 
+        "Argument must be a list object from 'quickSort'.";
+
     for let i = 0; i < list.length(); i++ {
-        if type(list[i]) != "number" { 
-            assert(false, "List should be numeric from 'quickSort'.");
-            return none;
-        }
+        //IMPROVEMENT
+        assert type(list[i]) == "number", 
+            "List should be numeric from 'quickSort'.";
     }
 
     __sort(list, 0, list.length() - 1);
