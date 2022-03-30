@@ -1,5 +1,5 @@
-#ifndef pcrap_tools_h
-#define pcrap_tools_h
+#ifndef Pa_tools_h
+#define Pa_tools_h
 
 #include <sys/unistd.h>
 #include <string.h>

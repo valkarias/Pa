@@ -1,6 +1,6 @@
 //> Chunks of Bytecode value-h
-#ifndef pcrap_value_h
-#define pcrap_value_h
+#ifndef Pa_value_h
+#define Pa_value_h
 //> Optimization include-string
 
 #include <string.h>

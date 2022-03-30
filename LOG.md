@@ -1,24 +1,6 @@
-# Pcrap Update Log
+# Pa Update Log
 
-### Assert as an Internal
-- the old ``assert`` built-in function is now a fully fledged statement in Pcrap. Asserting is so basic that it was decided to  
-be added to the language's core and this can be also considered as a micro optimization (cherry ontop!).  
-All the external & internal built-in APIs got updated to this new change.  
+### A Rebrand
+- We decided to re-name the language to its current name, althougth it's sounds weird, it's not weirder than the previous name. The name was simply *picked* it sounded simplistic enough and very readable and most importantly, being easily picked and *digested* by the hungry searching algorithms hopefully across most platforms used for so.  
 
-The assert statement can be used as so
-```
-assert condition, "Optional Message/Context.";
-
-assert false, "Error!";
-assert [1,2,3].length() == 4;
-```
-
-### Micro-Optimizations
-- The simple negate, increment and decrement opcodes now apply their changes directly to the values in the stack, previously these opcodes  
-popped then changed and finally pushed which is a lot of operations for a simple change.
-
-### Misc
-- Fixed GC not collecting a class' methods.
-- Minor improvements to display runtime errors.
-- Fixed not freeing allocated resources incase of an import failure.
-- Fixed private functions not being able to call themselves in their bodies.
+**But, What does it mean?** Well a suggestion popped into the heads was to rename it to simply **P**, but thats already a well established language, then another suggestion popped and it was **P\*** and i personally think its still not as *attractive* in any aspect, and, finally **Pa** came into the mind! So, about the meaning of it? it can mean different things but it mostly stands for (you might be familiar with it) *Father*.

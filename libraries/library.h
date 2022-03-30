@@ -1,12 +1,12 @@
-#ifndef pcrap_library_h
-#define pcrap_library_h
+#ifndef Pa_library_h
+#define Pa_library_h
 
-#include "pcrap_math.h"
+#include "Pa_math.h"
 #include "os.h"
 #include "random.h"
-#include "pcrap_time.h"
-#include "pcrap_path.h"
-#include "pcrap_ascii.h"
+#include "Pa_time.h"
+#include "Pa_path.h"
+#include "Pa_ascii.h"
 #include "fileio.h"
 
 typedef ObjLibrary *(*NativeLibrary)();

@@ -1,6 +1,6 @@
 //> Scanning on Demand compiler-h
-#ifndef pcrap_compiler_h
-#define pcrap_compiler_h
+#ifndef Pa_compiler_h
+#define Pa_compiler_h
 
 #include "object.h"
 #include <ctype.h>

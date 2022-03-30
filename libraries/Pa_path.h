@@ -1,5 +1,5 @@
-#ifndef pcrap_path_h
-#define pcrap_path_h
+#ifndef Pa_path_h
+#define Pa_path_h
 
 #include "../src/object.h"
 #include "../src/value.h"

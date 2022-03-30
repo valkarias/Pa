@@ -1,6 +1,6 @@
 //> Chunks of Bytecode chunk-h
-#ifndef pcrap_chunk_h
-#define pcrap_chunk_h
+#ifndef Pa_chunk_h
+#define Pa_chunk_h
 
 #include "common.h"
 //> chunk-h-include-value

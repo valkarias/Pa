@@ -1,5 +1,5 @@
-#ifndef pcrap_random_h
-#define pcrap_random_h
+#ifndef Pa_random_h
+#define Pa_random_h
 
 #include <stdlib.h>
 #include <time.h>

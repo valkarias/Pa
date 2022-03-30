@@ -63,7 +63,7 @@ char* resolveLibrary(char* name) {
   char* location = getenv("APPDATA");
   char* lib = basename(name);
 
-  join(location, location, "PCRAP_LIBS");
+  join(location, location, "Pa_LIBS");
   join(location, location, strcat(lib, ".pc"));
 
   if (checkPath(location)) {

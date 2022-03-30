@@ -1,5 +1,7 @@
-#ifndef pcrap_ascii_h
-#define pcrap_ascii_h
+#ifndef Pa_time_h
+#define Pa_time_h
+
+#include <time.h>
 
 #include "../src/object.h"
 #include "../src/value.h"
@@ -9,6 +11,6 @@
 
 #include "library.h"
 
-ObjLibrary* createAsciiLibrary();
+ObjLibrary* createTimeLibrary();
 
 #endif

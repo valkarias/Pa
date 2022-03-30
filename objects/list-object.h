@@ -1,5 +1,5 @@
-#ifndef pcrap_list_h
-#define pcrap_list_h
+#ifndef Pa_list_h
+#define Pa_list_h
 
 #include "../src/object.h"
 #include "../src/value.h"
@@ -8,7 +8,7 @@
 void initListMethods();
 
 //VM re-enterability issues.
-//Written in PCrap instead for the sake of simplicity too.
+//Written in Pa instead for the sake of simplicity too.
 #define LIST_EXTRA "//\n" \
 "define repeat(list, action) {\n" \
 "   assert type(action) == \"function\", \"Argument must be a function from 'repeat'.\";\n" \

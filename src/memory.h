@@ -1,6 +1,6 @@
 //> Chunks of Bytecode memory-h
-#ifndef pcrap_memory_h
-#define pcrap_memory_h
+#ifndef Pa_memory_h
+#define Pa_memory_h
 
 #include "common.h"
 //> Strings memory-include-object

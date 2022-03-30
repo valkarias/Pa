@@ -1,5 +1,5 @@
-#ifndef pcrap_common_h
-#define pcrap_common_h
+#ifndef Pa_common_h
+#define Pa_common_h
 
 #include <stdbool.h>
 #include <stddef.h>

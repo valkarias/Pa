@@ -1,6 +1,6 @@
 //> Scanning on Demand scanner-h
-#ifndef pcrap_scanner_h
-#define pcrap_scanner_h
+#ifndef Pa_scanner_h
+#define Pa_scanner_h
 //> token-type
 
 typedef enum {

@@ -10,8 +10,8 @@ from urllib.request import urlopen, Request, urlretrieve
 #
 home = os.path.expanduser('~')
 
-master = os.path.join(home, "PCrap")
-master_c = os.path.join(master, "PCrap-master")
+master = os.path.join(home, "Pa")
+master_c = os.path.join(master, "Pa-master")
 
 objects = os.path.join(master_c, "objects", "*.c")
 libraries = os.path.join(master_c, "libraries", "*.c")
@@ -24,25 +24,25 @@ flags = "-o"
 LINUX_BUILD = False
 WINDOWS_BUILD = False
 
-REPO_NAME = "valkarias/PCrap"
+REPO_NAME = "valkarias/Pa"
 
 exe = ""
 other_libraries = ""
 if platform.system() == "Windows":
     WINDOWS_BUILD = True
-    exe = "pcrap.exe"
-    other_libraries = os.path.join(os.environ['APPDATA'], "PCRAP_LIBS")
+    exe = "Pa.exe"
+    other_libraries = os.path.join(os.environ['APPDATA'], "Pa_LIBS")
 else:
     LINUX_BUILD = True
-    exe = "pcrap"
-    other_libraries = os.path.join(home, "PCRAP_LIBS")
+    exe = "Pa"
+    other_libraries = os.path.join(home, "Pa_LIBS")
 #
 
 def check():
-    p = os.path.join(home, "PCrap")
+    p = os.path.join(home, "Pa")
 
     if os.path.exists(p) == False:
-        click.secho("PCrap Directory is missing: ", fg='red')
+        click.secho("Pa Directory is missing: ", fg='red')
         click.echo("Please use the 'download' command.")
         return -1
 
@@ -106,11 +106,11 @@ def get_latest_release_name():
     return False
 
 def download_source():
-    url = "https://github.com/valkarias/PCrap/archive/master.zip"
+    url = "https://github.com/valkarias/Pa/archive/master.zip"
     req, headers = urlretrieve(url, filename=master + ".zip")
     file = open(req)
     with zipfile.ZipFile(master + ".zip", 'r') as zip:
-        extracted = os.path.join(home, "PCrap")
+        extracted = os.path.join(home, "Pa")
         os.mkdir(extracted)
         click.echo("Extracting ZIP file..")
         try:
@@ -219,17 +219,17 @@ def version():
     if release == False:
         print("\n")
         click.echo("Please try checking the repository instead.")
-        click.echo("-> https://github.com/valkarias/PCrap/releases")
+        click.echo("-> https://github.com/valkarias/Pa/releases")
         return
     
-    click.echo(f"Pcrap {release} on {platform.system()}")
+    click.echo(f"Pa {release} on {platform.system()}")
 
 @click.command()
 def uninstall():
-    p = os.path.join(home, "PCrap")
+    p = os.path.join(home, "Pa")
     
     if os.path.exists(p) == False:
-        click.secho("PCrap Directory is missing", fg='red')
+        click.secho("Pa Directory is missing", fg='red')
         return
     
     if (os.path.isdir(p)) and len(os.listdir(p)) == 0:

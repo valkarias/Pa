@@ -1,6 +1,6 @@
 ---
 name: Bugs report
-about: Create a bug report to help Pcrap improve to the better.
+about: Create a bug report to help Pa improve to the better.
 title: Name [Can be a brief description of the issue]
 labels: bug
 assignees: ''

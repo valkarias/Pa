@@ -1,6 +1,6 @@
 //> Strings object-h
-#ifndef pcrap_object_h
-#define pcrap_object_h
+#ifndef Pa_object_h
+#define Pa_object_h
 
 #include "common.h"
 

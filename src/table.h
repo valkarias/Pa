@@ -1,6 +1,6 @@
 //> Hash Tables table-h
-#ifndef pcrap_table_h
-#define pcrap_table_h
+#ifndef Pa_table_h
+#define Pa_table_h
 
 #include "common.h"
 #include "value.h"

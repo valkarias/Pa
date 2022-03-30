@@ -35,9 +35,7 @@ void runtimeError(const char* format, ...) {
     fprintf(stderr, "%s::", function->library->name->chars);
     fprintf(stderr, "%d in ", function->chunk.lines[instruction]);
     if (function->name != NULL) {
-      fprintf(stderr, "%s()\n",
-      function->name->chars,
-      function->library->name->chars);
+      fprintf(stderr, "%s()\n", function->name->chars);
     } else {
       fprintf(stderr, "<script>\n    {-} ");
     }

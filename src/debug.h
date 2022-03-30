@@ -1,5 +1,5 @@
-#ifndef pcrap_debug_h
-#define pcrap_debug_h
+#ifndef Pa_debug_h
+#define Pa_debug_h
 
 #include "chunk.h"
 

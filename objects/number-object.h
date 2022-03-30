@@ -1,5 +1,5 @@
-#ifndef pcrap_number_h
-#define pcrap_number_h
+#ifndef Pa_number_h
+#define Pa_number_h
 
 #include "../src/object.h"
 #include "../src/value.h"
@@ -8,7 +8,7 @@
 void initNumberMethods();
 
 //VM re-enterability issues.
-//Written in PCrap instead for the sake of simplicity too.
+//Written in Pa instead for the sake of simplicity too.
 #define NUMBER_EXTRA "//\n" \
 "define repeat(num, action) {\n" \
 "   assert type(action) == \"function\", \"Argument must be a function from 'repeat'.\";\n" \

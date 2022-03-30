@@ -1,5 +1,5 @@
-#ifndef pcrap_os_h
-#define pcrap_os_h
+#ifndef Pa_os_h
+#define Pa_os_h
 
 //combining mix functionalities into 1 module.
 #include <sys/stat.h>

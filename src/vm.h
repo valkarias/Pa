@@ -1,5 +1,5 @@
-#ifndef pcrap_vm_h
-#define pcrap_vm_h
+#ifndef Pa_vm_h
+#define Pa_vm_h
 
 
 #include "object.h"

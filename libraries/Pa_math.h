@@ -1,5 +1,5 @@
-#ifndef pcrap_math_h
-#define pcrap_math_h
+#ifndef Pa_math_h
+#define Pa_math_h
 
 #include <math.h>
 #include <errno.h>
