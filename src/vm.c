@@ -786,20 +786,15 @@ static InterpretResult run() {
 
 
       case OP_PRIVATE_PROPERTY_SET: {
-        if (!IS_OBJ(peek(1))) {
-          runtimeError("Type '%s' can not have private fields", typeValue(peek(1)));
-          info("Only instances can have private fields.");
-          return INTERPRET_RUNTIME_ERROR;
-        }
-
         if (IS_INSTANCE(peek(1))) {
           ObjInstance* instance = AS_INSTANCE(peek(1));
           tableSet(&instance->privateFields, READ_STRING(), peek(0));
+          //result
           pop();
           break;
         }
 
-        runtimeError("Type '%s' has no properties.", typeValue(peek(1)));
+        runtimeError("Type '%s' has no private properties.", typeValue(peek(1)));
         return INTERPRET_RUNTIME_ERROR;
       }
 

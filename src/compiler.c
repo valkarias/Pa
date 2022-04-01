@@ -582,7 +582,7 @@ static void number(bool canAssign) {
   double value = 0;
 
   if (isHex()) {
-    value = (double)strtol(parser.previous.start, NULL, 16);
+    value = (double)strtoll(parser.previous.start, NULL, 0);
   } else if (isOct()) {
     Token name = parser.previous;
     char* string = malloc(sizeof(char) * name.length + 1);
@@ -978,7 +978,7 @@ static void method(bool isPrivate) {
   if (!isPrivate) {
     emitBytes(OP_METHOD, constant);
   } else {
-    setPrivateVariable(methodName);
+    setPrivateProperty(methodName);
     emitBytes(OP_PRIVATE_METHOD, constant);
   }
 }
