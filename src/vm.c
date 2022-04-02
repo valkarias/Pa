@@ -789,8 +789,9 @@ static InterpretResult run() {
         if (IS_INSTANCE(peek(1))) {
           ObjInstance* instance = AS_INSTANCE(peek(1));
           tableSet(&instance->privateFields, READ_STRING(), peek(0));
-          //result
+          Value value = pop(); //result
           pop();
+          push(value);
           break;
         }
 

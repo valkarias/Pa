@@ -62,7 +62,7 @@ pbuild version
 - A more versatile tooling is planned! 
 
 At the moment there is only a syntax highlighter for the vscode text editor.  
-Avaliable in the marketplace [here](https://marketplace.visualstudio.com/items?itemName=Pa.Pa-syntax-highlighter)  
+Avaliable in the marketplace [here](https://marketplace.visualstudio.com/items?itemName=Pa-lang.pa-syntax-highlighter)  
 
 
 ## Example

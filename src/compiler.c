@@ -242,8 +242,24 @@ static void declaration();
 static ParseRule* getRule(TokenType type);
 static void parsePrecedence(Precedence precedence);
 
+static void setPrivateProperty(Token name) {
+  tableSet(&currentClass->privateVariables, copyString(name.start, name.length), NIL_VAL);
+}
+
+
 static uint8_t identifierConstant(Token* name) {
   return makeConstant(OBJ_VAL(copyString(name->start, name->length)));
+}
+
+static void parsePrivate() {
+  Token nameTok = parser.previous;
+  uint8_t name = identifierConstant(&parser.previous);
+  setPrivateProperty(nameTok);
+
+  consume(TOKEN_EQUAL, "Expected an '=' after identifier");
+  expression();
+  consume(TOKEN_SEMICOLON, "Expected a ';' after the property value.");
+  emitBytes(OP_PRIVATE_PROPERTY_SET,  name);
 }
 
 static bool identifiersEqual(Token* a, Token* b) {
@@ -365,9 +381,6 @@ static void setPrivateVariable(Token name) {
   tableSet(&parser.library->privateValues, copyString(name.start, name.length), NIL_VAL);
 }
 
-static void setPrivateProperty(Token name) {
-  tableSet(&currentClass->privateVariables, copyString(name.start, name.length), NIL_VAL);
-}
 
 static void defineVariable(uint8_t global, bool isPrivate) {
   if (current->scopeDepth > 0) {
@@ -1219,15 +1232,9 @@ static void privateStatement() {
     classDeclaration(true);
   } else if (match(TOKEN_IDENTIFIER)) {
     if (currentClass != NULL) {
-      uint8_t name = identifierConstant(&parser.previous);
-      Token nameTok = parser.previous;
       emitSlotZero();
-      consume(TOKEN_EQUAL, "Expected an '=' after property name");
-      expression(); 
-      emitBytes(OP_PRIVATE_PROPERTY_SET, name);
-      setPrivateProperty(nameTok);
-
-      consume(TOKEN_SEMICOLON, "Expected a ';' after the property value.");
+      parsePrivate();
+      emitByte(OP_POP);
     } else {
       error("Can't create a private property outside of a class.");
     }
