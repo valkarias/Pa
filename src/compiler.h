@@ -79,6 +79,8 @@ typedef struct Compiler {
   Upvalue upvalues[UINT8_COUNT];
 
   int scopeDepth;
+
+  Table cacheConstants;
 } Compiler;
 
 typedef struct ClassCompiler {

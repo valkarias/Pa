@@ -22,25 +22,6 @@ static Value exitLib(int argCount, Value *args) {
     return CLEAR; // Thanks Dictu & Clang.
 }
 
-static Value timeLib(int argCount, Value *args) {
-    if (argCount != 0) {
-        runtimeError("Expected 0 arguments but got %d from 'time()'.", argCount);
-        return NOTCLEAR;
-    }
-
-    return NUMBER_VAL( (double) time(NULL) );
-}
-
-
-static Value clockLib(int argCount, Value *args) {
-    if (argCount != 0) {
-        runtimeError("Expected 0 arguments but got %d from 'clock()'.", argCount);
-        return NOTCLEAR;
-    }
-
-    return NUMBER_VAL( (double)clock() / CLOCKS_PER_SEC );
-}
-
 static Value removeLib(int argCount, Value *args) {
     if (argCount != 1) {
         runtimeError("Expected 1 argument but got %d from 'remove()'.", argCount);
@@ -251,8 +232,6 @@ ObjLibrary* createOsLibrary() {
 #endif
 
     defineNative("exit", exitLib, &library->values);
-    defineNative("clock", clockLib, &library->values);
-    defineNative("time", timeLib, &library->values);
     defineNative("remove", removeLib, &library->values);
     defineNative("getCwd", getCwdLib, &library->values);
     defineNative("setCwd", setCwdLib, &library->values);

@@ -26,7 +26,7 @@ static Chunk* currentChunk() {
 static void errorAt(Token* token, const char* message) {
   if (parser.panicMode) return;
   parser.panicMode = true;
-  fprintf(stderr, "\n%s::", parser.library->name->chars);
+  fprintf(stderr, "\n%s::", basename(parser.library->name->chars));
 
   if (token->type == TOKEN_EOF) {
     fprintf(stderr, " at the end of line %d", token->line);
@@ -36,7 +36,7 @@ static void errorAt(Token* token, const char* message) {
     fprintf(stderr, "%d | %.*s", token->line, token->length, token->start);
   }
 
-  fprintf(stderr, "\n    -> %s\n", message);
+  fprintf(stderr, "\n    {-} %s\n", message);
   parser.hadError = true;
 }
 
@@ -57,6 +57,14 @@ static void advance() {
 
     errorAtCurrent(parser.current.start);
   }
+}
+
+static char* backTrack(const char* message) {
+  //+2 for the ''
+  int length = strlen(message) + 2 + parser.previous.length;
+  char* driver = malloc(sizeof(char) + length + 1);
+  snprintf(driver, length + 1, "%s'%.*s'", message, parser.previous.length, parser.previous.start);
+  return driver;
 }
 
 static void consume(TokenType type, const char* message) {
@@ -158,6 +166,7 @@ static void initCompiler(Compiler* compiler, FunctionType type) {
   compiler->lastCall = false;
   compiler->scopeDepth = 0;
 
+  initTable(&compiler->cacheConstants);
 
   compiler->type = type;
   compiler->function = newFunction(parser.library, type);
@@ -248,7 +257,16 @@ static void setPrivateProperty(Token name) {
 
 
 static uint8_t identifierConstant(Token* name) {
-  return makeConstant(OBJ_VAL(copyString(name->start, name->length)));
+  ObjString* nameStr = copyString(name->start, name->length);
+  Value indexVal;
+
+  if (tableGet(&current->cacheConstants, nameStr, &indexVal)) {
+    return (uint8_t)AS_NUMBER(indexVal);
+  }
+
+  uint8_t index = makeConstant(OBJ_VAL(nameStr));
+  tableSet(&current->cacheConstants, nameStr, NUMBER_VAL((double)index));
+  return index;
 }
 
 static void parsePrivate() {
@@ -1058,7 +1076,9 @@ static void varDeclaration(bool isPrivate) {
 
 static void expressionStatement() {
   expression();
-  consume(TOKEN_SEMICOLON, "Expected a ';' after the previous expression.");
+
+  char* msg = backTrack("Expected a ';' after the token ");
+  consume(TOKEN_SEMICOLON, msg);
   emitByte(OP_POP);
 }
 
@@ -1466,6 +1486,7 @@ ObjFunction* compile(const char* source, ObjLibrary* library) {
     declaration();
   }
 
+  freeTable(&compiler.cacheConstants);
   ObjFunction* function = endCompiler();
   return parser.hadError ? NULL : function;
 }
@@ -1474,6 +1495,7 @@ void markCompilerRoots() {
   Compiler* compiler = current;
   while (compiler != NULL) {
     markObject((Obj*)compiler->function);
+    markTable(&compiler->cacheConstants);
     compiler = compiler->enclosing;
   }
 }

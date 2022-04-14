@@ -31,11 +31,11 @@ other_libraries = ""
 if platform.system() == "Windows":
     WINDOWS_BUILD = True
     exe = "Pa.exe"
-    other_libraries = os.path.join(os.environ['APPDATA'], "Pa_LIBS")
+    other_libraries = os.path.join(os.environ['APPDATA'], "PA_LIBS")
 else:
     LINUX_BUILD = True
     exe = "Pa"
-    other_libraries = os.path.join(home, "Pa_LIBS")
+    other_libraries = os.path.join(home, "PA_LIBS")
 #
 
 def check():
@@ -171,10 +171,11 @@ def compile(cc):
 
     initLibs()
 
+    command = f"{cc} {objects} {libraries} {source} {opts} {flags} {exe}"
     if LINUX_BUILD:
-        execute( f"{cc} {objects} {libraries} {source} {opts} {flags} {exe} -lm" )
+        execute(command + " -lm")
     else:
-        execute( f"{cc} {objects} {libraries} {source} {opts} {flags} {exe}" )    
+        execute(command)    
 
 @click.group()
 def cli():

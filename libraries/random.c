@@ -1,6 +1,6 @@
 #include "random.h"
 
-// i dont remember adding these?? eh.
+// hmmm....
 static unsigned int g_seed;
 
 static inline void fastsrand(int seed) {
@@ -104,7 +104,7 @@ static Value fillLib(int argCount, Value *args) {
 
 //
 ObjLibrary* createRandomLibrary() {
-    //TODO: add xoroshiro algorithm.
+    //TODO: add xoroshiro algorithm?
     ObjString* name = copyString("Random", 6);
     push(OBJ_VAL(name));
     ObjLibrary* library = newLibrary(name);
@@ -115,6 +115,8 @@ ObjLibrary* createRandomLibrary() {
     defineNative("choice", choiceLib, &library->values);
     defineNative("fill", fillLib, &library->values);
     
+    defineProperty("RANDOM_MAX", NUMBER_VAL(RAND_MAX), &library->values);
+
     pop();
     pop();
 

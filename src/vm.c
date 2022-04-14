@@ -187,7 +187,9 @@ static Value peek(int distance) {
 
 static bool call(ObjClosure* closure, int argCount) {
   if (argCount != closure->function->arity) {
-    runtimeError("Expected %d arguments but got %d.", closure->function->arity, argCount);
+    const char* args = closure->function->arity == 1 ? "argument" : "arguments";
+    runtimeError("Expected %d %s but got %d from '%s' call.", closure->function->arity, args, argCount,
+      closure->function->name->chars);
     return false;
   }
 
@@ -239,7 +241,7 @@ static bool keepFrame(CallFrame* frame, int argCount) {
         if (tableGet(&klass->methods, vm.initString, &initializer)) {
           return call(AS_CLOSURE(initializer), argCount);
         } else if (argCount != 0) {
-          runtimeError("Expected 0 arguments but got %d.", argCount);
+          runtimeError("Expected 0 arguments but got %d from '%s' constructure call.", argCount, klass->name->chars);
           return false;
         }
 
@@ -540,8 +542,8 @@ static InterpretResult run() {
         return INTERPRET_RUNTIME_ERROR; \
       } \
       T b = AS_NUMBER(pop()); \
-      T a = AS_NUMBER(pop()); \
-      push(valueType(a op b)); \
+      T a = AS_NUMBER(peek(0)); \
+      vm.stackTop[-1] = valueType(a op b); \
     } while (false)
 
   for (;;) {
@@ -614,11 +616,14 @@ static InterpretResult run() {
       case OP_PRIVATE_GET: {
         ObjString* name = READ_STRING();
         Value value;
-        if (!tableGet(&frame->closure->function->library->privateValues, name, &value)) {
-          runtimeError("Undefined private variable '%s'.", name->chars);
-          return INTERPRET_RUNTIME_ERROR;
-        }
+        tableGet(&frame->closure->function->library->privateValues, name, &value);
         push(value);
+        break;
+      }
+
+      case OP_PRIVATE_SET: {
+        ObjString* name = READ_STRING();
+        tableSet(&frame->closure->function->library->privateValues, name, peek(0));
         break;
       }
 
@@ -686,7 +691,7 @@ static InterpretResult run() {
 
       case OP_PRIVATE_PROPERTY_GET: {
         if (!IS_INSTANCE(peek(0))) {
-          runtimeError("Only instances have private properties.");
+          runtimeError("Only instances can have private properties.");
           return INTERPRET_RUNTIME_ERROR;
         }
 
@@ -709,7 +714,7 @@ static InterpretResult run() {
 
       case OP_PRIVATE_GET_PROPERTY_NO_POP: {
         if (!IS_INSTANCE(peek(0))) {
-          runtimeError("Only instances have private properties.");
+          runtimeError("Only instances can have private properties.");
           return INTERPRET_RUNTIME_ERROR;
         }
 
@@ -895,7 +900,7 @@ static InterpretResult run() {
       }
       
       case OP_NOT:
-        push(BOOL_VAL(isFalsey(pop())));
+        vm.stackTop[-1] = BOOL_VAL(isFalsey( peek(0) ));
         break;
 
 

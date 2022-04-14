@@ -3,39 +3,39 @@
 
 //Stack.new() is better than Stack.Stack().
 class new {
-    init() { 
-      private _values = []; 
-    } 
- 
-    isEmpty() { 
-      return this._values.length() == 0; 
-    } 
- 
-    push(item) { 
-      this._values.append(item); 
-      return 0; 
-    } 
- 
-    pop() { 
-      assert !this.isEmpty(), 
-        "Can not pop from an empty stack from 'pop()'.";
+  init() { 
+    private _values = []; 
+  } 
 
-      return this._values.remove(); 
-    } 
- 
-    peek(distance) { 
-      let index = -1 - distance;
+  isEmpty() { 
+    return this._values.length() == 0; 
+  } 
 
-      assert 
-        !this.isEmpty(), "Can not peek an empty stack from 'peek()'.";
-      assert index > this._values.length(), 
-        "Distance out of bounds from 'peek()'."; 
+  push(item) { 
+    this._values.append(item); 
+    return 0; 
+  } 
 
-      return this._values[index]; 
-    }
+  pop() { 
+    assert !this.isEmpty(), 
+      "Can not pop from an empty stack from 'pop()'.";
 
-    clear() {
-      this._values.clear();
-      return 0;
-    }
+    return this._values.remove(); 
+  } 
+
+  peek(distance) { 
+    let index = -1 - distance;
+
+    assert 
+      !this.isEmpty(), "Can not peek an empty stack from 'peek()'.";
+    assert index > this._values.length(), 
+      "Distance out of bounds from 'peek()'."; 
+
+    return this._values[index]; 
+  }
+
+  clear() {
+    this._values.clear();
+    return 0;
+  }
 } 

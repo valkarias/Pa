@@ -1,6 +1,22 @@
 #include "Pa_time.h"
 
-//TODO: complete overhaul?
+static Value timeLib(int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError("Expected 0 arguments but got %d from 'time()'.", argCount);
+        return NOTCLEAR;
+    }
+
+    return NUMBER_VAL( (double) time(NULL) );
+}
+
+static Value clockLib(int argCount, Value *args) {
+    if (argCount != 0) {
+        runtimeError("Expected 0 arguments but got %d from 'clock()'.", argCount);
+        return NOTCLEAR;
+    }
+
+    return NUMBER_VAL( (double)clock() / CLOCKS_PER_SEC );
+}
 
 //
 ObjLibrary* createTimeLibrary() {
@@ -11,6 +27,9 @@ ObjLibrary* createTimeLibrary() {
     push(OBJ_VAL(name));
     ObjLibrary* library = newLibrary(name);
     push(OBJ_VAL(library));
+
+    defineNative("time", timeLib, &library->values);
+    defineNative("clock", clockLib, &library->values);
 
     defineProperty("MINYEAR", NUMBER_VAL(1), &library->values);
     defineProperty("MAXYEAR", NUMBER_VAL(9999), &library->values);

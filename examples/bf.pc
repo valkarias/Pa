@@ -2,21 +2,14 @@
 
 use Ascii;
 
-define bf (src, min, max, data, index) {
+define exec (src) {
     if src.length() == 0 return -1;
-
-    if min < 0 min = 0;
-    if min >= src.length() min = src.length() - 1;
-
-    if max < 0 max = 0;
-    if max >= src.length() max = src.length() - 1;
-
     let arr = [0,0,0,0,0,0,0,0,0,0,0,0,0]; // fixed size.
 
     let ptr = 0;
     let i = 0;
 
-    while i <= max {
+    while i <= src.length() - 1 {
         let s = src[i];
 
         if s == '>' {
@@ -73,3 +66,8 @@ define bf (src, min, max, data, index) {
         i++;
     } 
 }
+
+let helloWorld = "++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]
+                >>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.";
+
+exec(helloWorld);
