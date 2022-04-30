@@ -669,7 +669,7 @@ static InterpretResult run() {
 
       case OP_GET_PROPERTY_NO_POP: {
         if (!IS_INSTANCE(peek(0))) {
-          runtimeError("Only instances have properties.");
+          runtimeError("Only instances can have properties.");
           return INTERPRET_RUNTIME_ERROR;
         }
 

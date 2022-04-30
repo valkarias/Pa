@@ -18,11 +18,13 @@ static Value openLib(int argCount, Value *args) {
     ObjString* openType = AS_STRING(args[1]);
 
     ObjFile* file = newFile();
+    push(OBJ_VAL(file));
     file->file = fopen(
         fileName->chars, openType->chars
     );
     file->path = fileName->chars;
     file->openType = openType->chars;
+    pop();
 
     if (!file->file) {
         runtimeError("Unable to open file '%s'.", file->path);

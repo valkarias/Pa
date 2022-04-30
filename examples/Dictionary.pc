@@ -127,10 +127,10 @@ class Table {
     }
 }
 
-let x = Table(
-    [
-        ["item1", 1]
-    ]
-);
+// let x = Table(
+//     [
+//         ["item1", 1]
+//     ]
+// );
 
-print(x.get("item1")); //1
+// print(x.get("item1")); //1

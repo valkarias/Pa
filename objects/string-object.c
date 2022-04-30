@@ -147,8 +147,7 @@ static Value startsWithMethod(int argCount, Value *args) {
 }
 
 
-static Value endswith(char* string, char* suffix)
-{
+static Value endswith(char* string, char* suffix) {
     if (!string || !suffix) {
         return FALSE_VAL;
     }

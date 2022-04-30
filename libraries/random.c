@@ -83,7 +83,7 @@ static Value fillLib(int argCount, Value *args) {
     }
 
     if (!IS_NUMBER(args[0])) {
-        runtimeError("Argument must be a list from 'fill()'.");
+        runtimeError("Argument must be a number from 'fill()'.");
         return NOTCLEAR;
     }
 
