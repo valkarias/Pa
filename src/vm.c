@@ -220,7 +220,6 @@ static bool keepFrame(CallFrame* frame, int argCount) {
   frame->slots = vm.stackTop - argCount - 1;
   frame->closure = closure;
   frame->ip = closure->function->chunk.code;
-
   return true;
 }
 
@@ -830,8 +829,9 @@ static InterpretResult run() {
 
       case OP_EQUAL: {
         Value b = pop();
-        Value a = pop();
-        push(BOOL_VAL(valuesEqual(a, b)));
+        Value a = peek(0);
+
+        vm.stackTop[-1] = BOOL_VAL(valuesEqual(a, b));
         break;
       }
       case OP_GREATER:  BINARY_OP(BOOL_VAL, >, double); break;
@@ -841,8 +841,8 @@ static InterpretResult run() {
           concatenate();
         } else if (IS_NUMBER(peek(0)) && IS_NUMBER(peek(1))) {
           double b = AS_NUMBER(pop());
-          double a = AS_NUMBER(pop());
-          push(NUMBER_VAL(a + b));
+          double a = AS_NUMBER(peek(0));
+          vm.stackTop[-1] = NUMBER_VAL(a + b);
         } else {
           runtimeError("Operands must be either two numbers or two strings.");
           return INTERPRET_RUNTIME_ERROR;
@@ -859,9 +859,9 @@ static InterpretResult run() {
         }
 
         double b = AS_NUMBER(pop());
-        double a = AS_NUMBER(pop());
+        double a = AS_NUMBER(peek(0));
 
-        push(NUMBER_VAL(fmod(a,b)));
+        vm.stackTop[-1] = NUMBER_VAL(fmod(a,b));
         break;
       }
 
@@ -872,9 +872,9 @@ static InterpretResult run() {
         }
 
         double b = AS_NUMBER(pop());
-        double a = AS_NUMBER(pop());
+        double a = AS_NUMBER(peek(0));
 
-        push(NUMBER_VAL(powf(a,b)));
+        vm.stackTop[-1] = NUMBER_VAL(powf(a,b));
         break;
       }
 
@@ -887,7 +887,7 @@ static InterpretResult run() {
         }
 
         double b = AS_NUMBER(pop());
-        double a = AS_NUMBER(pop());
+        double a = AS_NUMBER(peek(0));
 
         if (a == 0 || b == 0) {
           runtimeError("Can not divide by 0.");
@@ -895,7 +895,7 @@ static InterpretResult run() {
           return INTERPRET_RUNTIME_ERROR;
         }
 
-        push(NUMBER_VAL(a / b));
+        vm.stackTop[-1] = NUMBER_VAL(a / b);
         break;
       }
       
@@ -961,25 +961,39 @@ static InterpretResult run() {
       case OP_TAIL_CALL: {
         int argCount = READ_BYTE();
 
-        if (frame != &vm.frames[vm.frameCount]) {
-          if (!callValue(peek(argCount), argCount)) {
-            return INTERPRET_RUNTIME_ERROR;
-          }
+        //function B args
+        ValueArray args;
+        initValueArray(&args);
+        for (int i = 0; i < argCount; i++) {
+          writeValueArray(&args, pop());
+        }
+        //function B
+        Value function = pop();
 
-          frame = &vm.frames[vm.frameCount - 1];
-          break;
+        //function A args
+        int argCount_A = frame->closure->function->arity;
+        for (int i = 0; i < argCount; i++) {
+          pop();
+        }
+        //function A
+        pop();
+
+        //function B took position of function A
+        push(function);
+        //re-position args
+        //push them in reverse to obtain their original order.
+        for (int i = argCount - 1; i >= 0; i--) {
+          push(args.values[i]);
         }
 
+        //No need anymore.
+        freeValueArray(&args);
+
+        //Jump
         if (!keepFrame(frame, argCount)) {
           return INTERPRET_RUNTIME_ERROR;
         }
 
-        // Awkward stack cleaner.
-        Value result = pop();
-        cleanCalls();
-
-        push(result);
-        frame = &vm.frames[vm.frameCount - 1];
         break;
       }
 

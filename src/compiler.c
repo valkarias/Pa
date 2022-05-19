@@ -1184,6 +1184,9 @@ static void assertStatement() {
 
   expression();
   if (match(TOKEN_COMMA)) {
+    //String must be a constant string rather than an expression resulting in one,
+    //this way its faster & will omit few checks at runtime.
+    //It doesnt need to be flexible because it should be only used for debugging.
     consume(TOKEN_STRING, "Expected an assert error string after the ','.");
     constant = addConstant(currentChunk(), OBJ_VAL(copyString(parser.previous.start + 1, parser.previous.length - 2)));
   }
