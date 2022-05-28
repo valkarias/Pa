@@ -1,36 +1,41 @@
-# Pa
-<img src="https://user-images.githubusercontent.com/70243457/156932366-71635391-789e-4c5d-8b79-d17beef5d387.png" alt="logo" height="300" style="display:block;margin-left: auto;margin-right: auto;">
+<p align="center"> <img src="https://user-images.githubusercontent.com/70243457/156932366-71635391-789e-4c5d-8b79-d17beef5d387.png" alt="logo" height="300" style="display:block;margin-left: auto;margin-right: auto;"></p>
+<h1 align="center">Pa</h1>
+<p align="center">Balanced as all things should be.</p>
 
-<img src="https://img.shields.io/github/workflow/status/valkarias/Pa/Release-builds?style=flat-square" alt="logo" style="display:block;margin-left: auto;margin-right: auto;margin-bottom:10px">
-<img src="https://img.shields.io/maintenance/yes/2022?style=flat-square" alt="logo" style="display:block;margin-left: auto;margin-right: auto;margin-bottom:15px">
+<p align="center">
+    <img src="https://img.shields.io/github/workflow/status/valkarias/Pa/Release-builds?style=flat-square" alt="logo">
+    <img src="https://img.shields.io/maintenance/yes/2022?style=flat-square" alt="logo">
+</p>
+<br>
 
-
-
-<p style="text-align: center;margin-bottom:30px">You are welcomed to the holy lands of Pa.</p>  
-
+## What
+<p style="text-align: center;margin-top:30px">You are welcomed to the holy lands of Pa.</p>  
 Pa is a hobby project designed around familiarity & quick-prototyping, it balances various features and makes them fit in one environment for the ease of development and focus.  
 
-## Documentation
-If you are completely new, Please head to [Pa's Documentation](https://valkarias.github.io/contents/toc.html).
-The standard library documentation will be gradually added.
 
+## Documentation
+![map-marker-home](https://user-images.githubusercontent.com/70243457/170840915-f9427da9-428b-43ad-aacf-8529883dde55.png)&nbsp;
+New here? Head straight to [Pa's Documentation](https://valkarias.github.io/contents/toc.html) to learn the basics!
+
+![share-free-icon-font](https://user-images.githubusercontent.com/70243457/170840963-2f0620c4-5488-4565-98ad-c47e593d136b.png)&nbsp;
 Examples are all in the [examples folder](https://github.com/valkarias/Pa/tree/master/examples).  
 
-Check the [Update Log](https://github.com/valkarias/Pa/blob/master/LOG.md) page for any major or minor changes added!
+![refresh-free-icon-font](https://user-images.githubusercontent.com/70243457/170841086-63a641d1-f1ad-49b5-9870-fbb05e7cf6e6.png)&nbsp;
+And lastly, check the [Update Log](https://github.com/valkarias/Pa/blob/master/LOG.md) page for any major or minor changes added!
 
-## Up & Running
-- Pa uses a tool called [PBuild](https://github.com/valkarias/Pa/releases) to download & build.  
-Building manually is possible.
+<br>
 
-### PBuild
-Assuming you downloaded PBuild from [releases](https://github.com/valkarias/Pa/releases)  
-- You need to extract the zip.  
+# Up & Running
+<p align="center">Pa uses a pre-built command line tool called PBuild to automate the process of downloading & building.</p>  
+<h3 align="center">Download PBuild</h3>
+<p align="center"><a href="https://github.com/valkarias/Pa/releases"><img src="https://user-images.githubusercontent.com/70243457/170841143-952e0d8a-2ae5-4659-9d88-677fbaa94291.png" alt="download"></a></p>
+<br>
+<br>
 
-The executable is located in `PBuild_(platform) -> pbuild -> pbuild(.exe)`  
+After, downloading you must extract the zipfile and navigate to the executable: 
+`PBuild_(platform) -> pbuild -> pbuild(.exe)`.   
 
-PBuild have 4 commands as of now: 
-
-
+## Usage
 #### download 
 Which downloads the Pa repo as a zipfile and extracts it into the user's home directory.  
 ```bash
