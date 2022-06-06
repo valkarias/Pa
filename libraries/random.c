@@ -67,6 +67,12 @@ static Value choiceLib(int argCount, Value *args) {
     }    
 
     ObjList* list = AS_LIST(args[0]);
+
+    if (list->items.count == 0) {
+        runtimeError("List should not be empty from 'choice()'.");
+        return NOTCLEAR;
+    }
+
     argCount = list->items.count;
     args = list->items.values;
 
@@ -105,6 +111,7 @@ static Value fillLib(int argCount, Value *args) {
 //
 ObjLibrary* createRandomLibrary() {
     //TODO: add xoroshiro algorithm?
+    //TODO: benchmark range & fastRange.
     ObjString* name = copyString("Random", 6);
     push(OBJ_VAL(name));
     ObjLibrary* library = newLibrary(name);

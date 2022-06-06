@@ -32,36 +32,9 @@ And lastly, check the [Update Log](https://github.com/valkarias/Pa/blob/master/L
 <br>
 <br>
 
-After, downloading you must extract the zipfile and navigate to the executable: 
-`PBuild_(platform) -> pbuild -> pbuild(.exe)`.   
+<p align="center">Follow the instructions to install Pa using PBuild <a href="https://valkarias.github.io/contents/chapters/getting-started.html">here</a>.</p>
 
-## Usage
-#### download 
-Which downloads the Pa repo as a zipfile and extracts it into the user's home directory.  
-```bash
-pbuild download
-```
-- the build command will not work if the download command was not executed.     
-
-#### build
-This command builds the downloaded Pa repo and modifies the Path environment variable to the executable (only works on windows). It takes a required option specifying the compiler to build with. 
-```bash
-pbuild build --cc-type=<compiler name>
-``` 
-There are two compilers supported as of now:  
-[Gnu Compiler Collection](https://gcc.gnu.org) (gcc) & [Tiny C Compiler](https://bellard.org/tcc/) (tcc). 
-
-#### uninstall 
-This command erases and uninstalls the Pa repo from you computer :(
-```bash
-pbuild uninstall
-```  
-
-#### version
-And this one displays the latest release version from [here](https://github.com/valkarias/Pa/releases)
-```bash
-pbuild version
-```
+-----------------------
 
 ### Tooling
 - A more versatile tooling is planned! 

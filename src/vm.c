@@ -349,9 +349,9 @@ static bool invoke(ObjString* name, int argCount) {
 
       case OBJ_INSTANCE: {
         ObjInstance* instance = AS_INSTANCE(receiver);
-
         Value value;
 
+        //TODO: investigate performance.
         if (tableGet(&instance->klass->privateMethods, name, &value)) {
           runtimeError("Can't access private property '%s' from '%s'.", name->chars, instance->klass->name->chars);
           return false;
@@ -958,6 +958,7 @@ static InterpretResult run() {
         break;
       }
 
+      //POLISH
       case OP_TAIL_CALL: {
         int argCount = READ_BYTE();
 
@@ -972,7 +973,7 @@ static InterpretResult run() {
 
         //function A args
         int argCount_A = frame->closure->function->arity;
-        for (int i = 0; i < argCount; i++) {
+        for (int i = 0; i < argCount_A; i++) {
           pop();
         }
         //function A

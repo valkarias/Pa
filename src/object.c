@@ -207,7 +207,7 @@ static uint32_t blend(uint32_t h) {
 ///// MurMur hash algorithm.
 
 /* Copyright 2013, Sébastien Paolacci.
-All rights reserved. Check NOTICE.TXT for more.
+All rights reserved.
 */
 static uint32_t hashString(const char* key, int length) {
   uint32_t h1 = 0x0;
@@ -433,6 +433,15 @@ char* objectString(Value value) {
       memmove(objectString + 7 + klass->name->length, ">", 1);
       objectString[klass->name->length + 8] = '\0';
       return objectString; 
+    }
+
+    case OBJ_BOUND_METHOD: {
+      ObjBoundMethod* method = AS_BOUND_METHOD(value);
+
+      char* objectString;
+      objectString = malloc(sizeof(char) * (method->method->function->name->length + 10));
+      snprintf(objectString, method->method->function->name->length + 10, "<method %s>", method->method->function->name->chars);
+      return objectString;
     }
 
     case OBJ_CLOSURE: {
