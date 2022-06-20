@@ -37,12 +37,12 @@ jobs:
       - name: Freeze CLI
         run: |
           cd tools/PBuild
-          pyinstaller pbuild.py
+          pyinstaller --onefile --hidden-import utils.py pbuild.py
       
       - name: Zip
         run: |
           cd tools/PBuild/dist
-          zip -r "PBuild_${{ matrix.os }}.zip" pbuild
+          zip "PBuild_${{ matrix.os }}.zip" pbuild
                    
       - name: Release
         uses: "marvinpinto/action-automatic-releases@latest"

@@ -746,7 +746,7 @@ static Token syntheticToken(const char* text) {
 
 static void this_(bool canAssign) {
   if (currentClass == NULL) {
-    error("Can't use the keyword 'this' outside of a class.");
+    error("Can't use 'this' outside of a class.");
     return;
   }
   
@@ -842,9 +842,9 @@ static void arrow(bool canAssign) {
   initCompiler(&compiler, TYPE_UNKNOWN);
   beginScope();
 
-  consume(TOKEN_LEFT_PAREN, "Expected a '(' after the 'lambda' keyword.");
+  consume(TOKEN_LEFT_PAREN, "Expected a '(' after 'lambda'.");
   functionArguments();
-  consume(TOKEN_RIGHT_PAREN, "Expected a ')'.");
+  consume(TOKEN_RIGHT_PAREN, "Expected a closing ')'.");
 
   consume(TOKEN_ARROW, "Expected an arrow ('->') after ')'.");
 
@@ -869,7 +869,7 @@ static void arrow(bool canAssign) {
 static void body() {
   functionArguments();
 
-  consume(TOKEN_RIGHT_PAREN, "Expected a ')'.");
+  consume(TOKEN_RIGHT_PAREN, "Expected a closing ')'.");
   consume(TOKEN_LEFT_BRACE, "Expected a '{' after the closing ')'.");
 
   block();
@@ -1096,10 +1096,10 @@ static void breakLoop() {
 }
 static void breakStatement() {
   if (staticCheck.innermostLoopStart == -1) {
-    error("Can't use the keyword 'break' outside of a loop.");
+    error("Can't use 'break' outside of a loop.");
   }
 
-  consume(TOKEN_SEMICOLON, "Expected a ';' after the keyword 'break'.");
+  consume(TOKEN_SEMICOLON, "Expected a ';' after 'break'.");
   for (int i = current->localCount - 1; i >= 0 && current->locals[i].depth > staticCheck.innermostLoopScopeDepth; i--) {
     emitByte(OP_POP);
   }
@@ -1109,10 +1109,10 @@ static void breakStatement() {
 
 static void continueStatement() {
   if (staticCheck.innermostLoopStart == -1) {
-    error("Can't use the keyword 'continue' outside of a loop.");
+    error("Can't use 'continue' outside of a loop.");
   }
 
-  consume(TOKEN_SEMICOLON, "Expected a ';' after keyword 'continue'.");
+  consume(TOKEN_SEMICOLON, "Expected a ';' after 'continue'.");
   for (int i = current->localCount - 1; i >= 0 && current->locals[i].depth > staticCheck.innermostLoopScopeDepth; i--) {
     emitByte(OP_POP);
   }
@@ -1204,7 +1204,7 @@ static void useStatement() {
     emitByte(OP_POP);
     
     if (match(TOKEN_FOR)) {
-      uint8_t library = parseVariable("Expected an indentifier after library's path.");
+      uint8_t library = parseVariable("Expected an identifier after library's path.");
       emitByte(OP_USE_NAME);
       defineVariable(library, false);
     }
@@ -1225,7 +1225,7 @@ static void useStatement() {
     defineVariable(libName, false);
   }
 
-  consume(TOKEN_SEMICOLON, "Expected a ';' after the 'use' statement.");
+  consume(TOKEN_SEMICOLON, "Expected a ';' after import.");
   emitByte(OP_RECENT_USE);
 }
 

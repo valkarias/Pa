@@ -33,18 +33,17 @@ jobs:
       - name: Freeze CLI
         run: |
           cd tools/PBuild
-          pyinstaller pbuild.py
+          pyinstaller --onefile --hidden-import utils.py pbuild.py
       
       - name: Zip
         run: |
           cd tools/PBuild/dist
-          powershell Compress-Archive pbuild PBuild_windows-latest.zip
+          powershell Compress-Archive pbuild.exe PBuild_windows-latest.zip
                    
       - name: Release
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.BIG_SECRET_NAME }}"
           automatic_release_tag: windows-latest
-          prerelease: true
           title: "${{ steps.date.outputs.date }}a-windows-latest"
           files: tools/PBuild/dist/PBuild_windows-latest.zip
