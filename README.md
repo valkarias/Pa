@@ -26,13 +26,13 @@ And lastly, check the [Update Log](https://github.com/valkarias/Pa/blob/master/L
 <br>
 
 # Up & Running
-<p align="center">Pa uses a pre-built command line tool called PBuild to automate the process of downloading & building.</p>  
+<p align="center">Pa uses a pre-built command line tool called <a href="https://github.com/valkarias/PBuild">PBuild</a> to automate the process of downloading & building.</p>  
 <h3 align="center">Download PBuild</h3>
-<p align="center"><a href="https://github.com/valkarias/Pa/releases"><img src="https://user-images.githubusercontent.com/70243457/170841143-952e0d8a-2ae5-4659-9d88-677fbaa94291.png" alt="download"></a></p>
+<p align="center"><a href="https://github.com/valkarias/PBuild"><img src="https://user-images.githubusercontent.com/70243457/170841143-952e0d8a-2ae5-4659-9d88-677fbaa94291.png" alt="download"></a></p>
 <br>
 <br>
 
-<p align="center">Follow the instructions to install Pa using PBuild <a href="https://valkarias.github.io/contents/chapters/getting-started.html">here</a>.</p>
+<p align="center">Follow the instructions to install Pa using <a href="https://github.com/valkarias/PBuild">PBuild</a> <a href="https://valkarias.github.io/contents/chapters/getting-started.html">here</a>.</p>
 
 -----------------------
 
