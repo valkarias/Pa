@@ -458,12 +458,6 @@ static ObjUpvalue* captureUpvalue(Value* local) {
   return createdUpvalue;
 }
 
-static void cleanCalls() {
-  for (Value* top = vm.stackTop; top > vm.stack + 1; top--) {
-    pop();
-  }
-}
-
 static void closeUpvalues(Value* last) {
   while (vm.openUpvalues != NULL &&
          vm.openUpvalues->location >= last) {

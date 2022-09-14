@@ -43,6 +43,24 @@ static Value sleepLib(int argCount, Value *args) {
     return CLEAR;
 }
 
+static char* getMonthName(int index) {
+    char months[12][10] = { "January","February","March","April","May","June", "July","August","September","October","November","December" };
+    char* month = ALLOCATE(char, strlen(months[index]) + 1);
+    memcpy(month, months[index], strlen(months[index]) + 1);
+
+    month[strlen(months[index])] = '\0';
+    return month;
+}
+
+static char* getDayName(int index) {
+    char days[12][10] = { "Saturday","Sunday","Monday","Tuesday","Wednesday","Thursday", "Friday" };
+    char* day = ALLOCATE(char, strlen(days[index]) + 1);
+    memcpy(day, days[index], strlen(days[index]) + 1);
+
+    day[strlen(days[index])] = '\0';
+    return day;
+}
+
 //
 ObjLibrary* createTimeLibrary() {
     time_t t = time(NULL);
@@ -61,9 +79,16 @@ ObjLibrary* createTimeLibrary() {
     defineProperty("MAXYEAR", NUMBER_VAL(9999), &library->values);
 
     defineProperty("day", NUMBER_VAL(tm.tm_mday), &library->values);
+
+    char* dayName = getDayName(tm.tm_wday + 1);
     defineProperty("weekday", NUMBER_VAL(tm.tm_wday), &library->values);
+    defineProperty("dayName", OBJ_VAL(takeString(dayName, strlen(dayName))), &library->values);
+
 
     defineProperty("month", NUMBER_VAL(tm.tm_mon + 1), &library->values);
+    char* monthName = getMonthName(tm.tm_mon);
+    defineProperty("monthName", OBJ_VAL(takeString(monthName, strlen(monthName))), &library->values);
+
     defineProperty("year", NUMBER_VAL(tm.tm_year + 1900), &library->values);
 
     defineProperty("hour", NUMBER_VAL(tm.tm_hour), &library->values);

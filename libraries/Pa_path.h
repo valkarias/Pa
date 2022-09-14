@@ -8,6 +8,13 @@
 
 #include "library.h"
 
+#ifdef _WIN32
+    #include "win.h"
+#else
+    #include <dirent.h>
+#endif
+#undef TokenType
+
 ObjLibrary* createPathLibrary();
 
 #endif

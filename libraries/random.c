@@ -9,7 +9,7 @@ static inline void fastsrand(int seed) {
 
 static inline int fastrand() { 
   g_seed = (214013 * g_seed + 2531011); 
-  return (g_seed >> 16) & 0x7FFF; 
+  return (g_seed >> 16) & RAND_MAX; 
 }
 //
 
