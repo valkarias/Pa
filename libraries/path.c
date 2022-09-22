@@ -126,40 +126,42 @@ static Value realLib(int argCount, Value *args) {
     return OBJ_VAL(copyString(realpath, strlen(realpath)));
 }
 
-static bool winListDir(ObjList* list, const char* path) {
-    WIN32_FIND_DATAA fdFile;
-    HANDLE dir = NULL;
+#ifdef _WIN32
+    static bool winListDir(ObjList* list, const char* path) {
+        WIN32_FIND_DATAA fdFile;
+        HANDLE dir = NULL;
 
-    // '\\*.*' 5 + 1 (\0)
-    int length = strlen(path) + 6;
-    char* searchPath = ALLOCATE(char, length);
-    if (!searchPath) {
-        runtimeError("Memory error on listDir()!?");
-        return false;
-    }
-    strcpy(searchPath, path);
-    strcat(searchPath, "\\*.*");
+        // '\\*.*' 5 + 1 (\0)
+        int length = strlen(path) + 6;
+        char* searchPath = ALLOCATE(char, length);
+        if (!searchPath) {
+            runtimeError("Memory error on listDir()!?");
+            return false;
+        }
+        strcpy(searchPath, path);
+        strcat(searchPath, "\\*.*");
 
-    if ( (dir = FindFirstFile(searchPath, &fdFile)) == INVALID_HANDLE_VALUE) {
-        free(searchPath);
-        FindClose(dir);
-        return false;
-    }
-
-    do {
-        // Ignore first entries ("." & "..")
-        if (strcmp(fdFile.cFileName, ".") == 0 || strcmp(fdFile.cFileName, "..") == 0) {
-            continue;
+        if ( (dir = FindFirstFile(searchPath, &fdFile)) == INVALID_HANDLE_VALUE) {
+            free(searchPath);
+            FindClose(dir);
+            return false;
         }
 
-        Value fileValue = OBJ_VAL(copyString(fdFile.cFileName, strlen(fdFile.cFileName)));
-        push(fileValue);
-        writeValueArray(&list->items, fileValue);
-        pop();
-    } while (FindNextFile(dir, &fdFile) != 0);
+        do {
+            // Ignore first entries ("." & "..")
+            if (strcmp(fdFile.cFileName, ".") == 0 || strcmp(fdFile.cFileName, "..") == 0) {
+                continue;
+            }
 
-    FindClose(dir);
-}
+            Value fileValue = OBJ_VAL(copyString(fdFile.cFileName, strlen(fdFile.cFileName)));
+            push(fileValue);
+            writeValueArray(&list->items, fileValue);
+            pop();
+        } while (FindNextFile(dir, &fdFile) != 0);
+
+        FindClose(dir);
+    }
+#endif
 
 static Value listDirLib(int argCount, Value* args) {
     if (argCount != 1) {
